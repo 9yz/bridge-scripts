@@ -1,12 +1,12 @@
 ﻿/*
 
 	copyMetadataCont Script created by 9yz
-	Last modifed 11/22/24
+	11/23/24
 
 	Adds the ability to copy IPTC metadata between files.
 
-	/// TODO:
-	- UI?
+	TODO:
+	- implement headline field
 
 */
 
@@ -18,10 +18,11 @@ const typeFlags = {
 	description:	1,
 	tags: 			2, // can be appended
 	location: 		4,
+	headline:		8
 };
-const allTypeFlags = typeFlags.description+typeFlags.tags+typeFlags.location;
+const allTypeFlags = typeFlags.description+typeFlags.tags+typeFlags.location+typeFlags.headline;
 
-// enum: when passed to a paste function, specifies how it should be pasted
+// enum: when passed to a paste function, specifies how it should be pasted. Only certian types can be appended - see typeFlags
 const methodFlags = {
 	append: 		1
 };
@@ -42,10 +43,11 @@ var copiedData = {
 
 
 #target bridge
-if(BridgeTalk.appName == 'bridge'){ // STARTUP FUNCTION: run when bridge starts, used for setup
+// STARTUP FUNCTION: run when bridge starts, used for setup
+if(BridgeTalk.appName == 'bridge'){ 
 	try{
 
-			// Load the XMP Script library
+		// Load the XMP Script library
 		if( xmpLib == undefined ){
 			if(Folder.fs == "Windows"){
 				var pathToLib = Folder.startup.fsName + "/AdobeXMPScript.dll";
@@ -58,43 +60,13 @@ if(BridgeTalk.appName == 'bridge'){ // STARTUP FUNCTION: run when bridge starts,
 			var xmpLib = new ExternalObject("lib:" + pathToLib );
 		}
 
-		// create tool menu folders
-		if(MenuElement.find('copyMetadata') == null){
-			MenuElement.create('menu', 'Copy property...', 'at the end of Tools', 'copyMetadata');
-		}
-		if(MenuElement.find('pasteMetadata') == null){
-			MenuElement.create('menu', 'Paste property...', 'at the end of Tools', 'pasteMetadata');
-		}
-
-		// create tools menu options
-		var cmCopyAll = 			MenuElement.create('command', 'All', 'at the end of copyMetadata'); 
-		var cmPasteAll = 			MenuElement.create('command', 'All (Overwrite)', 'at the end of pasteMetadata'); 
-		var cmCopyDescription = 	MenuElement.create('command', 'Description', 'at the end of copyMetadata'); 
-		var cmPasteDescription = 	MenuElement.create('command', 'Description', 'at the end of pasteMetadata');
-		var cmCopyTags =			MenuElement.create('command', 'Keywords', 'at the end of copyMetadata'); 
-		var cmPasteTags = 			MenuElement.create('command', 'Keywords (Overwrite)', 'at the end of pasteMetadata');
-		var cmPasteTagsApp = 		MenuElement.create('command', 'Keywords (Append)', 'at the end of pasteMetadata');
-		var cmCopyLocation = 		MenuElement.create('command', 'Location', 'at the end of copyMetadata'); 
-		var cmPasteLocation = 		MenuElement.create('command', 'Location', 'at the end of pasteMetadata');
-	
-		// create context (right click) menu folders
-		if(MenuElement.find('pasteMetadataCont') == null){
-			MenuElement.create('menu', 'Paste property...', 'after Thumbnail/Open', 'pasteMetadataCont');
-		}
-		if(MenuElement.find('copyMetadataCont') == null){
-			MenuElement.create('menu', 'Copy property...', 'after Thumbnail/Open', 'copyMetadataCont');
-		}
-
-		// items for context menu folders
-		var cmCopyAllCont = 			MenuElement.create('command', 'All', 'at the end of copyMetadataCont');
-		var cmPasteAllCont = 			MenuElement.create('command', 'All (Overwrite)', 'at the end of pasteMetadataCont');
-		var cmCopyDescriptionCont = 	MenuElement.create('command', 'Description', 'at the end of copyMetadataCont'); 
-		var cmPasteDescriptionCont = 	MenuElement.create('command', 'Description', 'at the end of pasteMetadataCont'); 
-		var cmCopyTagsCont = 			MenuElement.create('command', 'Keywords', 'at the end of copyMetadataCont'); 
-		var cmPasteTagsCont = 			MenuElement.create('command', 'Keywords (Overwrite)', 'at the end of pasteMetadataCont'); 
-		var cmPasteTagsAppCont = 		MenuElement.create('command', 'Keywords (Append)', 'at the end of pasteMetadataCont'); 
-		var cmCopyLocationCont = 		MenuElement.create('command', 'Location', 'at the end of copyMetadataCont'); 
-		var cmPasteLocationCont = 		MenuElement.create('command', 'Location', 'at the end of pasteMetadataCont');
+		// menu items; weird ordering so they get ordered correctly in the menus
+		var cmMenuCopy 					= MenuElement.create('command', 'Copy Property...', 'at the end of Tools'); 
+		var cmMenuPaste 				= MenuElement.create('command', 'Paste Property (Append)', 'at the end of Tools'); 
+		var cmMenuPasteOverwrite 		= MenuElement.create('command', 'Paste Property (Overwrite)', 'at the end of Tools'); 
+		var cmMenuPasteContOverwrite 	= MenuElement.create('command', 'Paste Property (Overwrite)', 'after Thumbnail/Open'); 
+		var cmMenuPasteCont 			= MenuElement.create('command', 'Paste Property (Append)', 'after Thumbnail/Open'); 
+		var cmMenuCopyCont 				= MenuElement.create('command', 'Copy Property...', 'after Thumbnail/Open'); 
 
 	}
 	catch(e){
@@ -103,11 +75,170 @@ if(BridgeTalk.appName == 'bridge'){ // STARTUP FUNCTION: run when bridge starts,
 }
 
 
+// clears the clipboard for all chosen properties
+function resetClipboard(type){
+	if(type & typeFlags.description){
+		copiedData.description = null;
+	}
+	if(type & typeFlags.tags){
+		copiedData.tags = null;
+	}
+	if(type & typeFlags.location){
+		copiedData.sublocation = 	null;
+		copiedData.city = 			null;
+		copiedData.state = 			null;
+		copiedData.country = 		null;
+		copiedData.countrycode = 	null;
+	}
+}
 
 
-function cmCopy(type, method){
+// creates a modal dialog asking what fields to copy
+function cmDialog(){
+
+	var copyTypes = allTypeFlags; // stores what values we'll be copying based on user selection
+
+	/*
+	Code for Import https://scriptui.joonas.me — (Triple click to select): 
+	{"activeId":1,"items":{"item-0":{"id":0,"type":"Dialog","parentId":false,"style":{"enabled":true,"varName":"copyMetadata","windowType":"Dialog","creationProps":{"su1PanelCoordinates":false,"maximizeButton":false,"minimizeButton":false,"independent":false,"closeButton":true,"borderless":false,"resizeable":false},"text":"Copy metadata...","preferredSize":[150,100],"margins":16,"orientation":"column","spacing":5,"alignChildren":["left","top"]}},"item-1":{"id":1,"type":"Group","parentId":10,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":[0,null,0,20],"orientation":"column","spacing":5,"alignChildren":["left","center"],"alignment":null}},"item-2":{"id":2,"type":"Checkbox","parentId":10,"style":{"enabled":true,"varName":"cbAll","text":"All","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-3":{"id":3,"type":"Group","parentId":0,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":[15,0,0,0],"orientation":"row","spacing":10,"alignChildren":["left","center"],"alignment":null}},"item-4":{"id":4,"type":"Checkbox","parentId":1,"style":{"enabled":true,"varName":"cbHeadline","text":"Headline","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-5":{"id":5,"type":"Checkbox","parentId":1,"style":{"enabled":true,"varName":"cbDescription","text":"Description","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-6":{"id":6,"type":"Checkbox","parentId":1,"style":{"enabled":true,"varName":"cbKeywords","text":"Keywords","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-7":{"id":7,"type":"Checkbox","parentId":1,"style":{"enabled":true,"varName":"cbLocatio","text":"Location","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-8":{"id":8,"type":"Button","parentId":3,"style":{"enabled":true,"varName":"butCancel","text":"Cancel","justify":"center","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-9":{"id":9,"type":"Button","parentId":3,"style":{"enabled":true,"varName":"butOk","text":"Ok","justify":"center","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-10":{"id":10,"type":"Panel","parentId":0,"style":{"enabled":true,"varName":"","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Properties","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["left","top"],"alignment":null}}},"order":[0,10,2,1,4,5,6,7,3,8,9],"settings":{"importJSON":true,"indentSize":false,"cepExport":false,"includeCSSJS":true,"showDialog":true,"functionWrapper":false,"afterEffectsDockable":false,"itemReferenceList":"None"}}
+	*/ 
+
+	// COPYMETADATA
+	var winCopyMetadata = new Window("dialog"); 
+	winCopyMetadata.text = "Copy metadata..."; 
+	winCopyMetadata.preferredSize.width = 150; 
+	winCopyMetadata.preferredSize.height = 100; 
+	winCopyMetadata.orientation = "column"; 
+	winCopyMetadata.alignChildren = ["fill","top"]; 
+	winCopyMetadata.spacing = 5; 
+	winCopyMetadata.margins = 16; 
+
+	// PANEL1
+	var panel1 = winCopyMetadata.add("panel", undefined, undefined, {name: "panel1"}); 
+	panel1.text = "Properties"; 
+	panel1.orientation = "column"; 
+	panel1.alignChildren = ["fill","top"]; 
+	panel1.spacing = 10; 
+	panel1.margins = 10; 
+
+	var cbAll = panel1.add("checkbox", undefined, undefined, {name: "cbAll"}); 
+	cbAll.text = "All"; 
+	cbAll.value = true;
+
+	// GROUP1
+	var group1 = panel1.add("group", undefined, {name: "group1"}); 
+	group1.orientation = "column"; 
+	group1.alignChildren = ["left","center"]; 
+	group1.spacing = 5; 
+	group1.margins = [20,0,0,0]; 
+
+	var cbHeadline = group1.add("checkbox", undefined, undefined, {name: "cbHeadline"}); 
+	cbHeadline.text = "Headline"; 
+	cbHeadline.value = true;
+
+	var cbDescription = group1.add("checkbox", undefined, undefined, {name: "cbDescription"}); 
+	cbDescription.text = "Description";
+	cbDescription.value = true;
+
+	var cbKeywords = group1.add("checkbox", undefined, undefined, {name: "cbKeywords"}); 
+	cbKeywords.text = "Keywords";
+	cbKeywords.value = true;
+
+	var cbLocation = group1.add("checkbox", undefined, undefined, {name: "cbLocation"}); 
+	cbLocation.text = "Location";
+	cbLocation.value = true;
+
+
+	//// GROUP1 INTERACTIVITY
+
+	// called when "All" is clicked
+	winCopyMetadata.panel1.cbAll.onClick = function(){ 
+		cbHeadline.value = cbDescription.value = cbKeywords.value = cbLocation.value = this.value; // set the other checkboxes to this box's value
+
+		//set result value
+		if(this.value) 
+			copyTypes = allTypeFlags;
+		else 
+			copyTypes = 0;
+	}
+
+	// called when "Headline" is clicked
+	winCopyMetadata.panel1.group1.cbHeadline.onClick = function(){
+		if(!this.value){ 
+			cbAll.value = false;
+			copyTypes ^= typeFlags.headline; // remove this value from the result
+		}
+		else copyTypes |= typeFlags.headline; // add this val to the result
+	}
+	// called when "Description" is clicked
+	winCopyMetadata.panel1.group1.cbDescription.onClick = function(){
+		if(!this.value){ 
+			cbAll.value = false;
+			copyTypes ^= typeFlags.description; // remove this value from the result
+		}
+		else copyTypes |= typeFlags.description; // add this val to the result
+	}
+	// called when "Keywords" is clicked
+	winCopyMetadata.panel1.group1.cbKeywords.onClick = function(){
+		if(!this.value){ 
+			cbAll.value = false;
+			copyTypes ^= typeFlags.tags; // remove this value from the result
+		}
+		else copyTypes |= typeFlags.tags; // add this val to the result
+	}
+	// called when "Location" is clicked
+	winCopyMetadata.panel1.group1.cbLocation.onClick = function(){
+		if(!this.value){ 
+			cbAll.value = false;
+			copyTypes ^= typeFlags.location; // remove this value from the result
+		}
+		else copyTypes |= typeFlags.location; // add this val to the result
+	}
+
+
+
+	// GROUP2
+	var group2 = winCopyMetadata.add("group", undefined, {name: "group2"}); 
+	group2.orientation = "row"; 
+	group2.alignChildren = ["left","center"]; 
+	group2.spacing = 10; 
+	group2.margins = [0,15,0,0]; 
+
+	var butCancel = group2.add("button", undefined, undefined, {name: "butCancel"}); 
+	butCancel.text = "Cancel"; 
+
+	var butOk = group2.add("button", undefined, undefined, {name: "butOk"}); 
+	butOk.text = "Ok"; 
+
+
+	//// GROUP2 INTERACTIVITY
+
+	// called when "Cancel" is clicked
+	winCopyMetadata.group2.butCancel.onClick = function(){
+		winCopyMetadata.close();
+		return -1;
+	}
+	
+	// called when "Ok" is clicked
+	winCopyMetadata.group2.butOk.onClick = function(){
+		winCopyMetadata.close();
+		return copyTypes;
+	}
+
+	winCopyMetadata.show(); // display the window
+}
+
+
+
+
+
+// Identifies a file to copy from; prompts user to select the fields to be copied; saves those fields into memory
+function cmCopy(){
 	try{
 		app.synchronousMode = true; // ensures we're getting the full metadata
+
+		//////////////////////////////
+		/////// SELECTION VALIDATION
 
 		var selection = app.document.selections; // get selected files
 		if(!selection.length){ // nothing selected
@@ -123,36 +254,44 @@ function cmCopy(type, method){
 			return;
 		}
 
-		
+		var copyTypes;
+		copyTypes = cmDialog();
+		if(copyTypes != -1){ // -1 means user canceled dialog
 
-		if (ExternalObject.AdobeXMPScript == undefined)  ExternalObject.AdobeXMPScript = new ExternalObject('lib:AdobeXMPScript'); // load the xmp scripting API
+			////////////////
+			////// COPYING		
 
-		// get existing metadata for this item
-		var newMetadata = selection[0].synchronousMetadata; 
-		var myXMP = new XMPMeta(newMetadata.serialize());
+			resetClipboard(allTypeFlags); // blank the clipboard
+
+			if (ExternalObject.AdobeXMPScript == undefined)  ExternalObject.AdobeXMPScript = new ExternalObject('lib:AdobeXMPScript'); // load the xmp scripting API
+
+			// get existing metadata for this item
+			var newMetadata = selection[0].synchronousMetadata; 
+			var myXMP = new XMPMeta(newMetadata.serialize());
 
 
-		// get copied data and save it based on set flags
-		if(type & typeFlags.description){
-			copiedData.description = selection[0].metadata.read(XMPConst.NS_DC, 'description');
-			// we DON'T use .getProperty here because it doesn't return a string, it returns an XMPProperty object which can have localization and arrays and other bullshit and fuck that
+			// get copied data and save it based on set flags
+			if(copyTypes & typeFlags.description){
+				copiedData.description = selection[0].metadata.read(XMPConst.NS_DC, 'description');
+				// we DON'T use getProperty here because it doesn't return a string, it returns an XMPProperty object which can have localization and arrays and other bullshit and fuck that
+			}
+			if(copyTypes & typeFlags.tags){
+				var tags = selection[0].metadata.read(XMPConst.NS_DC, 'subject').toString(); // convert to one long string
+				copiedData.tags = tags.split(','); // separate string into array
+			}
+			if(copyTypes & typeFlags.location){
+				copiedData.sublocation = 	selection[0].metadata.read(XMPConst.NS_IPTC_CORE, 'Location');
+				copiedData.city = 			selection[0].metadata.read(XMPConst.NS_PHOTOSHOP, 'City');
+				copiedData.state = 			selection[0].metadata.read(XMPConst.NS_PHOTOSHOP, 'State');
+				copiedData.country = 		selection[0].metadata.read(XMPConst.NS_PHOTOSHOP, 'Country');
+				copiedData.countrycode = 	selection[0].metadata.read(XMPConst.NS_IPTC_CORE, 'CountryCode');
+			}
+			/*
+			if(copyTypes & typeFlags.headline){
+				// TODO
+			} */
+
 		}
-		if(type & typeFlags.tags){
-			var tags = selection[0].metadata.read(XMPConst.NS_DC, 'subject').toString(); // convert to one long string
-			copiedData.tags = tags.split(','); // separate string into array
-		}
-		if(type & typeFlags.location){
-			copiedData.sublocation = 	selection[0].metadata.read(XMPConst.NS_IPTC_CORE, 'Location');
-			copiedData.city = 			selection[0].metadata.read(XMPConst.NS_PHOTOSHOP, 'City');
-			copiedData.state = 			selection[0].metadata.read(XMPConst.NS_PHOTOSHOP, 'State');
-			copiedData.country = 		selection[0].metadata.read(XMPConst.NS_PHOTOSHOP, 'Country');
-			copiedData.countrycode = 	selection[0].metadata.read(XMPConst.NS_IPTC_CORE, 'CountryCode');
-		}
-		/*
-		if(type & typeFlags.author){
-			// TODO
-		} */
-
 
 		app.synchronousMode = false;
 	}
@@ -161,7 +300,8 @@ function cmCopy(type, method){
 	}
 }
 
-function cmPaste(type, method){
+// Pastes from memory into all selected files
+function cmPaste(method){
 	try{
 		app.synchronousMode = true;
 
@@ -181,42 +321,40 @@ function cmPaste(type, method){
 				
 
 				// paste appropriate data based on type flags
-				if(type & typeFlags.description && copiedData.description != null){
+				if(copiedData.description != null){
 					newXMP.deleteProperty(XMPConst.NS_DC, 'description'); // delete old desc
 					newXMP.setProperty(XMPConst.NS_DC, 'description', copiedData.description); // update w/ new desc
 				}
-				if(type & typeFlags.tags && copiedData.tags != null){
-					if(!method & methodFlags.append) newXMP.deleteProperty(XMPConst.NS_DC, 'subject'); // delete old desc if we aren't appending
+				if(copiedData.tags != null){
+					if(!method & methodFlags.append) newXMP.deleteProperty(XMPConst.NS_DC, 'subject'); // delete old tags if we aren't appending
 
 					for(var j in copiedData.tags){ // iterate through tags, adding all
 						newXMP.appendArrayItem(XMPConst.NS_DC, 'subject', copiedData.tags[j], 0, XMPConst.ARRAY_IS_ORDERED);
 					}
 				}
-				if(type & typeFlags.location){
-					if(copiedData.sublocation != null){ 
-						newXMP.deleteProperty(XMPConst.NS_IPTC_CORE, 'Location');
-						newXMP.setProperty(XMPConst.NS_IPTC_CORE, 'Location', copiedData.sublocation);
-						//                 ^ namespace             ^ key (case sensitive)    ^ value
-					}
-					if(copiedData.city != null){
-						newXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'City');
-						newXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'City', copiedData.city);
-					}
-					if(copiedData.state != null){
-						newXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'State');
-						newXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'State', copiedData.state); 
-					}
-					if(copiedData.country != null){
-						newXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'Country');
-						newXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'Country', copiedData.country); 
-					}
-					if(copiedData.countrycode != null){
-						newXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'CountryCode');
-						newXMP.setProperty(XMPConst.NS_IPTC_CORE, 'CountryCode', copiedData.countrycode);
-					}
+				if(copiedData.sublocation != null){ 
+					newXMP.deleteProperty(XMPConst.NS_IPTC_CORE, 'Location');
+					newXMP.setProperty(XMPConst.NS_IPTC_CORE, 'Location', copiedData.sublocation);
+					//                 ^ namespace             ^ key (case sensitive)    ^ value
+				}
+				if(copiedData.city != null){
+					newXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'City');
+					newXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'City', copiedData.city);
+				}
+				if(copiedData.state != null){
+					newXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'State');
+					newXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'State', copiedData.state); 
+				}
+				if(copiedData.country != null){
+					newXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'Country');
+					newXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'Country', copiedData.country); 
+				}
+				if(copiedData.countrycode != null){
+					newXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'CountryCode');
+					newXMP.setProperty(XMPConst.NS_IPTC_CORE, 'CountryCode', copiedData.countrycode);
 				}
 				/*
-				if(type & typeFlags.author){
+				if(type & typeFlags.headline){
 					// TODO
 				}*/
 
@@ -235,73 +373,27 @@ function cmPaste(type, method){
 }
 
 
-// ALL
-cmCopyAll.onSelect = function(){ 
-	cmCopy(allTypeFlags, 0);
-}
-cmCopyAllCont.onSelect = function(){ 
-	cmCopy(allTypeFlags, 0);
-}
-
-cmPasteAll.onSelect = function(){ 
-	cmPaste(allTypeFlags, 0);
-}
-cmPasteAllCont.onSelect = function(){ 
-	cmPaste(allTypeFlags, 0);
-}
 
 
-
-// DESCRIPTION
-cmCopyDescription.onSelect = function(){ 
-	cmCopy(typeFlags.description, 0);
+// called when copy metadata is selected in menu
+cmMenuCopy.onSelect = function(){
+	cmCopy();
 }
-cmCopyDescriptionCont.onSelect = function(){ 
-	cmCopy(typeFlags.description, 0);
-}
-
-cmPasteDescription.onSelect = function(){ 
-	cmPaste(typeFlags.description, 0);
-}
-cmPasteDescriptionCont.onSelect = function(){ 
-	cmPaste(typeFlags.description, 0);
+cmMenuCopyCont.onSelect = function(){
+	cmCopy();
 }
 
-
-
-// TAGS
-cmCopyTags.onSelect = function(){ 
-	cmCopy(typeFlags.tags, 0);
+// called when paste metadata is selected in menu
+cmMenuPaste.onSelect = function(){
+	cmPaste(methodFlags.append);
 }
-cmCopyTagsCont.onSelect = function(){ 
-	cmCopy(typeFlags.tags, 0);
+cmMenuPasteCont.onSelect = function(){
+	cmPaste(methodFlags.append);
 }
-
-cmPasteTags.onSelect = function(){ 
-	cmPaste(typeFlags.tags, 0);
+cmMenuPasteOverwrite.onSelect = function(){
+	cmPaste(0);
 }
-cmPasteTagsCont.onSelect = function(){ 
-	cmPaste(typeFlags.tags, 0);
-}
-cmPasteTagsApp.onSelect = function(){ 
-	cmPaste(typeFlags.tags, methodFlags.append);
-}
-cmPasteTagsAppCont.onSelect = function(){ 
-	cmPaste(typeFlags.tags, methodFlags.append);
+cmMenuPasteContOverwrite.onSelect = function(){
+	cmPaste(0);
 }
 
-
-// LOCATION
-cmCopyLocation.onSelect = function(){ 
-	cmCopy(typeFlags.location, 0);
-}
-cmCopyLocationCont.onSelect = function(){ 
-	cmCopy(typeFlags.location, 0);
-}
-
-cmPasteLocation.onSelect = function(){ 
-	cmPaste(typeFlags.location, 0);
-}
-cmPasteLocationCont.onSelect = function(){ 
-	cmPaste(typeFlags.location, 0);
-}
