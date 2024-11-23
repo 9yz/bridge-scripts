@@ -5,8 +5,19 @@
 
 	Adds the ability to copy IPTC metadata between files.
 
-	TODO:
-	- implement headline field
+	TO ADD A NEW TYPE:
+	1. add a value for it in typeFlags
+		a. also add to allTypeFlags
+	2. add storage for it in copiedData
+	3. add a check for it in resetClipboard
+	4. add a checkbox for it in cmDialog
+		a. make sure it gets reset in winCopyMetadata.panel1.cbAll.onClick()
+		b. give it a onClick function to modify copyTypes
+	5. add a check for it in cmCopy
+		a. make sure to verify its namespace and copy the param name exactly
+		b. check if it's a string, array, or some other godforsaken tata structure
+	6. add a check for it in cmPaste
+		a.
 
 */
 
@@ -18,9 +29,10 @@ const typeFlags = {
 	description:	1,
 	tags: 			2, // can be appended
 	location: 		4,
-	headline:		8
+	headline:		8,
+	accessability:	16 // alt text & extended escription
 };
-const allTypeFlags = typeFlags.description+typeFlags.tags+typeFlags.location+typeFlags.headline;
+const allTypeFlags = typeFlags.description+typeFlags.tags+typeFlags.location+typeFlags.headline+typeFlags.accessability;
 
 // enum: when passed to a paste function, specifies how it should be pasted. Only certian types can be appended - see typeFlags
 const methodFlags = {
@@ -36,7 +48,10 @@ var copiedData = {
 	city:				null,
 	state:				null,
 	country:			null,
-	countrycode:		null
+	countryCode:		null,
+	headline:			null,
+	altText:			null,
+	extDesc:			null
 };
 
 
@@ -88,7 +103,14 @@ function resetClipboard(type){
 		copiedData.city = 			null;
 		copiedData.state = 			null;
 		copiedData.country = 		null;
-		copiedData.countrycode = 	null;
+		copiedData.countryCode = 	null;
+	}
+	if(type & typeFlags.headline){
+		copiedData.headline = null;
+	}
+	if(type & typeFlags.accessability){
+		copiedData.altText = null;
+		copiedData.extDesc = null;
 	}
 }
 
@@ -97,14 +119,15 @@ function resetClipboard(type){
 function cmDialog(){
 
 	var copyTypes = allTypeFlags; // stores what values we'll be copying based on user selection
+	var safeClose = false; // only set to true if window is closed via ok/cancel
 
 	/*
 	Code for Import https://scriptui.joonas.me — (Triple click to select): 
-	{"activeId":1,"items":{"item-0":{"id":0,"type":"Dialog","parentId":false,"style":{"enabled":true,"varName":"copyMetadata","windowType":"Dialog","creationProps":{"su1PanelCoordinates":false,"maximizeButton":false,"minimizeButton":false,"independent":false,"closeButton":true,"borderless":false,"resizeable":false},"text":"Copy metadata...","preferredSize":[150,100],"margins":16,"orientation":"column","spacing":5,"alignChildren":["left","top"]}},"item-1":{"id":1,"type":"Group","parentId":10,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":[0,null,0,20],"orientation":"column","spacing":5,"alignChildren":["left","center"],"alignment":null}},"item-2":{"id":2,"type":"Checkbox","parentId":10,"style":{"enabled":true,"varName":"cbAll","text":"All","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-3":{"id":3,"type":"Group","parentId":0,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":[15,0,0,0],"orientation":"row","spacing":10,"alignChildren":["left","center"],"alignment":null}},"item-4":{"id":4,"type":"Checkbox","parentId":1,"style":{"enabled":true,"varName":"cbHeadline","text":"Headline","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-5":{"id":5,"type":"Checkbox","parentId":1,"style":{"enabled":true,"varName":"cbDescription","text":"Description","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-6":{"id":6,"type":"Checkbox","parentId":1,"style":{"enabled":true,"varName":"cbKeywords","text":"Keywords","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-7":{"id":7,"type":"Checkbox","parentId":1,"style":{"enabled":true,"varName":"cbLocatio","text":"Location","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-8":{"id":8,"type":"Button","parentId":3,"style":{"enabled":true,"varName":"butCancel","text":"Cancel","justify":"center","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-9":{"id":9,"type":"Button","parentId":3,"style":{"enabled":true,"varName":"butOk","text":"Ok","justify":"center","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-10":{"id":10,"type":"Panel","parentId":0,"style":{"enabled":true,"varName":"","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Properties","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["left","top"],"alignment":null}}},"order":[0,10,2,1,4,5,6,7,3,8,9],"settings":{"importJSON":true,"indentSize":false,"cepExport":false,"includeCSSJS":true,"showDialog":true,"functionWrapper":false,"afterEffectsDockable":false,"itemReferenceList":"None"}}
+	{"activeId":0,"items":{"item-0":{"id":0,"type":"Dialog","parentId":false,"style":{"enabled":true,"varName":"copyMetadata","windowType":"Dialog","creationProps":{"su1PanelCoordinates":false,"maximizeButton":false,"minimizeButton":false,"independent":false,"closeButton":false,"borderless":false,"resizeable":false},"text":"Copy metadata...","preferredSize":[150,100],"margins":16,"orientation":"column","spacing":5,"alignChildren":["left","top"]}},"item-1":{"id":1,"type":"Group","parentId":10,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":[0,0,0,20],"orientation":"column","spacing":5,"alignChildren":["left","center"],"alignment":null}},"item-2":{"id":2,"type":"Checkbox","parentId":10,"style":{"enabled":true,"varName":"cbAll","text":"All","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":true}},"item-3":{"id":3,"type":"Group","parentId":0,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":[15,0,0,0],"orientation":"row","spacing":10,"alignChildren":["left","center"],"alignment":null}},"item-4":{"id":4,"type":"Checkbox","parentId":1,"style":{"enabled":true,"varName":"cbHeadline","text":"Headline","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":true}},"item-5":{"id":5,"type":"Checkbox","parentId":1,"style":{"enabled":true,"varName":"cbDescription","text":"Description","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":true}},"item-6":{"id":6,"type":"Checkbox","parentId":1,"style":{"enabled":true,"varName":"cbKeywords","text":"Keywords","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-7":{"id":7,"type":"Checkbox","parentId":1,"style":{"enabled":true,"varName":"cbLocation","text":"Location","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-8":{"id":8,"type":"Button","parentId":3,"style":{"enabled":true,"varName":"butCancel","text":"Cancel","justify":"center","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-9":{"id":9,"type":"Button","parentId":3,"style":{"enabled":true,"varName":"butOk","text":"Ok","justify":"center","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-10":{"id":10,"type":"Panel","parentId":0,"style":{"enabled":true,"varName":"","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Properties","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["fill","top"],"alignment":null}},"item-11":{"id":11,"type":"Checkbox","parentId":1,"style":{"enabled":true,"varName":"cbAltText","text":"Alt Text","preferredSize":[0,0],"alignment":null,"helpTip":null}}},"order":[0,10,2,1,4,5,6,11,7,3,8,9],"settings":{"importJSON":true,"indentSize":false,"cepExport":false,"includeCSSJS":true,"showDialog":true,"functionWrapper":false,"afterEffectsDockable":false,"itemReferenceList":"None"}}
 	*/ 
 
 	// COPYMETADATA
-	var winCopyMetadata = new Window("dialog"); 
+	var winCopyMetadata = new Window("dialog", undefined, undefined, {closeButton: false}); 
 	winCopyMetadata.text = "Copy metadata..."; 
 	winCopyMetadata.preferredSize.width = 150; 
 	winCopyMetadata.preferredSize.height = 100; 
@@ -144,6 +167,10 @@ function cmDialog(){
 	cbKeywords.text = "Keywords";
 	cbKeywords.value = true;
 
+	var cbAltText = group1.add("checkbox", undefined, undefined, {name: "cbAltText"}); 
+    cbAltText.text = "Alt Text";
+	cbAltText.value = true; 
+
 	var cbLocation = group1.add("checkbox", undefined, undefined, {name: "cbLocation"}); 
 	cbLocation.text = "Location";
 	cbLocation.value = true;
@@ -153,7 +180,8 @@ function cmDialog(){
 
 	// called when "All" is clicked
 	winCopyMetadata.panel1.cbAll.onClick = function(){ 
-		cbHeadline.value = cbDescription.value = cbKeywords.value = cbLocation.value = this.value; // set the other checkboxes to this box's value
+		cbHeadline.value = cbDescription.value = cbKeywords.value = cbLocation.value = cbAltText.value 
+			= this.value; // set the other checkboxes to this box's value
 
 		//set result value
 		if(this.value) 
@@ -186,6 +214,14 @@ function cmDialog(){
 		}
 		else copyTypes |= typeFlags.tags; // add this val to the result
 	}
+	// called when "Alt Text" is clicked
+	winCopyMetadata.panel1.group1.cbAltText.onClick = function(){
+		if(!this.value){ 
+			cbAll.value = false;
+			copyTypes ^= typeFlags.accessability; // remove this value from the result
+		}
+		else copyTypes |= typeFlags.accessability; // add this val to the result
+	}
 	// called when "Location" is clicked
 	winCopyMetadata.panel1.group1.cbLocation.onClick = function(){
 		if(!this.value){ 
@@ -216,16 +252,19 @@ function cmDialog(){
 	// called when "Cancel" is clicked
 	winCopyMetadata.group2.butCancel.onClick = function(){
 		winCopyMetadata.close();
-		return -1;
+		copyTypes = -1;
+		safeClose = true;
 	}
 	
 	// called when "Ok" is clicked
 	winCopyMetadata.group2.butOk.onClick = function(){
 		winCopyMetadata.close();
-		return copyTypes;
+		safeClose = true;
 	}
 
 	winCopyMetadata.show(); // display the window
+	if(safeClose) return copyTypes; // async function; not called until the window is closed.
+	else return -1; // called if the window closes not from ok/cancel
 }
 
 
@@ -284,12 +323,15 @@ function cmCopy(){
 				copiedData.city = 			selection[0].metadata.read(XMPConst.NS_PHOTOSHOP, 'City');
 				copiedData.state = 			selection[0].metadata.read(XMPConst.NS_PHOTOSHOP, 'State');
 				copiedData.country = 		selection[0].metadata.read(XMPConst.NS_PHOTOSHOP, 'Country');
-				copiedData.countrycode = 	selection[0].metadata.read(XMPConst.NS_IPTC_CORE, 'CountryCode');
+				copiedData.countryCode = 	selection[0].metadata.read(XMPConst.NS_IPTC_CORE, 'CountryCode');
 			}
-			/*
 			if(copyTypes & typeFlags.headline){
-				// TODO
-			} */
+				copiedData.headline = selection[0].metadata.read(XMPConst.NS_PHOTOSHOP, 'Headline');
+			}
+			if(copyTypes & typeFlags.accessability){
+				copiedData.altText = selection[0].metadata.read(XMPConst.NS_IPTC_CORE, 'AltTextAccessibility');
+				copiedData.extDesc = selection[0].metadata.read(XMPConst.NS_IPTC_CORE, 'ExtDescrAccessibility');
+			}
 
 		}
 
@@ -349,14 +391,22 @@ function cmPaste(method){
 					newXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'Country');
 					newXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'Country', copiedData.country); 
 				}
-				if(copiedData.countrycode != null){
-					newXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'CountryCode');
-					newXMP.setProperty(XMPConst.NS_IPTC_CORE, 'CountryCode', copiedData.countrycode);
+				if(copiedData.countryCode != null){
+					newXMP.deleteProperty(XMPConst.NS_IPTC_CORE, 'CountryCode');
+					newXMP.setProperty(XMPConst.NS_IPTC_CORE, 'CountryCode', copiedData.countryCode);
 				}
-				/*
-				if(type & typeFlags.headline){
-					// TODO
-				}*/
+				if(copiedData.headline != null){
+					newXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'Headline');
+					newXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'Headline', copiedData.headline);
+				}
+				if(copiedData.extDesc != null){
+					newXMP.deleteProperty(XMPConst.NS_IPTC_CORE, 'ExtDescrAccessibility');
+					newXMP.setProperty(XMPConst.NS_IPTC_CORE, 'ExtDescrAccessibility', copiedData.extDesc);
+				}
+				if(copiedData.altText != null){
+					newXMP.deleteProperty(XMPConst.NS_IPTC_CORE, 'AltTextAccessibility');
+					newXMP.setProperty(XMPConst.NS_IPTC_CORE, 'AltTextAccessibility', copiedData.altText);
+				}
 
 
 				var updatedMetadata = newXMP.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPConst.SERIALIZE_USE_COMPACT_FORMAT);
