@@ -31,7 +31,7 @@ Text Substiutions currently work in these metadata fields:
 - Description
 
 #### Usage
-1. Edit one of the above properties of any file to include a [code](https://github.com/9yz/bridge-scripts/wiki/TextSubstitutions-Built%E2%80%90In-Substitutions).
+1. Edit one of the above properties of any file to include a [code](https://github.com/9yz/bridge-scripts/wiki/Built%E2%80%90In-Substitutions).
 2. Run Text Substitutions from the right-click (context) or Tools menu.
 
 ##### Creating Custom Substitutions
