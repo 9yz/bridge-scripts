@@ -9,6 +9,7 @@ A simple interface for copying selected metadata fields between files. These fie
 - Keywords
 - Alt Text (Alt Text & Extended Description)
 - Location (Sublocation, City, State, Country, and Country Code)
+- Title
 #### Usage:
 1. Select a file.
 2. Right click > Copy Property... OR Tools > Copy Property...
