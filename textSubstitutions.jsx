@@ -251,6 +251,7 @@ function tsFindReplacement(selection, targetString){
 		"mlocation"			: tsMLocation,
 		"mcity"				: tsMCity,
 		"mstate"			: tsMState,
+		"mprovince"			: tsMState,
 		"mcountry"			: tsMCountry, 
 	}
 	
@@ -396,7 +397,7 @@ function tsTMinute(sel){
 
 // returns the second
 function tsTSecond(sel){ 
-	return tsSelectionToXMPDate(sel).second;
+	return padTwoDigitNumber(tsSelectionToXMPDate(sel).second);
 }
 
 // returns the date and time. ex 2024-01-31 17:02
