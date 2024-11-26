@@ -19,7 +19,7 @@ A simple interface for copying selected metadata fields between files. These fie
 Tested and working for Bridge 25.0 on Windows.
 
 ### textSubstitutions
-Inspired by the PhotoMechanic's code replacements feature, this lets you designate special codes to be replaced by any kind of text! For example, typing `[[tTime]]` in the description of an image then running this tool will replace it with the timestamp the photo was created. [[mFileName]] will be replaced with the file's name. In addition to nearly 2 dozen special codes that retrieve the file's metadata, you can also create your own substitutions.
+Inspired by the PhotoMechanic's code replacements feature, this lets you designate special codes to be replaced by any kind of text! For example, typing `[[tTime]]` in the description of an image then running this tool will replace it with the timestamp the photo was created. `[[mFileName]]` will be replaced with the file's name. In addition to nearly 2 dozen special codes that retrieve the file's metadata, you can also create your own substitutions.
 
 Text Substiutions currently work in these metadata fields:
 - City, State, Country, Sublocation
@@ -32,6 +32,9 @@ Text Substiutions currently work in these metadata fields:
 #### Usage
 1. Edit one of the above properties of any file to include a [code](test).
 2. Run Text Substitutions from the right-click (context) or Tools menu.
+
+##### Creating Custom Substitutions
+After installing [textSubstitutions.jsx](textSubstitutions.jsx) as described below, install [ts_customSubstitutions.jsx](ts_customSubstitutions.jsx) the same way. The file contains information on the format for custom substitutions.
 
 ## Installation
 1. Go to Preferences and select the "Startup Scripts" tab.
