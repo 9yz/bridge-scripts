@@ -17,7 +17,6 @@
 		a. make sure to verify its namespace and copy the param name exactly
 		b. check if it's a string, array, or some other godforsaken tata structure
 	6. add a check for it in cmPaste
-		a.
 
 */
 
@@ -25,23 +24,23 @@
 // basically just an enum
 // when passed to a function, specifies which types to copy/paste
 // only specifically noted types can use the append method
-const typeFlags = {
+const CM_TYPE_FLAGS = {
 	description:	1,
 	tags: 			2, // can be appended
 	location: 		4,
 	headline:		8,
 	accessability:	16 // alt text & extended escription
 };
-const allTypeFlags = typeFlags.description+typeFlags.tags+typeFlags.location+typeFlags.headline+typeFlags.accessability;
+const CM_ALL_TYPE_FLAGS = CM_TYPE_FLAGS.description+CM_TYPE_FLAGS.tags+CM_TYPE_FLAGS.location+CM_TYPE_FLAGS.headline+CM_TYPE_FLAGS.accessability;
 
 // enum: when passed to a paste function, specifies how it should be pasted. Only certian types can be appended - see typeFlags
-const methodFlags = {
+const CM_METHOD_FLAGS = {
 	append: 		1
 };
 
 
 // param storing all copied data
-var copiedData = {
+var cmCopiedData = {
 	description:		null,
 	tags:				null, 	// array of tags
 	sublocation:		null,
@@ -91,26 +90,26 @@ if(BridgeTalk.appName == 'bridge'){
 
 
 // clears the clipboard for all chosen properties
-function resetClipboard(type){
-	if(type & typeFlags.description){
-		copiedData.description = null;
+function cmResetClipboard(type){
+	if(type & CM_TYPE_FLAGS.description){
+		cmCopiedData.description = null;
 	}
-	if(type & typeFlags.tags){
-		copiedData.tags = null;
+	if(type & CM_TYPE_FLAGS.tags){
+		cmCopiedData.tags = null;
 	}
-	if(type & typeFlags.location){
-		copiedData.sublocation = 	null;
-		copiedData.city = 			null;
-		copiedData.state = 			null;
-		copiedData.country = 		null;
-		copiedData.countryCode = 	null;
+	if(type & CM_TYPE_FLAGS.location){
+		cmCopiedData.sublocation = 	null;
+		cmCopiedData.city = 		null;
+		cmCopiedData.state = 		null;
+		cmCopiedData.country = 		null;
+		cmCopiedData.countryCode = 	null;
 	}
-	if(type & typeFlags.headline){
-		copiedData.headline = null;
+	if(type & CM_TYPE_FLAGS.headline){
+		cmCopiedData.headline = null;
 	}
-	if(type & typeFlags.accessability){
-		copiedData.altText = null;
-		copiedData.extDesc = null;
+	if(type & CM_TYPE_FLAGS.accessability){
+		cmCopiedData.altText = null;
+		cmCopiedData.extDesc = null;
 	}
 }
 
@@ -118,7 +117,7 @@ function resetClipboard(type){
 // creates a modal dialog asking what fields to copy
 function cmDialog(){
 
-	var copyTypes = allTypeFlags; // stores what values we'll be copying based on user selection
+	var copyTypes = CM_ALL_TYPE_FLAGS; // stores what values we'll be copying based on user selection
 	var safeClose = false; // only set to true if window is closed via ok/cancel
 
 	/*
@@ -185,7 +184,7 @@ function cmDialog(){
 
 		//set result value
 		if(this.value) 
-			copyTypes = allTypeFlags;
+			copyTypes = CM_ALL_TYPE_FLAGS;
 		else 
 			copyTypes = 0;
 	}
@@ -194,41 +193,41 @@ function cmDialog(){
 	winCopyMetadata.panel1.group1.cbHeadline.onClick = function(){
 		if(!this.value){ 
 			cbAll.value = false;
-			copyTypes ^= typeFlags.headline; // remove this value from the result
+			copyTypes ^= CM_TYPE_FLAGS.headline; // remove this value from the result
 		}
-		else copyTypes |= typeFlags.headline; // add this val to the result
+		else copyTypes |= CM_TYPE_FLAGS.headline; // add this val to the result
 	}
 	// called when "Description" is clicked
 	winCopyMetadata.panel1.group1.cbDescription.onClick = function(){
 		if(!this.value){ 
 			cbAll.value = false;
-			copyTypes ^= typeFlags.description; // remove this value from the result
+			copyTypes ^= CM_TYPE_FLAGS.description; // remove this value from the result
 		}
-		else copyTypes |= typeFlags.description; // add this val to the result
+		else copyTypes |= CM_TYPE_FLAGS.description; // add this val to the result
 	}
 	// called when "Keywords" is clicked
 	winCopyMetadata.panel1.group1.cbKeywords.onClick = function(){
 		if(!this.value){ 
 			cbAll.value = false;
-			copyTypes ^= typeFlags.tags; // remove this value from the result
+			copyTypes ^= CM_TYPE_FLAGS.tags; // remove this value from the result
 		}
-		else copyTypes |= typeFlags.tags; // add this val to the result
+		else copyTypes |= CM_TYPE_FLAGS.tags; // add this val to the result
 	}
 	// called when "Alt Text" is clicked
 	winCopyMetadata.panel1.group1.cbAltText.onClick = function(){
 		if(!this.value){ 
 			cbAll.value = false;
-			copyTypes ^= typeFlags.accessability; // remove this value from the result
+			copyTypes ^= CM_TYPE_FLAGS.accessability; // remove this value from the result
 		}
-		else copyTypes |= typeFlags.accessability; // add this val to the result
+		else copyTypes |= CM_TYPE_FLAGS.accessability; // add this val to the result
 	}
 	// called when "Location" is clicked
 	winCopyMetadata.panel1.group1.cbLocation.onClick = function(){
 		if(!this.value){ 
 			cbAll.value = false;
-			copyTypes ^= typeFlags.location; // remove this value from the result
+			copyTypes ^= CM_TYPE_FLAGS.location; // remove this value from the result
 		}
-		else copyTypes |= typeFlags.location; // add this val to the result
+		else copyTypes |= CM_TYPE_FLAGS.location; // add this val to the result
 	}
 
 
@@ -300,7 +299,7 @@ function cmCopy(){
 			////////////////
 			////// COPYING		
 
-			resetClipboard(allTypeFlags); // blank the clipboard
+			cmResetClipboard(CM_ALL_TYPE_FLAGS); // blank the clipboard
 
 			if (ExternalObject.AdobeXMPScript == undefined)  ExternalObject.AdobeXMPScript = new ExternalObject('lib:AdobeXMPScript'); // load the xmp scripting API
 
@@ -310,27 +309,27 @@ function cmCopy(){
 
 
 			// get copied data and save it based on set flags
-			if(copyTypes & typeFlags.description){
-				copiedData.description = selection[0].metadata.read(XMPConst.NS_DC, 'description');
+			if(copyTypes & CM_TYPE_FLAGS.description){
+				cmCopiedData.description = selection[0].metadata.read(XMPConst.NS_DC, 'description');
 				// we DON'T use getProperty here because it doesn't return a string, it returns an XMPProperty object which can have localization and arrays and other bullshit and fuck that
 			}
-			if(copyTypes & typeFlags.tags){
+			if(copyTypes & CM_TYPE_FLAGS.tags){
 				var tags = selection[0].metadata.read(XMPConst.NS_DC, 'subject').toString(); // convert to one long string
-				copiedData.tags = tags.split(','); // separate string into array
+				cmCopiedData.tags = tags.split(','); // separate string into array
 			}
-			if(copyTypes & typeFlags.location){
-				copiedData.sublocation = 	selection[0].metadata.read(XMPConst.NS_IPTC_CORE, 'Location');
-				copiedData.city = 			selection[0].metadata.read(XMPConst.NS_PHOTOSHOP, 'City');
-				copiedData.state = 			selection[0].metadata.read(XMPConst.NS_PHOTOSHOP, 'State');
-				copiedData.country = 		selection[0].metadata.read(XMPConst.NS_PHOTOSHOP, 'Country');
-				copiedData.countryCode = 	selection[0].metadata.read(XMPConst.NS_IPTC_CORE, 'CountryCode');
+			if(copyTypes & CM_TYPE_FLAGS.location){
+				cmCopiedData.sublocation = 	selection[0].metadata.read(XMPConst.NS_IPTC_CORE, 'Location');
+				cmCopiedData.city = 		selection[0].metadata.read(XMPConst.NS_PHOTOSHOP, 'City');
+				cmCopiedData.state = 		selection[0].metadata.read(XMPConst.NS_PHOTOSHOP, 'State');
+				cmCopiedData.country = 		selection[0].metadata.read(XMPConst.NS_PHOTOSHOP, 'Country');
+				cmCopiedData.countryCode = 	selection[0].metadata.read(XMPConst.NS_IPTC_CORE, 'CountryCode');
 			}
-			if(copyTypes & typeFlags.headline){
-				copiedData.headline = selection[0].metadata.read(XMPConst.NS_PHOTOSHOP, 'Headline');
+			if(copyTypes & CM_TYPE_FLAGS.headline){
+				cmCopiedData.headline = selection[0].metadata.read(XMPConst.NS_PHOTOSHOP, 'Headline');
 			}
-			if(copyTypes & typeFlags.accessability){
-				copiedData.altText = selection[0].metadata.read(XMPConst.NS_IPTC_CORE, 'AltTextAccessibility');
-				copiedData.extDesc = selection[0].metadata.read(XMPConst.NS_IPTC_CORE, 'ExtDescrAccessibility');
+			if(copyTypes & CM_TYPE_FLAGS.accessability){
+				cmCopiedData.altText = selection[0].metadata.read(XMPConst.NS_IPTC_CORE, 'AltTextAccessibility');
+				cmCopiedData.extDesc = selection[0].metadata.read(XMPConst.NS_IPTC_CORE, 'ExtDescrAccessibility');
 			}
 
 		}
@@ -357,55 +356,56 @@ function cmPaste(method){
 		
 		for(var i in selection){ // iterate through selection
 			if(!selection[i].container){ // exclude folders
+
 				// get existing metadata for this item
 				var newMetadata = selection[i].synchronousMetadata; 
 				var newXMP = new XMPMeta(newMetadata.serialize());
 				
 
-				// paste appropriate data based on type flags
-				if(copiedData.description != null){
+				// paste all copied (non-null) data
+				if(cmCopiedData.description != null){
 					newXMP.deleteProperty(XMPConst.NS_DC, 'description'); // delete old desc
-					newXMP.setProperty(XMPConst.NS_DC, 'description', copiedData.description); // update w/ new desc
+					newXMP.setProperty(XMPConst.NS_DC, 'description', cmCopiedData.description); // update w/ new desc
 				}
-				if(copiedData.tags != null){
-					if(!method & methodFlags.append) newXMP.deleteProperty(XMPConst.NS_DC, 'subject'); // delete old tags if we aren't appending
+				if(cmCopiedData.tags != null){
+					if(!method & CM_METHOD_FLAGS.append) newXMP.deleteProperty(XMPConst.NS_DC, 'subject'); // delete old tags if we aren't appending
 
-					for(var j in copiedData.tags){ // iterate through tags, adding all
-						newXMP.appendArrayItem(XMPConst.NS_DC, 'subject', copiedData.tags[j], 0, XMPConst.ARRAY_IS_ORDERED);
+					for(var j in cmCopiedData.tags){ // iterate through tags, adding all
+						newXMP.appendArrayItem(XMPConst.NS_DC, 'subject', cmCopiedData.tags[j], 0, XMPConst.ARRAY_IS_ORDERED);
 					}
 				}
-				if(copiedData.sublocation != null){ 
+				if(cmCopiedData.sublocation != null){ 
 					newXMP.deleteProperty(XMPConst.NS_IPTC_CORE, 'Location');
-					newXMP.setProperty(XMPConst.NS_IPTC_CORE, 'Location', copiedData.sublocation);
+					newXMP.setProperty(XMPConst.NS_IPTC_CORE, 'Location', cmCopiedData.sublocation);
 					//                 ^ namespace             ^ key (case sensitive)    ^ value
 				}
-				if(copiedData.city != null){
+				if(cmCopiedData.city != null){
 					newXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'City');
-					newXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'City', copiedData.city);
+					newXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'City', cmCopiedData.city);
 				}
-				if(copiedData.state != null){
+				if(cmCopiedData.state != null){
 					newXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'State');
-					newXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'State', copiedData.state); 
+					newXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'State', cmCopiedData.state); 
 				}
-				if(copiedData.country != null){
+				if(cmCopiedData.country != null){
 					newXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'Country');
-					newXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'Country', copiedData.country); 
+					newXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'Country', cmCopiedData.country); 
 				}
-				if(copiedData.countryCode != null){
+				if(cmCopiedData.countryCode != null){
 					newXMP.deleteProperty(XMPConst.NS_IPTC_CORE, 'CountryCode');
-					newXMP.setProperty(XMPConst.NS_IPTC_CORE, 'CountryCode', copiedData.countryCode);
+					newXMP.setProperty(XMPConst.NS_IPTC_CORE, 'CountryCode', cmCopiedData.countryCode);
 				}
-				if(copiedData.headline != null){
+				if(cmCopiedData.headline != null){
 					newXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'Headline');
-					newXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'Headline', copiedData.headline);
+					newXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'Headline', cmCopiedData.headline);
 				}
-				if(copiedData.extDesc != null){
+				if(cmCopiedData.extDesc != null){
 					newXMP.deleteProperty(XMPConst.NS_IPTC_CORE, 'ExtDescrAccessibility');
-					newXMP.setProperty(XMPConst.NS_IPTC_CORE, 'ExtDescrAccessibility', copiedData.extDesc);
+					newXMP.setProperty(XMPConst.NS_IPTC_CORE, 'ExtDescrAccessibility', cmCopiedData.extDesc);
 				}
-				if(copiedData.altText != null){
+				if(cmCopiedData.altText != null){
 					newXMP.deleteProperty(XMPConst.NS_IPTC_CORE, 'AltTextAccessibility');
-					newXMP.setProperty(XMPConst.NS_IPTC_CORE, 'AltTextAccessibility', copiedData.altText);
+					newXMP.setProperty(XMPConst.NS_IPTC_CORE, 'AltTextAccessibility', cmCopiedData.altText);
 				}
 
 
@@ -435,10 +435,10 @@ cmMenuCopyCont.onSelect = function(){
 
 // called when paste metadata is selected in menu
 cmMenuPaste.onSelect = function(){
-	cmPaste(methodFlags.append);
+	cmPaste(CM_METHOD_FLAGS.append);
 }
 cmMenuPasteCont.onSelect = function(){
-	cmPaste(methodFlags.append);
+	cmPaste(CM_METHOD_FLAGS.append);
 }
 cmMenuPasteOverwrite.onSelect = function(){
 	cmPaste(0);

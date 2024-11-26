@@ -60,7 +60,7 @@ function tsRun(){
 
 		if (ExternalObject.AdobeXMPScript == undefined)  ExternalObject.AdobeXMPScript = new ExternalObject('lib:AdobeXMPScript'); // load the xmp scripting API
 		
-		for(var i in selection){ 
+		for(var i = 0; i < selection.length; i++){ 
 			if(!selection[i].container){ // exclude folders
 				// get existing metadata for this item
 				var existingMetadata = selection[i].synchronousMetadata; 
@@ -122,14 +122,14 @@ function tsDoSubstitutions(selection, sourceText){
 		else if(start != -1 && end == -1){ // case: mismatched brackets (cant find end)
 			alert("TextSubstitutions Error:\nUnmatched " + TS_START_CHAR + " found in file " + selection.name + " at index " + start + ".\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
 			throw SyntaxError("bracketMatching");
-			break;
 		}
 		else if(start == -1 && end != -1){ // cant find start
 			alert("TextSubstitutions Error:\nUnmatched " + TS_END_CHAR + " found in file " + selection.name + " at index " + end + ".\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
 			throw SyntaxError("bracketMatching");
-			break;
 		}
-		else break; // if both are -1 there's nothing more to process
+		else { // if both are -1 there's nothing more to process
+			break;
+		}  
 		
 		// update progressIndex - length of the string is now different
 		progressIndex -= TS_EDGE_CHAR_SIZE*2;
@@ -137,73 +137,74 @@ function tsDoSubstitutions(selection, sourceText){
 	}
 
 	return sourceText;
+	
 }
 
 
 // given a target string, returns the replacement for it
 function tsFindReplacement(selection, targetString){
-	try{
-		alert("tsFindReplacement(): " + targetString);
-		targetString = targetString.toLowerCase();
+	// alert("tsFindReplacement(): " + targetString);
+	targetString = targetString.toLowerCase();
 
-		if(targetString.length == 0){
-			return;
-		}
+	if(targetString.length == 0){ // case: empty replacement
+		return;
+	}
 
-		var commandMap = { // map of all program-defined substitutions
-			"tdate"				: tsTDateTaken,
-			"tdatep"			: tsTDateTakenPretty,
-			"tdatepretty"		: tsTDateTakenPretty,
-			"tdateps"			: tsTDateTakenPrettyShort,
-			"tdateprettyshort"	: tsTDateTakenPrettyShort,
-			"tday"				: tsTDateTakenDay,
-			"tdayp"				: tsTDateTakenDayPretty,
-			"tdaypretty"		: tsTDateTakenDayPretty,
-			"tmonth"			: tsTDateTakenMonth,
-			"tmonthp"			: tsTDateTakenMonthPretty,
-			"tmonthpretty"		: tsTDateTakenMonthPretty,
-			"tmonthps"			: tsTDateTakenMonthPrettyShort,
-			"tmonthprettyshort"	: tsTDateTakenMonthPrettyShort,
-			"tyear"				: tsTDateTakenYear,
-			"ttime"				: tsTTimeTaken,
-			"ttod"				: tsTTimeOfDay,
-			"ttimeofday"		: tsTTimeOfDay,
-			"thr"				: tsTHour,
-			"thour"				: tsTHour,
-			"tmin"				: tsTMinute,
-			"tminute"			: tsTMinute,
-			"tsec"				: tsTSecond,
-			"tsecond"			: tsTSecond,
-			"tms"				: tsTMilliecond,
-			"tmillisecond"		: tsTMilliecond,
-			"tdt"				: tsTDateTime,
-			"tdatetime"			: tsTDateTime,
-			"tiso"				: tsTISO,
+	var commandMap = { // map of all program-defined substitutions
+		"tdate"				: tsTDateTaken,
+		"tdatep"			: tsTDateTakenPretty,
+		"tdatepretty"		: tsTDateTakenPretty,
+		"tdateps"			: tsTDateTakenPrettyShort,
+		"tdateprettyshort"	: tsTDateTakenPrettyShort,
+		"tday"				: tsTDateTakenDay,
+		"tdayp"				: tsTDateTakenDayPretty,
+		"tdaypretty"		: tsTDateTakenDayPretty,
+		"tmonth"			: tsTDateTakenMonth,
+		"tmonthp"			: tsTDateTakenMonthPretty,
+		"tmonthpretty"		: tsTDateTakenMonthPretty,
+		"tmonthps"			: tsTDateTakenMonthPrettyShort,
+		"tmonthprettyshort"	: tsTDateTakenMonthPrettyShort,
+		"tyear"				: tsTDateTakenYear,
+		"tyr"				: tsTDateTakenYear,
+		"tyearshort"		: tsTDateTakenYearShort,
+		"tyrs"				: tsTDateTakenYearShort,
+		"ttime12"			: tsTTimeTaken12,
+		"ttime24"			: tsTTimeTaken24,
+		"ttime"				: tsTTimeTaken24,
+		"ttod"				: tsTTimeOfDay,
+		"ttimeofday"		: tsTTimeOfDay,
+		"thr"				: tsTHour,
+		"thour"				: tsTHour,
+		"tmin"				: tsTMinute,
+		"tminute"			: tsTMinute,
+		"tsec"				: tsTSecond,
+		"tsecond"			: tsTSecond,
+		"tdt"				: tsTDateTime,
+		"tdatetime"			: tsTDateTime,
+		"tiso"				: tsTISO,
 
-			"mname"				: tsMFileName,
-			"mfilename"			: tsMFileName,
-			"mtitle"			: tsMTitle,
-			"mheadline"			: tsMHeadline,
-			"mcredit"			: tsMCreditLine,
-			"mcreditline"		: tsMCreditLine,
-			"msublocation"		: tsMSublocation,
-			"mlocation"			: tsMLocation,
-			"mcity"				: tsMCity,
-			"mstate"			: tsMState,
-			"mcountry"			: tsMCountry, 
-		}
-
-		if(commandMap.hasOwnProperty(targetString)){
-			return commandMap[targetString](selection);
-		}
-
-		alert("TextSubstitutions Error:\nUnknown substitution " + targetString + " in " + selection.name + ".\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
-		throw SyntaxError("unknownSubstitution");
+		"mname"				: tsMFileName,
+		"mfilename"			: tsMFileName,
+		"mtitle"			: tsMTitle,
+		"mheadline"			: tsMHeadline,
+		"mcredit"			: tsMCreditLine,
+		"mcreditline"		: tsMCreditLine,
+		"msublocation"		: tsMSublocation,
+		"mlocation"			: tsMLocation,
+		"mcity"				: tsMCity,
+		"mstate"			: tsMState,
+		"mcountry"			: tsMCountry, 
+	}
 	
+	// check if the string has a matching function, run and return the result if it does
+	if(commandMap.hasOwnProperty(targetString)){ 
+		return commandMap[targetString](selection).toString(); // for some reason not casting this to string causes the program to silently crash when it returns an int???
 	}
-	catch(e){
-		alert(e + ' ' + e.line);
-	}
+
+	// no matching function
+	alert("TextSubstitutions Error:\nUnknown substitution " + targetString + " in " + selection.name + ".\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
+	throw SyntaxError("unknownSubstitution");
+
 }
 
 
@@ -230,9 +231,13 @@ function tsSelectionToDate(sel){
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 const monthsAbbr = ["Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."];
 const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const timeOfDay = [ "night", "night", "night", "night", "night", "night", "morning", "morning", "morning", "morning", "day", "day", "day", "day", "afternoon", "afternoon", "afternoon", "evening", "evening", "evening", "night", "night", "night", "night"]
 
 
-// returns the creation date in ISO 8601 format
+//////////////
+// TIME FUNCTIONS
+
+// returns the date in yyyy-mm-dd format
 function tsTDateTaken(sel){
 	var date = tsSelectionToXMPDate(sel);
 	return date.year + "-" + date.month + "-" + date.day;
@@ -241,13 +246,13 @@ function tsTDateTaken(sel){
 // returns the formatted as Monthname date, year. Ex. January 1, 2024
 function tsTDateTakenPretty(sel){
 	var date = tsSelectionToXMPDate(sel);
-	return months[date.month] + date.day + ", " + date.year;
+	return months[date.month] + " " + date.day + ", " + date.year;
 }
 
 // returns the formatted as Mmth. date, year. Ex. Jan. 1, 2024
 function tsTDateTakenPrettyShort(sel){
 	var date = tsSelectionToXMPDate(sel);
-	return monthsAbbr[date.month] + date.day + ", " + date.year;
+	return monthsAbbr[date.month] + " " + date.day + ", " + date.year;
 }
 
 // returns the numerical date
@@ -270,20 +275,123 @@ function tsTDateTakenMonthPretty(sel){
 	return months[tsSelectionToXMPDate(sel).month];
 }
 
-// returns the name of the month
+// returns the short name of the month
 function tsTDateTakenMonthPrettyShort(sel){
 	return monthsAbbr[tsSelectionToXMPDate(sel).month];
+}
+
+// returns the numerical year
+function tsTDateTakenYear(sel){
+	return tsSelectionToXMPDate(sel).year;
+}
+
+// returns the last 2 digits of the year
+function tsTDateTakenYearShort(sel){
+	year = tsSelectionToXMPDate(sel).year;
+	return year.substring(year.length-2, year.length);
+}
+
+// returns the time taken in 12-hour format (ex. 2:43 pm)
+function tsTTimeTaken12(sel){
+	var date = tsSelectionToXMPDate(sel);
+	var hour = date.hour > 12 ? date.hour-12 : date.hour;
+	hour = hour == 0 ? 12 : hour;
+	var period = date.hour > 11 ? " pm" : " am";
+	return hour.toString() + ":" + padTwoDigitNumber(date.minute) +  period;
+}
+
+// time taken, 24-hr format
+function tsTTimeTaken24(sel){
+	var date = tsSelectionToXMPDate(sel);
+	return date.hour + ":" + padTwoDigitNumber(date.minute);
+}
+
+// time of day. ex. morning, night, afternoon
+function tsTTimeOfDay(sel){
+	return timeOfDay[tsSelectionToXMPDate(sel).hour];
+}
+
+// returns the hour
+function tsTHour(sel){
+	return tsSelectionToXMPDate(sel).hour;
+}
+
+// returns the minute
+function tsTMinute(sel){
+	return padTwoDigitNumber(tsSelectionToXMPDate(sel).minute);
+}
+
+// returns the second
+function tsTSecond(sel){ 
+	return tsSelectionToXMPDate(sel).second;
+}
+
+// returns the date and time. ex 2024-01-31 17:02
+function tsTDateTime(sel){
+	var date = tsSelectionToXMPDate(sel);
+	return date.year + "-" + date.month + "-" + date.day + " " + date.hour + ":" + padTwoDigitNumber(date.minute);
+}
+
+// returns the datetime in full 8601 format with timezone
+function tsTISO(sel){
+	return sel.metadata.read(XMPConst.NS_XMP, 'CreateDate');
+}
+
+
+///////////////////
+// METADATA FUNCTIONS
+
+// returns the filename
+function tsMFileName(sel){
+	return sel.name;
+}
+
+// returns the DC title param
+function tsMTitle(sel){
+	return sel.metadata.read(XMPConst.NS_DC, 'title');
+}
+
+// returns the PS headline param
+function tsMHeadline(sel){
+	return sel.metadata.read(XMPConst.NS_PHOTOSHOP, 'Headline');
+}
+
+// returns the PS credit line param
+function tsMCreditLine(sel){
+	return sel.metadata.read(XMPConst.NS_PHOTOSHOP, 'Credit');
+}
+
+// returns the iptc location field
+function tsMSublocation(sel){
+	return sel.metadata.read(XMPConst.NS_IPTC_CORE, 'Location');
+}
+
+// returns the PS country field
+function tsMCountry(sel){
+	return sel.metadata.read(XMPConst.NS_PHOTOSHOP, 'Country');
+}
+
+// returns the PS state field
+function tsMState(sel){
+	return sel.metadata.read(XMPConst.NS_PHOTOSHOP, 'State');
+}
+
+// returns the PS City field
+function tsMCity(sel){
+	return sel.metadata.read(XMPConst.NS_PHOTOSHOP, 'City');
+}
+
+// returns the PS Country, State, and City fields. Ex. United States, California, San Francisco
+function tsMLocation(sel){
+	return sel.metadata.read(XMPConst.NS_PHOTOSHOP, 'Country') + ", " + sel.metadata.read(XMPConst.NS_PHOTOSHOP, 'State') + ", " + sel.metadata.read(XMPConst.NS_PHOTOSHOP, 'City');
 }
 
 
 
 
-
-
-
-
-
-
+function padTwoDigitNumber(num){
+	return num < 10 ? "0" + num.toString() : num;
+}
 
 
 Array.prototype.indexOf = function(item){
