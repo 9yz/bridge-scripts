@@ -3,20 +3,12 @@
 	textSubstitutions.jsx
 	11/24/24
 
-	1. read property
-	2. find opening and closing [[brackets]]
-	3. identify corresponding subst
-	4. run function to determinereplacement
-	5. replace
-	6. repeat 2-6 till end of string
-	7. write property 
-
 */
 
 // start and end strings must be the same size
 const TS_START_CHAR = "[[";
 const TS_END_CHAR = "]]";
-const TS_EDGE_CHAR_SIZE = 2;
+const TS_EDGE_CHAR_SIZE = 2; 
 
 
 #target bridge
@@ -65,27 +57,85 @@ function tsRun(){
 				// get existing metadata for this item
 				var existingMetadata = selection[i].synchronousMetadata; 
 				var myXMP = new XMPMeta(existingMetadata.serialize());
-
-				// BEGIN PER-PROPERTY CODE
-				var value = selection[0].metadata.read(XMPConst.NS_DC, 'description');
+				var value;
 				try{
+
+					// city
+					value = selection[i].metadata.read(XMPConst.NS_PHOTOSHOP, 'City');
+					value = tsDoSubstitutions(selection[i], value); 
+					myXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'City'); 
+					myXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'City', value); 
+
+					// state
+					value = selection[i].metadata.read(XMPConst.NS_PHOTOSHOP, 'State');
+					value = tsDoSubstitutions(selection[i], value); 
+					myXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'State'); 
+					myXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'State', value); 
+
+					// country
+					value = selection[i].metadata.read(XMPConst.NS_PHOTOSHOP, 'Country');
+					value = tsDoSubstitutions(selection[i], value); 
+					myXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'Country'); 
+					myXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'Country', value); 
+
+					// sublocation
+					value = selection[i].metadata.read(XMPConst.NS_IPTC_CORE, 'Location');
+					value = tsDoSubstitutions(selection[i], value); 
+					myXMP.deleteProperty(XMPConst.NS_IPTC_CORE, 'Location'); 
+					myXMP.setProperty(XMPConst.NS_IPTC_CORE, 'Location', value);
+
+					// title
+					value = selection[i].metadata.read(XMPConst.NS_DC, 'title');
+					value = tsDoSubstitutions(selection[i], value); 
+					myXMP.deleteProperty(XMPConst.NS_DC, 'title'); 
+					myXMP.setProperty(XMPConst.NS_DC, 'title', value); 
+
+					// headline
+					value = selection[i].metadata.read(XMPConst.NS_PHOTOSHOP, 'Headline');
 					value = tsDoSubstitutions(selection[i], value); // find and replace substutions
+					myXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'Headline'); // delete old value
+					myXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'Headline', value); // update w/ new value
+
+					// alt text
+					value = selection[i].metadata.read(XMPConst.NS_IPTC_CORE, 'AltTextAccessibility');
+					value = tsDoSubstitutions(selection[i], value); 
+					myXMP.deleteProperty(XMPConst.NS_IPTC_CORE, 'AltTextAccessibility'); 
+					myXMP.setProperty(XMPConst.NS_IPTC_CORE, 'AltTextAccessibility', value); 
+					
+					// extended description
+					value = selection[i].metadata.read(XMPConst.NS_IPTC_CORE, 'ExtDescrAccessibility');
+					value = tsDoSubstitutions(selection[i], value); 
+					myXMP.deleteProperty(XMPConst.NS_IPTC_CORE, 'ExtDescrAccessibility'); 
+					myXMP.setProperty(XMPConst.NS_IPTC_CORE, 'ExtDescrAccessibility', value); 
+
+					// keywords - disabled until i figure out why it's completely fucked
+					/* value = selection[i].metadata.read(XMPConst.NS_DC, 'subject').toString();
+					value = tsDoSubstitutions(selection[i], value); 
+					value = value.toString().split(',')
+					myXMP.deleteProperty(XMPConst.NS_DC, 'subject'); 
+					for(var j in value){ // iterate through tags, adding all
+						myXMP.appendArrayItem(XMPConst.NS_DC, 'subject', value[j], 0, XMPConst.ARRAY_IS_ORDERED);
+					} */
+					
+					// description
+					value = selection[i].metadata.read(XMPConst.NS_DC, 'description');
+					value = tsDoSubstitutions(selection[i], value); 
+					myXMP.deleteProperty(XMPConst.NS_DC, 'description'); 
+					myXMP.setProperty(XMPConst.NS_DC, 'description', value); 
+						
+					
 				} catch(e){
 					if(e instanceof SyntaxError) break;
 					else throw e;
 				}
-				myXMP.deleteProperty(XMPConst.NS_DC, 'description'); // delete old desc
-				myXMP.setProperty(XMPConst.NS_DC, 'description', value); // update w/ new desc
-				// END PER-PROP CODE
 
-
-				 // write updated metadata to file
+				// write updated metadata to file
 				var updatedMetadata = myXMP.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPConst.SERIALIZE_USE_COMPACT_FORMAT);
 				selection[i].metadata = new Metadata(updatedMetadata);
 			}
-
+			
 		}		
-
+		
 		app.synchronousMode = false;
 	}
 	catch(e){
@@ -94,7 +144,8 @@ function tsRun(){
 }
 
 // given a string of text, finds brackets surrpounding substitutions and replaces them with the string given by tsFindReplacement()
-function tsDoSubstitutions(selection, sourceText){
+function tsDoSubstitutions(selection, sourceText, recursions){
+	recursions = recursions || 0; // if not passed as a param, assume we want 0
 	sourceText = sourceText.toString(); // for some reason it's not a string to begin with???
 	// alert("tsDoSubstitutions(): " + sourceText);
 	var progressIndex = 0; // index of sourceText representing the farthest char we've analysed
@@ -136,6 +187,11 @@ function tsDoSubstitutions(selection, sourceText){
 		progressIndex += replacementString.length - targetString.length;
 	}
 
+	if(recursions > 0){ // certain substitutions may contain more substitutions. if they do, we want to recursively evaluate them
+		alert("recursing " + recursions);
+		sourceText = tsDoSubstitutions(selection, sourceText, recursions-1);
+	}
+
 	return sourceText;
 	
 }
@@ -151,6 +207,7 @@ function tsFindReplacement(selection, targetString){
 	}
 
 	var commandMap = { // map of all program-defined substitutions
+		// time-based substitutions
 		"tdate"				: tsTDateTaken,
 		"tdatep"			: tsTDateTakenPretty,
 		"tdatepretty"		: tsTDateTakenPretty,
@@ -183,6 +240,7 @@ function tsFindReplacement(selection, targetString){
 		"tdatetime"			: tsTDateTime,
 		"tiso"				: tsTISO,
 
+		// metadata-based substitutions
 		"mname"				: tsMFileName,
 		"mfilename"			: tsMFileName,
 		"mtitle"			: tsMTitle,
@@ -199,6 +257,21 @@ function tsFindReplacement(selection, targetString){
 	// check if the string has a matching function, run and return the result if it does
 	if(commandMap.hasOwnProperty(targetString)){ 
 		return commandMap[targetString](selection).toString(); // for some reason not casting this to string causes the program to silently crash when it returns an int???
+	}
+	
+	if(typeof tsCustomSubstitutions !== 'undefined'){ // have we loaded a custom substitutions file?
+		// check if this is one of the custom substitutions
+		for(var i = 0; i < tsCustomSubstitutions.length; i++){
+			if(tsCustomSubstitutions[i].target == targetString){
+				if(tsCustomSubstitutions[i].recursions > 0){ // does this need recursion?
+					return tsDoSubstitutions(selection, tsCustomSubstitutions[i].replacement, tsCustomSubstitutions[i].recursions-1);
+				}
+				else{
+					return tsCustomSubstitutions[i].replacement;
+				}
+			}
+
+		}
 	}
 
 	// no matching function
