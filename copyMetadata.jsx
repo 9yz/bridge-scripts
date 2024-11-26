@@ -29,9 +29,10 @@ const CM_TYPE_FLAGS = {
 	tags: 			2, // can be appended
 	location: 		4,
 	headline:		8,
-	accessability:	16 // alt text & extended escription
+	accessability:	16, // alt text & extended escription
+	title:			32
 };
-const CM_ALL_TYPE_FLAGS = CM_TYPE_FLAGS.description+CM_TYPE_FLAGS.tags+CM_TYPE_FLAGS.location+CM_TYPE_FLAGS.headline+CM_TYPE_FLAGS.accessability;
+const CM_ALL_TYPE_FLAGS = CM_TYPE_FLAGS.description+CM_TYPE_FLAGS.tags+CM_TYPE_FLAGS.location+CM_TYPE_FLAGS.headline+CM_TYPE_FLAGS.accessability+CM_TYPE_FLAGS.title;
 
 // enum: when passed to a paste function, specifies how it should be pasted. Only certian types can be appended - see typeFlags
 const CM_METHOD_FLAGS = {
@@ -50,7 +51,8 @@ var cmCopiedData = {
 	countryCode:		null,
 	headline:			null,
 	altText:			null,
-	extDesc:			null
+	extDesc:			null,
+	title:				null
 };
 
 
@@ -110,6 +112,9 @@ function cmResetClipboard(type){
 	if(type & CM_TYPE_FLAGS.accessability){
 		cmCopiedData.altText = null;
 		cmCopiedData.extDesc = null;
+	}
+	if(type & CM_TYPE_FLAGS.title){
+		cmCopiedData.title = null;
 	}
 }
 
@@ -174,12 +179,16 @@ function cmDialog(){
 	cbLocation.text = "Location";
 	cbLocation.value = true;
 
+	var cbTitle = group1.add("checkbox", undefined, undefined, {name: "cbTitle"}); 
+	cbTitle.text = "Title";
+	cbTitle.value = true;
+
 
 	//// GROUP1 INTERACTIVITY
 
 	// called when "All" is clicked
 	winCopyMetadata.panel1.cbAll.onClick = function(){ 
-		cbHeadline.value = cbDescription.value = cbKeywords.value = cbLocation.value = cbAltText.value 
+		cbHeadline.value = cbDescription.value = cbKeywords.value = cbLocation.value = cbAltText.value = cbTitle.value
 			= this.value; // set the other checkboxes to this box's value
 
 		//set result value
@@ -228,6 +237,14 @@ function cmDialog(){
 			copyTypes ^= CM_TYPE_FLAGS.location; // remove this value from the result
 		}
 		else copyTypes |= CM_TYPE_FLAGS.location; // add this val to the result
+	}
+	// called when "Title" is clicked
+	winCopyMetadata.panel1.group1.cbTitle.onClick = function(){
+		if(!this.value){ 
+			cbAll.value = false;
+			copyTypes ^= CM_TYPE_FLAGS.title; // remove this value from the result
+		}
+		else copyTypes |= CM_TYPE_FLAGS.title; // add this val to the result
 	}
 
 
@@ -331,6 +348,9 @@ function cmCopy(){
 				cmCopiedData.altText = selection[0].metadata.read(XMPConst.NS_IPTC_CORE, 'AltTextAccessibility');
 				cmCopiedData.extDesc = selection[0].metadata.read(XMPConst.NS_IPTC_CORE, 'ExtDescrAccessibility');
 			}
+			if(copyTypes & CM_TYPE_FLAGS.title){
+				cmCopiedData.title = selection[0].metadata.read(XMPConst.NS_DC, 'title');
+			}
 
 		}
 
@@ -406,6 +426,10 @@ function cmPaste(method){
 				if(cmCopiedData.altText != null){
 					newXMP.deleteProperty(XMPConst.NS_IPTC_CORE, 'AltTextAccessibility');
 					newXMP.setProperty(XMPConst.NS_IPTC_CORE, 'AltTextAccessibility', cmCopiedData.altText);
+				}
+				if(cmCopiedData.title != null){
+					newXMP.deleteProperty(XMPConst.NS_DC, 'title');
+					newXMP.setProperty(XMPConst.NS_DC, 'title', cmCopiedData.title);
 				}
 
 
