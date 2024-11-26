@@ -1,5 +1,5 @@
 # Bridge Scripts
-A collection of useful scripts I've made for Adobe Bridge. This readme contains basic information on the scripts - for more comprehensive information, see the [wiki](https://github.com/9yz/bridge-scripts/wiki)
+A collection of useful scripts I've made for Adobe Bridge. This readme contains basic information on the scripts - for more comprehensive information, see the [wiki](https://github.com/9yz/bridge-scripts/wiki).
 
 ## Scripts
 ### copyMetadata
