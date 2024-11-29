@@ -320,13 +320,13 @@ function tsTDateTaken(sel){
 // returns the formatted as Monthname date, year. Ex. January 1, 2024
 function tsTDateTakenPretty(sel){
 	var date = tsSelectionToXMPDate(sel);
-	return months[date.month] + " " + date.day + ", " + date.year;
+	return months[date.month-1] + " " + date.day + ", " + date.year;
 }
 
 // returns the formatted as Mmth. date, year. Ex. Jan. 1, 2024
 function tsTDateTakenPrettyShort(sel){
 	var date = tsSelectionToXMPDate(sel);
-	return monthsAbbr[date.month] + " " + date.day + ", " + date.year;
+	return monthsAbbr[date.month-1] + " " + date.day + ", " + date.year;
 }
 
 // returns the numerical date
@@ -346,12 +346,12 @@ function tsTDateTakenMonth(sel){
 
 // returns the name of the month
 function tsTDateTakenMonthPretty(sel){
-	return months[tsSelectionToXMPDate(sel).month];
+	return months[tsSelectionToXMPDate(sel).month-1];
 }
 
 // returns the short name of the month
 function tsTDateTakenMonthPrettyShort(sel){
-	return monthsAbbr[tsSelectionToXMPDate(sel).month];
+	return monthsAbbr[tsSelectionToXMPDate(sel).month-1];
 }
 
 // returns the numerical year
