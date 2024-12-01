@@ -147,7 +147,6 @@ function tsRun(){
 function tsDoSubstitutions(selection, sourceText, recursions){
 	recursions = recursions || 0; // if not passed as a param, assume we want 0
 	sourceText = sourceText.toString(); // for some reason it's not a string to begin with???
-	// alert("tsDoSubstitutions(): " + sourceText);
 	var progressIndex = 0; // index of sourceText representing the farthest char we've analysed
 
 	while(progressIndex <= sourceText.length){
@@ -183,12 +182,10 @@ function tsDoSubstitutions(selection, sourceText, recursions){
 		}  
 		
 		// update progressIndex - length of the string is now different
-		progressIndex -= TS_EDGE_CHAR_SIZE*2;
 		progressIndex += replacementString.length - targetString.length;
 	}
 
 	if(recursions > 0){ // certain substitutions may contain more substitutions. if they do, we want to recursively evaluate them
-		alert("recursing " + recursions);
 		sourceText = tsDoSubstitutions(selection, sourceText, recursions-1);
 	}
 
