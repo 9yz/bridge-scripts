@@ -182,6 +182,7 @@ function tsDoSubstitutions(selection, sourceText, recursions){
 		}  
 		
 		// update progressIndex - length of the string is now different
+		progressIndex -= TS_EDGE_CHAR_SIZE*2;
 		progressIndex += replacementString.length - targetString.length;
 	}
 
@@ -291,11 +292,11 @@ tsMenuRunCont.onSelect = function(){
 
 
 function tsSelectionToXMPDate(sel){
-	return new XMPDateTime(sel.metadata.read(XMPConst.NS_XMP, 'CreateDate'));
+	return new XMPDateTime(sel.metadata.read(XMPConst.NS_EXIF, 'DateTimeOriginal'));
 }
 
 function tsSelectionToDate(sel){
-	date = new XMPDateTime(sel.metadata.read(XMPConst.NS_XMP, 'CreateDate'));
+	date = new XMPDateTime(sel.metadata.read(XMPConst.NS_EXIF, 'DateTimeOriginal'));
 	return date.getDate();
 }
 
@@ -405,7 +406,7 @@ function tsTDateTime(sel){
 
 // returns the datetime in full 8601 format with timezone
 function tsTISO(sel){
-	return sel.metadata.read(XMPConst.NS_XMP, 'CreateDate');
+	return sel.metadata.read(XMPConst.NS_EXIF, 'DateTimeOriginal');
 }
 
 
