@@ -3,6 +3,8 @@
 
     ###### textSubstitutions.jsx Custom Substitutions ######
 
+	A companion to textSubstitutions.jsx.
+
     ### Format ###
     {
         target: "<text>",

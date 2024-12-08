@@ -1,22 +1,10 @@
 ﻿/*
 
 	copyMetadataCont Script created by 9yz
-	11/23/24
+	12/08/24
 
 	Adds the ability to copy IPTC metadata between files.
-
-	TO ADD A NEW TYPE:
-	1. add a value for it in typeFlags
-		a. also add to allTypeFlags
-	2. add storage for it in copiedData
-	3. add a check for it in resetClipboard
-	4. add a checkbox for it in cmDialog
-		a. make sure it gets reset in winCopyMetadata.panel1.cbAll.onClick()
-		b. give it a onClick function to modify copyTypes
-	5. add a check for it in cmCopy
-		a. make sure to verify its namespace and copy the param name exactly
-		b. check if it's a string, array, or some other godforsaken tata structure
-	6. add a check for it in cmPaste
+	Activate via Tools > Copy Property or Tools > Paste Property..
 
 */
 

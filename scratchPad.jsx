@@ -3,6 +3,9 @@
 	scratchPad.jsx
 	12/08/24
 
+	Adds a new "Scratch Pad" window for taking notes or whatever. Accessed through Window > Scratch Pad.
+	Text is not saved between sessions.
+
 	Derived from TextPreview.jsx by David M. Converse, availible under the Apache 2.0 License.
 
 */

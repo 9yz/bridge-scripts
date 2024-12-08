@@ -1,7 +1,11 @@
 /* 
 
 	textSubstitutions.jsx
-	11/24/24
+	12/08/24
+
+	Adds code replacements (ala PhotoMechanic). These are predefined strings that are replaced with other strings when the program is run via Tools > Text Substitutions...
+	Codes are wrapped in [[double brackets]]. See https://github.com/9yz/bridge-scripts/wiki/Built%E2%80%90In-Substitutions for a list of default substitutions, or see commandMap in tsFindReplacement.
+	Custom codes can also be added - see ts_customSubstitutions.jsx.
 
 */
 
