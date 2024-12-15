@@ -10,9 +10,18 @@
 */
 
 // start and end strings must be the same size
-const TS_START_CHAR = "[[";
-const TS_END_CHAR = "]]";
-const TS_EDGE_CHAR_SIZE = 2; 
+var TS_START_CHAR;
+var TS_END_CHAR;
+var TS_EDGE_CHAR_SIZE; 
+const TS_DELIMITERS = [
+	// starting delim, ending delim, delim length.
+	["[",  "]",  1],
+	["[[", "]]", 2],
+	["{",  "}",  1],
+	["{{", "}}", 2],
+	["=",  "=",  1],
+	["==", "==", 2],
+]
 
 
 #target bridge
@@ -36,10 +45,277 @@ if(BridgeTalk.appName == 'bridge'){
 		var tsMenuRun 			= MenuElement.create('command', 'Text Substitutions...', 'at the end of Tools');
 		var tsMenuRunCont 		= MenuElement.create('command', 'Text Substitutions...', 'after Thumbnail/Open'); 
 
+		tsInitalizePrefs();
+		tsPrefsPanel();
+
 	}
 	catch(e){
 		alert(e + ' ' + e.line);
 	}
+}
+
+function tsPrefsPanel(){
+
+	// Event handler;  called when prefs panel is opened  
+	var tsPrefHandler = function(event){
+		// Can only add a panel when the Preferences dialog opens
+		if(event.type == "create" && event.location == "prefs"){
+
+			/*
+			Code for Import https://scriptui.joonas.me — (Triple click to select): 
+	{"activeId":16,"items":{"item-0":{"id":0,"type":"Dialog","parentId":false,"style":{"enabled":true,"varName":"tsPrefsPanelObject","windowType":"Window","creationProps":{"su1PanelCoordinates":true,"maximizeButton":false,"minimizeButton":false,"independent":false,"closeButton":true,"borderless":false,"resizeable":false},"text":"Dialog","preferredSize":[400,0],"margins":16,"orientation":"column","spacing":10,"alignChildren":["left","top"]}},"item-1":{"id":1,"type":"Panel","parentId":7,"style":{"enabled":true,"varName":"panelDelimiter","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Code Delimiter","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["fill","top"],"alignment":null}},"item-2":{"id":2,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbSingleBrackets","text":"[Single Brackets]","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":true}},"item-3":{"id":3,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbDoubleBrackets","text":"[[Double Brackets]] ","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":false}},"item-4":{"id":4,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbSingleCurly","text":"{Curly Brackets}","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":false}},"item-5":{"id":5,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbDoubleCurly","text":"{{Double Curlies}}","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":false}},"item-6":{"id":6,"type":"Panel","parentId":7,"style":{"enabled":true,"varName":"panelDateField","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Get Creation Date From","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["fill","top"],"alignment":null}},"item-7":{"id":7,"type":"Group","parentId":0,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":0,"orientation":"column","spacing":10,"alignChildren":["fill","top"],"alignment":null}},"item-8":{"id":8,"type":"RadioButton","parentId":6,"style":{"enabled":true,"varName":"rbUseEXIFDate","text":"EXIF (reccomended)","preferredSize":[0,0],"alignment":null,"helpTip":"Get date from EXIF. This field is updated by Bridge's \"Edit Capture Time\" feature."}},"item-9":{"id":9,"type":"RadioButton","parentId":6,"style":{"enabled":true,"varName":"rbUseIPTCDate","text":"IPTC","preferredSize":[0,0],"alignment":null,"helpTip":"Get date from IPTC. This field is NOT updated by Bridge's \"Edit Capture Time\" feature."}},"item-10":{"id":10,"type":"StaticText","parentId":6,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"Select which field time-based substitutions like tDate and tTime should get the Creation Date from. ","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-11":{"id":11,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbSingleEquals","text":"=Single Equals=","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-12":{"id":12,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbDoubleEquals","text":"==Double Equals==","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-13":{"id":13,"type":"StaticText","parentId":6,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"tEXIFTime and tIPTCTime will always get the ISO 8601 timestamp from their respective fields.","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-14":{"id":14,"type":"Divider","parentId":0,"style":{"enabled":true,"varName":null}},"item-15":{"id":15,"type":"StaticText","parentId":0,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"View documentation and contribute to Text Substitutions at https://github.com/9yz/bridge-scripts","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-16":{"id":16,"type":"StaticText","parentId":1,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"Set the delimiter used to identify substitutions. Don't forget to update  any custom recursive substitutions when changing this setting!","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}}},"order":[0,7,1,16,2,3,4,5,11,12,6,10,13,8,9,14,15],"settings":{"importJSON":true,"indentSize":false,"cepExport":false,"includeCSSJS":true,"showDialog":true,"functionWrapper":false,"afterEffectsDockable":false,"itemReferenceList":"None"}}
+			*/ 
+
+			
+
+			// PALETTE
+			// =======
+			var tsPrefsPanelObject = event.object.addPanel(" Text Substitutions");
+				tsPrefsPanelObject.text = "Dialog"; 
+				tsPrefsPanelObject.preferredSize.width = 600; 
+				tsPrefsPanelObject.orientation = "column"; 
+				tsPrefsPanelObject.alignChildren = ["fill","top"]; 
+				tsPrefsPanelObject.spacing = 10; 
+				tsPrefsPanelObject.margins = 16; 
+			
+			// GROUP1
+			// ======
+			var group1 = tsPrefsPanelObject.add("group", undefined, {name: "group1"}); 
+				group1.orientation = "column"; 
+				group1.alignChildren = ["fill","top"]; 
+				group1.spacing = 10; 
+				group1.margins = 0; 
+			
+			// PANELDELIMITER
+			// ==============
+			var panelDelimiter = group1.add("panel", undefined, undefined, {name: "panelDelimiter"});
+				panelDelimiter.text = "Code Delimiter"; 
+				panelDelimiter.orientation = "column"; 
+				panelDelimiter.alignChildren = ["fill","top"]; 
+				panelDelimiter.spacing = 8; 
+				panelDelimiter.margins = 10; 
+
+			var statictext1 = panelDelimiter.add("group", undefined , {name: "statictext1"}); 
+				statictext1.getText = function() { var t=[]; for ( var n=0; n<statictext1.children.length; n++ ) { var text = statictext1.children[n].text || ''; if ( text === '' ) text = ' '; t.push( text ); } return t.join('\n'); }; 
+				statictext1.orientation = "column"; 
+				statictext1.alignChildren = ["left","center"]; 
+				statictext1.spacing = 0; 
+
+				statictext1.add("statictext", undefined, "Set the delimiter used to identify substitutions. Don't forget to"); 
+				statictext1.add("statictext", undefined, "update any custom recursive substitutions when changing this"); 
+				statictext1.add("statictext", undefined, "setting!"); 
+			
+			var rbSingleBrackets = panelDelimiter.add("radiobutton", undefined, undefined, {name: "rbSingleBrackets"}); 
+				rbSingleBrackets.text = "[Single Brackets]"; 
+			
+			var rbDoubleBrackets = panelDelimiter.add("radiobutton", undefined, undefined, {name: "rbDoubleBrackets"}); 
+				rbDoubleBrackets.text = "[[Double Brackets]] "; 
+			
+			var rbSingleCurly = panelDelimiter.add("radiobutton", undefined, undefined, {name: "rbSingleCurly"}); 
+				rbSingleCurly.text = "{Curly Brackets}"; 
+			
+			var rbDoubleCurly = panelDelimiter.add("radiobutton", undefined, undefined, {name: "rbDoubleCurly"}); 
+				rbDoubleCurly.text = "{{Double Curlies}}"; 
+			
+			var rbSingleEquals = panelDelimiter.add("radiobutton", undefined, undefined, {name: "rbSingleEquals"}); 
+				rbSingleEquals.text = "=Single Equals="; 
+			
+			var rbDoubleEquals = panelDelimiter.add("radiobutton", undefined, undefined, {name: "rbDoubleEquals"}); 
+				rbDoubleEquals.text = "==Double Equals=="; 
+
+				// initalize delimiter values
+				switch(app.preferences.tsDelimiter) {
+					case 0:
+						rbSingleBrackets.value = true;
+						break;
+					case 1:
+						rbDoubleBrackets.value = true;
+						break;
+					case 2:
+						rbSingleCurly.value = true;
+						break;
+					case 3:
+						rbDoubleCurly.value = true;
+						break;
+					case 4:
+						rbSingleEquals.value = true;
+						break;
+					case 5:
+						rbDoubleEquals.value = true;
+						break;
+				}
+
+				// update values on select
+				rbSingleBrackets.onClick = function(){
+					app.preferences.tsDelimiter = 0;
+					TS_START_CHAR = 	TS_DELIMITERS[0][0];
+					TS_END_CHAR = 		TS_DELIMITERS[0][1];
+					TS_EDGE_CHAR_SIZE = TS_DELIMITERS[0][2];
+				}
+				rbDoubleBrackets.onClick = function(){
+					app.preferences.tsDelimiter = 1;
+					TS_START_CHAR = 	TS_DELIMITERS[1][0];
+					TS_END_CHAR = 		TS_DELIMITERS[1][1];
+					TS_EDGE_CHAR_SIZE = TS_DELIMITERS[1][2];
+				}
+				rbSingleCurly.onClick = function(){
+					app.preferences.tsDelimiter = 2;
+					TS_START_CHAR = 	TS_DELIMITERS[2][0];
+					TS_END_CHAR = 		TS_DELIMITERS[2][1];
+					TS_EDGE_CHAR_SIZE = TS_DELIMITERS[2][2];
+				}
+				rbDoubleCurly.onClick = function(){
+					app.preferences.tsDelimiter = 3;
+					TS_START_CHAR = 	TS_DELIMITERS[3][0];
+					TS_END_CHAR = 		TS_DELIMITERS[3][1];
+					TS_EDGE_CHAR_SIZE = TS_DELIMITERS[3][2];
+				}
+				rbSingleEquals.onClick = function(){
+					app.preferences.tsDelimiter = 4;
+					TS_START_CHAR = 	TS_DELIMITERS[4][0];
+					TS_END_CHAR = 		TS_DELIMITERS[4][1];
+					TS_EDGE_CHAR_SIZE = TS_DELIMITERS[4][2];
+				}
+				rbDoubleEquals.onClick = function(){
+					app.preferences.tsDelimiter = 5;
+					TS_START_CHAR = 	TS_DELIMITERS[5][0];
+					TS_END_CHAR = 		TS_DELIMITERS[5][1];
+					TS_EDGE_CHAR_SIZE = TS_DELIMITERS[5][2];
+				}
+
+
+			
+			// PANELDATEFIELD
+			// ==============
+			var panelDateField = group1.add("panel", undefined, undefined, {name: "panelDateField"}); 
+				panelDateField.text = "Get Creation Date From"; 
+				panelDateField.orientation = "column"; 
+				panelDateField.alignChildren = ["fill","top"]; 
+				panelDateField.spacing = 8; 
+				panelDateField.margins = 10; 
+			
+			var statictext1 = panelDateField.add("group", undefined , {name: "statictext1"}); 
+				statictext1.getText = function() { var t=[]; for ( var n=0; n<statictext1.children.length; n++ ) { var text = statictext1.children[n].text || ''; if ( text === '' ) text = ' '; t.push( text ); } return t.join('\n'); }; 
+				statictext1.orientation = "column"; 
+				statictext1.alignChildren = ["left","center"]; 
+				statictext1.spacing = 0; 
+			
+				statictext1.add("statictext", undefined, "Select which field time-based substitutions like tDate and"); 
+				statictext1.add("statictext", undefined, "tTime should get the Creation Date from. "); 
+			
+			var statictext2 = panelDateField.add("group", undefined , {name: "statictext2"}); 
+				statictext2.getText = function() { var t=[]; for ( var n=0; n<statictext2.children.length; n++ ) { var text = statictext2.children[n].text || ''; if ( text === '' ) text = ' '; t.push( text ); } return t.join('\n'); }; 
+				statictext2.orientation = "column"; 
+				statictext2.alignChildren = ["left","center"]; 
+				statictext2.spacing = 0; 
+			
+				statictext2.add("statictext", undefined, "tEXIFTime and tIPTCTime will always get the ISO 8601"); 
+				statictext2.add("statictext", undefined, "timestamp from their respective fields."); 
+			
+			var rbUseEXIFDate = panelDateField.add("radiobutton", undefined, undefined, {name: "rbUseEXIFDate"}); 
+				rbUseEXIFDate.helpTip = "Get date from EXIF. This field is updated by Bridge's \u0022Edit Capture Time\u0022 feature."; 
+				rbUseEXIFDate.text = "EXIF (reccomended)"; 
+				rbUseEXIFDate.value = false;
+			
+			var rbUseIPTCDate = panelDateField.add("radiobutton", undefined, undefined, {name: "rbUseIPTCDate"}); 
+				rbUseIPTCDate.helpTip = "Get date from IPTC. This field is NOT updated by Bridge's \u0022Edit Capture Time\u0022 feature."; 
+				rbUseIPTCDate.text = "IPTC"; 
+				rbUseIPTCDate.value = false;
+
+				// initalize values
+				switch (app.preferences.tsDateField) {
+					case 0:
+						rbUseEXIFDate.value = true;
+						break;
+					case 1:
+						rbUseIPTCDate.value = true;
+						break;
+				}
+
+				// update values on select
+				rbUseEXIFDate.onClick = function(){
+					app.preferences.tsDateField = 0;
+				}
+				rbUseIPTCDate.onClick = function(){
+					app.preferences.tsDateField = 1;
+				}
+			
+			// TSPREFSPANELOBJECT
+			// ==================
+			var divider1 = tsPrefsPanelObject.add("panel", undefined, undefined, {name: "divider1"}); 
+				divider1.alignment = "fill"; 
+			
+			var statictext3 = tsPrefsPanelObject.add("group", undefined , {name: "statictext3"}); 
+				statictext3.getText = function() { var t=[]; for ( var n=0; n<statictext3.children.length; n++ ) { var text = statictext3.children[n].text || ''; if ( text === '' ) text = ' '; t.push( text ); } return t.join('\n'); }; 
+				statictext3.orientation = "column"; 
+				statictext3.alignChildren = ["left","center"]; 
+				statictext3.spacing = 0; 
+			
+				statictext3.add("statictext", undefined, "View documentation and contribute to Text Substitutions at"); 
+				statictext3.add("statictext", undefined, "https://github.com/9yz/bridge-scripts"); 
+		
+			
+
+			tsPrefsPanelObject.layout.layout(true); // not really sure what this does but without it nothing works so ¯\_(ツ)_/¯ 
+		}
+		
+		return { handled: false };
+	};
+
+	// Register the event handler
+	app.eventHandlers.push( { handler: tsPrefHandler } );
+	
+	
+	return true;
+}
+
+// reset prefs to defaults
+function tsSetDefaultPrefs(){
+	// alert("Text Substitutions:\n No preferences found, setting defaults!")
+	app.preferences.tsPrefsSet = true;
+	app.preferences.tsDelimiter = 1; // int representing the `delimiters` array index of the delimiter to use
+	app.preferences.tsDateField = 0; // 0 = EXIF, 1 = IPTC
+}
+
+// set vars based on prefs
+function tsInitalizePrefs(){
+	// set default prefs if they havent been set
+	if(app.preferences.tsPrefsSet != true) tsSetDefaultPrefs();
+
+	switch(app.preferences.tsDelimiter) {
+		case 0:
+			TS_START_CHAR = 	TS_DELIMITERS[0][0];
+			TS_END_CHAR = 		TS_DELIMITERS[0][1];
+			TS_EDGE_CHAR_SIZE = TS_DELIMITERS[0][2];
+			break;
+		case 1:
+			TS_START_CHAR = 	TS_DELIMITERS[1][0];
+			TS_END_CHAR = 		TS_DELIMITERS[1][1];
+			TS_EDGE_CHAR_SIZE = TS_DELIMITERS[1][2];
+			break;
+		case 2:
+			TS_START_CHAR = 	TS_DELIMITERS[2][0];
+			TS_END_CHAR = 		TS_DELIMITERS[2][1];
+			TS_EDGE_CHAR_SIZE = TS_DELIMITERS[2][2];
+			break;
+		case 3:
+			TS_START_CHAR = 	TS_DELIMITERS[3][0];
+			TS_END_CHAR = 		TS_DELIMITERS[3][1];
+			TS_EDGE_CHAR_SIZE = TS_DELIMITERS[3][2];
+			break;
+		case 4:
+			TS_START_CHAR = 	TS_DELIMITERS[4][0];
+			TS_END_CHAR = 		TS_DELIMITERS[4][1];
+			TS_EDGE_CHAR_SIZE = TS_DELIMITERS[4][2];
+			break;
+		case 5:
+			TS_START_CHAR = 	TS_DELIMITERS[5][0];
+			TS_END_CHAR = 		TS_DELIMITERS[5][1];
+			TS_EDGE_CHAR_SIZE = TS_DELIMITERS[5][2];
+			break;
+	}
+
+	
 }
 
 
@@ -147,6 +423,8 @@ function tsRun(){
 	}
 }
 
+
+
 // given a string of text, finds brackets surrpounding substitutions and replaces them with the string given by tsFindReplacement()
 function tsDoSubstitutions(selection, sourceText, recursions){
 	recursions = recursions || 0; // if not passed as a param, assume we want 0
@@ -240,11 +518,14 @@ function tsFindReplacement(selection, targetString){
 		"tsecond"			: tsTSecond,
 		"tdt"				: tsTDateTime,
 		"tdatetime"			: tsTDateTime,
-		"tiso"				: tsTISO,
+		"texiftime"			: tsTEXIFTime,
+		"tiptctime"			: tsTIPTCTime,
 
 		// metadata-based substitutions
 		"mname"				: tsMFileName,
 		"mfilename"			: tsMFileName,
+		"mfoldername"		: tsMFolderName,
+		"mfolder"			: tsMFolderName,
 		"mtitle"			: tsMTitle,
 		"mheadline"			: tsMHeadline,
 		"mcredit"			: tsMCreditLine,
@@ -295,12 +576,21 @@ tsMenuRunCont.onSelect = function(){
 }
 
 
-function tsSelectionToXMPDate(sel){
-	return new XMPDateTime(sel.metadata.read(XMPConst.NS_EXIF, 'DateTimeOriginal'));
+// returns either the IPTC or EXIF creation date, depending on what the user has set in prefs
+function tsSelectionToCreationDate(sel){
+	if(app.preferences.tsDateField == 0) return new XMPDateTime(sel.metadata.read(XMPConst.NS_EXIF, 'DateTimeOriginal'));
+	else if(app.preferences.tsDateField == 1) return new XMPDateTime(sel.metadata.read(XMPConst.NS_XMP, 'CreateDate'));
+	else alert("ERROR: invalid value for app.preferences.tsDateField!");
 }
 
+// returns the file's creation date as an XMPDateTime object
+function tsSelectionToXMPDate(sel){
+	return tsSelectionToCreationDate(sel);
+}
+
+// returns the file's creation date as a JS date object
 function tsSelectionToDate(sel){
-	date = new XMPDateTime(sel.metadata.read(XMPConst.NS_EXIF, 'DateTimeOriginal'));
+	date = tsSelectionToCreationDate(sel);
 	return date.getDate();
 }
 
@@ -408,9 +698,13 @@ function tsTDateTime(sel){
 	return date.year + "-" + date.month + "-" + date.day + " " + date.hour + ":" + padTwoDigitNumber(date.minute);
 }
 
-// returns the datetime in full 8601 format with timezone
-function tsTISO(sel){
+// returns the datetime in full 8601 format with timezone from the EXIF creation date field
+function tsTEXIFTime(sel){
 	return sel.metadata.read(XMPConst.NS_EXIF, 'DateTimeOriginal');
+}
+// same but from IPTC field
+function tsTIPTCTime(sel){
+	return sel.metadata.read(XMPConst.NS_XMP, 'CreateDate');
 }
 
 
@@ -420,6 +714,11 @@ function tsTISO(sel){
 // returns the filename
 function tsMFileName(sel){
 	return sel.name;
+}
+
+// returns the name of the parent folder
+function tsMFolderName(sel){
+	return sel.parent.name;
 }
 
 // returns the DC title param
