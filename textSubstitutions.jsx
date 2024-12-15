@@ -22,6 +22,7 @@ const TS_DELIMITERS = [
 	["=",  "=",  1],
 	["==", "==", 2],
 ]
+const TS_VERSION = 1.1;
 
 
 #target bridge
@@ -55,7 +56,6 @@ if(BridgeTalk.appName == 'bridge'){
 }
 
 function tsPrefsPanel(){
-
 	// Event handler;  called when prefs panel is opened  
 	var tsPrefHandler = function(event){
 		// Can only add a panel when the Preferences dialog opens
@@ -63,63 +63,67 @@ function tsPrefsPanel(){
 
 			/*
 			Code for Import https://scriptui.joonas.me — (Triple click to select): 
-	{"activeId":16,"items":{"item-0":{"id":0,"type":"Dialog","parentId":false,"style":{"enabled":true,"varName":"tsPrefsPanelObject","windowType":"Window","creationProps":{"su1PanelCoordinates":true,"maximizeButton":false,"minimizeButton":false,"independent":false,"closeButton":true,"borderless":false,"resizeable":false},"text":"Dialog","preferredSize":[400,0],"margins":16,"orientation":"column","spacing":10,"alignChildren":["left","top"]}},"item-1":{"id":1,"type":"Panel","parentId":7,"style":{"enabled":true,"varName":"panelDelimiter","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Code Delimiter","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["fill","top"],"alignment":null}},"item-2":{"id":2,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbSingleBrackets","text":"[Single Brackets]","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":true}},"item-3":{"id":3,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbDoubleBrackets","text":"[[Double Brackets]] ","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":false}},"item-4":{"id":4,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbSingleCurly","text":"{Curly Brackets}","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":false}},"item-5":{"id":5,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbDoubleCurly","text":"{{Double Curlies}}","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":false}},"item-6":{"id":6,"type":"Panel","parentId":7,"style":{"enabled":true,"varName":"panelDateField","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Get Creation Date From","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["fill","top"],"alignment":null}},"item-7":{"id":7,"type":"Group","parentId":0,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":0,"orientation":"column","spacing":10,"alignChildren":["fill","top"],"alignment":null}},"item-8":{"id":8,"type":"RadioButton","parentId":6,"style":{"enabled":true,"varName":"rbUseEXIFDate","text":"EXIF (reccomended)","preferredSize":[0,0],"alignment":null,"helpTip":"Get date from EXIF. This field is updated by Bridge's \"Edit Capture Time\" feature."}},"item-9":{"id":9,"type":"RadioButton","parentId":6,"style":{"enabled":true,"varName":"rbUseIPTCDate","text":"IPTC","preferredSize":[0,0],"alignment":null,"helpTip":"Get date from IPTC. This field is NOT updated by Bridge's \"Edit Capture Time\" feature."}},"item-10":{"id":10,"type":"StaticText","parentId":6,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"Select which field time-based substitutions like tDate and tTime should get the Creation Date from. ","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-11":{"id":11,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbSingleEquals","text":"=Single Equals=","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-12":{"id":12,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbDoubleEquals","text":"==Double Equals==","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-13":{"id":13,"type":"StaticText","parentId":6,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"tEXIFTime and tIPTCTime will always get the ISO 8601 timestamp from their respective fields.","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-14":{"id":14,"type":"Divider","parentId":0,"style":{"enabled":true,"varName":null}},"item-15":{"id":15,"type":"StaticText","parentId":0,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"View documentation and contribute to Text Substitutions at https://github.com/9yz/bridge-scripts","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-16":{"id":16,"type":"StaticText","parentId":1,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"Set the delimiter used to identify substitutions. Don't forget to update  any custom recursive substitutions when changing this setting!","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}}},"order":[0,7,1,16,2,3,4,5,11,12,6,10,13,8,9,14,15],"settings":{"importJSON":true,"indentSize":false,"cepExport":false,"includeCSSJS":true,"showDialog":true,"functionWrapper":false,"afterEffectsDockable":false,"itemReferenceList":"None"}}
+			{"activeId":22,"items":{"item-0":{"id":0,"type":"Dialog","parentId":false,"style":{"enabled":true,"varName":"tsPrefsPanelObject","windowType":"Window","creationProps":{"su1PanelCoordinates":true,"maximizeButton":false,"minimizeButton":false,"independent":false,"closeButton":true,"borderless":false,"resizeable":false},"text":"Dialog","preferredSize":[400,0],"margins":16,"orientation":"column","spacing":10,"alignChildren":["left","top"]}},"item-1":{"id":1,"type":"Panel","parentId":7,"style":{"enabled":true,"varName":"panelDelimiter","creationProps":{"borderStyle":"black","su1PanelCoordinates":false},"text":"Code Delimiter","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["fill","top"],"alignment":null}},"item-2":{"id":2,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbSingleBrackets","text":"[Single Brackets]","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":true}},"item-3":{"id":3,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbDoubleBrackets","text":"[[Double Brackets]] ","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":false}},"item-4":{"id":4,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbSingleCurly","text":"{Curly Brackets}","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":false}},"item-5":{"id":5,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbDoubleCurly","text":"{{Double Curlies}}","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":false}},"item-6":{"id":6,"type":"Panel","parentId":7,"style":{"enabled":true,"varName":"panelDateField","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Get Creation Date From","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["fill","top"],"alignment":null}},"item-7":{"id":7,"type":"Group","parentId":17,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":0,"orientation":"column","spacing":10,"alignChildren":["fill","top"],"alignment":null}},"item-8":{"id":8,"type":"RadioButton","parentId":6,"style":{"enabled":true,"varName":"rbUseEXIFDate","text":"EXIF (reccomended)","preferredSize":[0,0],"alignment":null,"helpTip":"Get date from EXIF. This field is updated by Bridge's \"Edit Capture Time\" feature."}},"item-9":{"id":9,"type":"RadioButton","parentId":6,"style":{"enabled":true,"varName":"rbUseIPTCDate","text":"IPTC","preferredSize":[0,0],"alignment":null,"helpTip":"Get date from IPTC. This field is NOT updated by Bridge's \"Edit Capture Time\" feature."}},"item-10":{"id":10,"type":"StaticText","parentId":6,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"Select which field time-based substitutions like tDate and tTime should get the Creation Date from. ","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-11":{"id":11,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbSingleEquals","text":"=Single Equals=","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-12":{"id":12,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbDoubleEquals","text":"==Double Equals==","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-13":{"id":13,"type":"StaticText","parentId":6,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"tEXIFTime and tIPTCTime will always get the ISO 8601 timestamp from their respective fields.","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-14":{"id":14,"type":"Divider","parentId":0,"style":{"enabled":true,"varName":null}},"item-15":{"id":15,"type":"StaticText","parentId":0,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"View documentation and contribute to Text Substitutions at https://github.com/9yz/bridge-scripts","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-16":{"id":16,"type":"StaticText","parentId":1,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"Set the delimiter used to identify substitutions. Don't forget to update  any custom recursive substitutions when changing this setting!","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-17":{"id":17,"type":"Group","parentId":0,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":0,"orientation":"row","spacing":10,"alignChildren":["left","center"],"alignment":null}},"item-18":{"id":18,"type":"Panel","parentId":19,"style":{"enabled":true,"varName":"panelSepTags","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Separate Substitutions in Keywords","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["left","top"],"alignment":null}},"item-19":{"id":19,"type":"Group","parentId":17,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":0,"orientation":"row","spacing":10,"alignChildren":["left","top"],"alignment":null}},"item-20":{"id":20,"type":"StaticText","parentId":18,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"When set, substitutions used in the Keywords field containing commas will be split into multiple keywords.","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-21":{"id":21,"type":"StaticText","parentId":18,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"For example, if the substitution [[foods]] is set  to be substituted with \"apples,  crackers\" and this setting is enabled, 2 tags will be created - one  each for \"apples\" and \"crackers\". Otherwise, only one tag will be created","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-22":{"id":22,"type":"Checkbox","parentId":18,"style":{"enabled":true,"varName":"rbSepTags","text":"Separate Substitutions in Keywords","preferredSize":[0,0],"alignment":null,"helpTip":null}}},"order":[0,17,7,1,16,2,3,4,5,11,12,6,10,13,8,9,19,18,20,21,22,14,15],"settings":{"importJSON":true,"indentSize":false,"cepExport":false,"includeCSSJS":true,"showDialog":true,"functionWrapper":false,"afterEffectsDockable":false,"itemReferenceList":"None"}}
 			*/ 
 
 			
 
-			// PALETTE
-			// =======
+			// TSPREFSPANELOBJECT
+			// ==================
 			var tsPrefsPanelObject = event.object.addPanel(" Text Substitutions");
 				tsPrefsPanelObject.text = "Dialog"; 
 				tsPrefsPanelObject.preferredSize.width = 600; 
 				tsPrefsPanelObject.orientation = "column"; 
 				tsPrefsPanelObject.alignChildren = ["fill","top"]; 
 				tsPrefsPanelObject.spacing = 10; 
-				tsPrefsPanelObject.margins = 16; 
-			
+				tsPrefsPanelObject.margins = 16;  
+
 			// GROUP1
 			// ======
 			var group1 = tsPrefsPanelObject.add("group", undefined, {name: "group1"}); 
-				group1.orientation = "column"; 
-				group1.alignChildren = ["fill","top"]; 
+				group1.orientation = "row"; 
+				group1.alignChildren = ["left","top"]; 
 				group1.spacing = 10; 
 				group1.margins = 0; 
-			
+
+			// GROUP2
+			// ======
+			var group2 = group1.add("group", undefined, {name: "group2"}); 
+				group2.preferredSize.width = 400; 
+				group2.orientation = "column"; 
+				group2.alignChildren = ["fill","top"]; 
+				group2.spacing = 10; 
+				group2.margins = 0; 
+
 			// PANELDELIMITER
 			// ==============
-			var panelDelimiter = group1.add("panel", undefined, undefined, {name: "panelDelimiter"});
+			var panelDelimiter = group2.add("panel", undefined, undefined, {name: "panelDelimiter", borderStyle: "black"}); 
 				panelDelimiter.text = "Code Delimiter"; 
 				panelDelimiter.orientation = "column"; 
 				panelDelimiter.alignChildren = ["fill","top"]; 
-				panelDelimiter.spacing = 8; 
+				panelDelimiter.spacing = 10; 
 				panelDelimiter.margins = 10; 
 
-			var statictext1 = panelDelimiter.add("group", undefined , {name: "statictext1"}); 
-				statictext1.getText = function() { var t=[]; for ( var n=0; n<statictext1.children.length; n++ ) { var text = statictext1.children[n].text || ''; if ( text === '' ) text = ' '; t.push( text ); } return t.join('\n'); }; 
-				statictext1.orientation = "column"; 
-				statictext1.alignChildren = ["left","center"]; 
-				statictext1.spacing = 0; 
+			var statictext1 = panelDelimiter.add("statictext", undefined, undefined, {name: "statictext1", multiline: true}); 
+				statictext1.text = "Set the delimiter used to identify substitutions. Don't forget to update any custom recursive substitutions when changing this setting!"; 
+			 
 
-				statictext1.add("statictext", undefined, "Set the delimiter used to identify substitutions. Don't forget to"); 
-				statictext1.add("statictext", undefined, "update any custom recursive substitutions when changing this"); 
-				statictext1.add("statictext", undefined, "setting!"); 
-			
 			var rbSingleBrackets = panelDelimiter.add("radiobutton", undefined, undefined, {name: "rbSingleBrackets"}); 
 				rbSingleBrackets.text = "[Single Brackets]"; 
-			
+				rbSingleBrackets.value = true; 
+
 			var rbDoubleBrackets = panelDelimiter.add("radiobutton", undefined, undefined, {name: "rbDoubleBrackets"}); 
 				rbDoubleBrackets.text = "[[Double Brackets]] "; 
-			
+
 			var rbSingleCurly = panelDelimiter.add("radiobutton", undefined, undefined, {name: "rbSingleCurly"}); 
 				rbSingleCurly.text = "{Curly Brackets}"; 
-			
+
 			var rbDoubleCurly = panelDelimiter.add("radiobutton", undefined, undefined, {name: "rbDoubleCurly"}); 
 				rbDoubleCurly.text = "{{Double Curlies}}"; 
-			
+
 			var rbSingleEquals = panelDelimiter.add("radiobutton", undefined, undefined, {name: "rbSingleEquals"}); 
 				rbSingleEquals.text = "=Single Equals="; 
-			
+
 			var rbDoubleEquals = panelDelimiter.add("radiobutton", undefined, undefined, {name: "rbDoubleEquals"}); 
 				rbDoubleEquals.text = "==Double Equals=="; 
 
@@ -187,40 +191,28 @@ function tsPrefsPanel(){
 			
 			// PANELDATEFIELD
 			// ==============
-			var panelDateField = group1.add("panel", undefined, undefined, {name: "panelDateField"}); 
+			var panelDateField = group2.add("panel", undefined, undefined, {name: "panelDateField"}); 
 				panelDateField.text = "Get Creation Date From"; 
 				panelDateField.orientation = "column"; 
 				panelDateField.alignChildren = ["fill","top"]; 
-				panelDateField.spacing = 8; 
+				panelDateField.spacing = 10; 
 				panelDateField.margins = 10; 
+
+			var statictext2 = panelDateField.add("statictext", undefined, undefined, {name: "statictext2", multiline: true}); 
+				statictext2.text = "Select which field time-based substitutions like tDate and tTime should get the Creation Date from. "; 
+				statictext2.alignment = ["fill","top"]; 
 			
-			var statictext1 = panelDateField.add("group", undefined , {name: "statictext1"}); 
-				statictext1.getText = function() { var t=[]; for ( var n=0; n<statictext1.children.length; n++ ) { var text = statictext1.children[n].text || ''; if ( text === '' ) text = ' '; t.push( text ); } return t.join('\n'); }; 
-				statictext1.orientation = "column"; 
-				statictext1.alignChildren = ["left","center"]; 
-				statictext1.spacing = 0; 
-			
-				statictext1.add("statictext", undefined, "Select which field time-based substitutions like tDate and"); 
-				statictext1.add("statictext", undefined, "tTime should get the Creation Date from. "); 
-			
-			var statictext2 = panelDateField.add("group", undefined , {name: "statictext2"}); 
-				statictext2.getText = function() { var t=[]; for ( var n=0; n<statictext2.children.length; n++ ) { var text = statictext2.children[n].text || ''; if ( text === '' ) text = ' '; t.push( text ); } return t.join('\n'); }; 
-				statictext2.orientation = "column"; 
-				statictext2.alignChildren = ["left","center"]; 
-				statictext2.spacing = 0; 
-			
-				statictext2.add("statictext", undefined, "tEXIFTime and tIPTCTime will always get the ISO 8601"); 
-				statictext2.add("statictext", undefined, "timestamp from their respective fields."); 
-			
+			var statictext3 = panelDateField.add("statictext", undefined, undefined, {name: "statictext3", multiline: true}); 
+				statictext3.text = "tEXIFTime and tIPTCTime will always get the ISO 8601 timestamp from their respective fields."; 
+				statictext3.alignment = ["fill","top"]; 			
+
 			var rbUseEXIFDate = panelDateField.add("radiobutton", undefined, undefined, {name: "rbUseEXIFDate"}); 
 				rbUseEXIFDate.helpTip = "Get date from EXIF. This field is updated by Bridge's \u0022Edit Capture Time\u0022 feature."; 
 				rbUseEXIFDate.text = "EXIF (reccomended)"; 
-				rbUseEXIFDate.value = false;
-			
+
 			var rbUseIPTCDate = panelDateField.add("radiobutton", undefined, undefined, {name: "rbUseIPTCDate"}); 
 				rbUseIPTCDate.helpTip = "Get date from IPTC. This field is NOT updated by Bridge's \u0022Edit Capture Time\u0022 feature."; 
 				rbUseIPTCDate.text = "IPTC"; 
-				rbUseIPTCDate.value = false;
 
 				// initalize values
 				switch (app.preferences.tsDateField) {
@@ -239,6 +231,47 @@ function tsPrefsPanel(){
 				rbUseIPTCDate.onClick = function(){
 					app.preferences.tsDateField = 1;
 				}
+
+
+
+			// GROUP3
+			// ======
+			var group3 = group1.add("group", undefined, {name: "group3"}); 
+				group3.preferredSize.width = 400; 
+				group3.orientation = "row"; 
+				group3.alignChildren = ["left","top"]; 
+				group3.spacing = 10; 
+				group3.margins = 0; 
+
+			// PANELSEPTAGS
+			// ============
+			var panelSepTags = group3.add("panel", undefined, undefined, {name: "panelSepTags"}); 
+				panelSepTags.text = "Separate Substitutions in Keywords"; 
+				panelSepTags.orientation = "column"; 
+				panelSepTags.alignChildren = ["left","top"]; 
+				panelSepTags.spacing = 10; 
+				panelSepTags.margins = 10; 
+
+			var statictext4 = panelSepTags.add("statictext", undefined, undefined, {name: "statictext4", multiline: true}); 
+				statictext4.text = "When set, substitutions used in the Keywords field containing commas will be split into multiple keywords."; 
+				statictext4.alignment = ["fill","top"]; 
+
+			var statictext5 = panelSepTags.add("statictext", undefined, undefined, {name: "statictext5", multiline: true}); 
+				statictext5.text = "For example, if the substitution [[foods]] is set  to be substituted with \u0022apples,crackers\u0022 and this setting is enabled, 2 tags will be created - one each for \u0022apples\u0022 and \u0022crackers\u0022. Otherwise, only one tag will be created"; 
+				statictext5.alignment = ["fill","top"]; 
+
+			var cbSepTags = panelSepTags.add("checkbox", undefined, undefined, {name: "rbSepTags"}); 
+				cbSepTags.text = "Separate Substitutions in Keywords (recommended)"; 
+
+			if(app.preferences.tsSepTags){ // initalize value
+				cbSepTags.value = true;
+			}
+
+			cbSepTags.onClick = function(){ // update values on click
+				app.preferences.tsSepTags = cbSepTags.value;
+			}
+
+
 			
 			// TSPREFSPANELOBJECT
 			// ==================
@@ -251,8 +284,8 @@ function tsPrefsPanel(){
 				statictext3.alignChildren = ["left","center"]; 
 				statictext3.spacing = 0; 
 			
-				statictext3.add("statictext", undefined, "View documentation and contribute to Text Substitutions at"); 
-				statictext3.add("statictext", undefined, "https://github.com/9yz/bridge-scripts"); 
+				statictext3.add("statictext", undefined, "Version " + TS_VERSION); 
+				statictext3.add("statictext", undefined, "View documentation and contribute to Text Substitutions at https://github.com/9yz/bridge-scripts"); 
 		
 			
 
@@ -275,6 +308,7 @@ function tsSetDefaultPrefs(){
 	app.preferences.tsPrefsSet = true;
 	app.preferences.tsDelimiter = 1; // int representing the `delimiters` array index of the delimiter to use
 	app.preferences.tsDateField = 0; // 0 = EXIF, 1 = IPTC
+	app,preferences.tsSepTags = 1; // 1 = seperate tags
 }
 
 // set vars based on prefs
@@ -341,10 +375,10 @@ function tsRun(){
 				try{
 
 					// city
-					value = selection[i].metadata.read(XMPConst.NS_PHOTOSHOP, 'City');
-					value = tsDoSubstitutions(selection[i], value); 
-					myXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'City'); 
-					myXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'City', value); 
+					value = selection[i].metadata.read(XMPConst.NS_PHOTOSHOP, 'City'); // get existing value
+					value = tsDoSubstitutions(selection[i], value); // do substitutions on it
+					myXMP.deleteProperty(XMPConst.NS_PHOTOSHOP, 'City'); // delete the existing value
+					myXMP.setProperty(XMPConst.NS_PHOTOSHOP, 'City', value); // replace with new value
 
 					// state
 					value = selection[i].metadata.read(XMPConst.NS_PHOTOSHOP, 'State');
@@ -388,14 +422,23 @@ function tsRun(){
 					myXMP.deleteProperty(XMPConst.NS_IPTC_CORE, 'ExtDescrAccessibility'); 
 					myXMP.setProperty(XMPConst.NS_IPTC_CORE, 'ExtDescrAccessibility', value); 
 
-					// keywords - disabled until i figure out why it's completely fucked
-					/* value = selection[i].metadata.read(XMPConst.NS_DC, 'subject').toString();
-					value = tsDoSubstitutions(selection[i], value); 
-					value = value.toString().split(',')
+
+					// keywords 
+					value = selection[i].metadata.read(XMPConst.NS_DC, 'subject').toString();
 					myXMP.deleteProperty(XMPConst.NS_DC, 'subject'); 
+					value = value.toString().split(',')
+
 					for(var j in value){ // iterate through tags, adding all
-						myXMP.appendArrayItem(XMPConst.NS_DC, 'subject', value[j], 0, XMPConst.ARRAY_IS_ORDERED);
-					} */
+						value[j] = tsDoSubstitutions(selection[i], value[j]); 
+						if(app.preferences.tsSepTags){ // if this pref is enabled, check for commas after processing and split at each one into a seperate tag
+							var tags = value[j].toString().split(',');
+							for(var k in tags){
+								myXMP.appendArrayItem(XMPConst.NS_DC, 'subject', tags[k], 0, XMPConst.ARRAY_IS_ORDERED);
+							}
+						}
+						else myXMP.appendArrayItem(XMPConst.NS_DC, 'subject', value[j], 0, XMPConst.ARRAY_IS_ORDERED);
+					}
+
 					
 					// description
 					value = selection[i].metadata.read(XMPConst.NS_DC, 'description');
