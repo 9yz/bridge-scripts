@@ -22,7 +22,7 @@ const CM_TYPE_FLAGS = {
 };
 const CM_ALL_TYPE_FLAGS = CM_TYPE_FLAGS.description+CM_TYPE_FLAGS.tags+CM_TYPE_FLAGS.location+CM_TYPE_FLAGS.headline+CM_TYPE_FLAGS.accessability+CM_TYPE_FLAGS.title;
 
-// enum: when passed to a paste function, specifies how it should be pasted. Only certian types can be appended - see typeFlags
+// enum: when passed to a paste function, specifies how it should be pasted. Only certian types can be appended - see CM_TYPE_FLAGS
 const CM_METHOD_FLAGS = {
 	append: 		1
 };
@@ -296,6 +296,10 @@ function cmCopy(){
 			alert('Folders cannot be copied from.');
 			return;
 		}
+		if(!selection[0].core.itemContent.canGetXMP){ // selection doesn't support xmp
+			alert('This file does not have XMP metadata.');
+			return;
+		}
 
 		var copyTypes;
 		copyTypes = cmDialog();
@@ -363,7 +367,7 @@ function cmPaste(method){
 		if (ExternalObject.AdobeXMPScript == undefined)  ExternalObject.AdobeXMPScript = new ExternalObject('lib:AdobeXMPScript'); // load the xmp scripting API
 		
 		for(var i in selection){ // iterate through selection
-			if(!selection[i].container){ // exclude folders
+			if(!selection[i].container && selection[i].core.itemContent.canGetXMP){ // exclude folders & files that dont support xmp
 
 				// get existing metadata for this item
 				var newMetadata = selection[i].synchronousMetadata; 

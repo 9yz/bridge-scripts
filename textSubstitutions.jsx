@@ -367,7 +367,7 @@ function tsRun(){
 		if (ExternalObject.AdobeXMPScript == undefined)  ExternalObject.AdobeXMPScript = new ExternalObject('lib:AdobeXMPScript'); // load the xmp scripting API
 		
 		for(var i = 0; i < selection.length; i++){ 
-			if(!selection[i].container){ // exclude folders
+			if(!selection[i].container && selection[i].core.itemContent.canGetXMP){ // exclude folders and check if this item uses XMP
 				// get existing metadata for this item
 				var existingMetadata = selection[i].synchronousMetadata; 
 				var myXMP = new XMPMeta(existingMetadata.serialize());
@@ -579,6 +579,30 @@ function tsFindReplacement(selection, targetString){
 		"mstate"			: tsMState,
 		"mprovince"			: tsMState,
 		"mcountry"			: tsMCountry, 
+		"mrating"			: tsMRating, 
+		"mratingpretty"		: tsMRatingPretty, 
+		"mratingp"			: tsMRatingPretty,
+		"mlabel"			: tsMLabel,
+
+		// camera-based substitutions
+		"cwidth"			: tsCWidth, 
+		"cw"				: tsCWidth, 
+		"cheight"			: tsCHeight, 
+		"ch"				: tsCHeight, 
+		"ccamera"			: tsCCamera, 
+		"cserial"			: tsCSerial, 
+		"clens"				: tsCLens, 
+		"cshutterspeed"		: tsCShutterSpeed, 
+		"cshutter"			: tsCShutterSpeed, 
+		"css"				: tsCShutterSpeed, 
+		"caperture"			: tsCAperture, 
+		"cf"				: tsCAperture, 
+		"ciso"				: tsCISO, 
+		"cfocallength"		: tsCFocalLength, 
+		"czoom"				: tsCFocalLength, 
+		"cfocallength35"	: tsCFocalLength35, 
+		"czoom35"			: tsCFocalLength35, 
+		// "c"				: tsC, 
 	}
 	
 	// check if the string has a matching function, run and return the result if it does
@@ -804,6 +828,91 @@ function tsMLocation(sel){
 	return sel.metadata.read(XMPConst.NS_PHOTOSHOP, 'Country') + ", " + sel.metadata.read(XMPConst.NS_PHOTOSHOP, 'State') + ", " + sel.metadata.read(XMPConst.NS_PHOTOSHOP, 'City');
 }
 
+// returns the image's rating as a number
+function tsMRating(sel){
+	return sel.core.quickMetadata.rating;
+}
+
+// returns the image's rating as a string of stars. Ex. if the rating is 3, *** will be returned.
+function tsMRatingPretty(sel){
+	var r = "";
+	for(var i = 0; i < sel.core.quickMetadata.rating; i++){
+		r += "*";
+	}
+	return r;
+}
+
+// returns the image's leabel
+function tsMLabel(sel){
+	return sel.core.quickMetadata.label;
+}
+
+
+
+
+//////////////////////////
+// CAMERA FUNCTIONS
+
+// returns the image's width
+function tsCWidth(sel){
+	return sel.core.quickMetadata.width;
+}
+
+// returns the image's height
+function tsCHeight(sel){
+	return sel.core.quickMetadata.height;
+}
+
+// returns the name of the camera used to take the photo
+function tsCCamera(sel){
+	return sel.metadata.read(XMPConst.NS_EXIF, 'Model');
+}
+
+// returns the serial no of the camera used to take the photo
+function tsCSerial(sel){
+	return sel.metadata.read(XMPConst.NS_EXIF_AUX, 'SerialNumber');
+}
+
+// returns the name of the lens used to take the photo
+function tsCLens(sel){
+	return sel.metadata.read(XMPConst.NS_EXIF_AUX, 'Lens');
+}
+
+// returns the shutter speed
+function tsCShutterSpeed(sel){
+	var x = sel.metadata.read(XMPConst.NS_EXIF, 'ExposureTime');
+	// shutter speed is expressed as a fraction - could be 1/100 for one onehundreth or 3/1 for 3 seconds
+	// so we split at the slash, check if there's a 1 after it. if there is, just use the first component.
+	var y = x.split("/"); 
+	return y[1] == 1 ? y[0] : x;
+}
+
+// returns the aperture value
+function tsCAperture(sel){
+	var x = sel.metadata.read(XMPConst.NS_EXIF, 'ExposureTime');
+	// f-num is expressed as a fraction in EXIF, so we need to turn that into a proper decimal
+	x = x.split("/"); 
+	return x[0]/x[1];
+	// return Math.round(x[0]/x[1] * 10) / 10;
+}
+
+// returns the ISO
+function tsCISO(sel){
+	return sel.metadata.read(XMPConst.NS_EXIF, 'ISOSpeedRatings');
+}
+
+// returns the focal length 
+function tsCFocalLength(sel){
+	var x = sel.metadata.read(XMPConst.NS_EXIF, 'FocalLength');
+	x = x.split("/"); 
+	return x[0]/x[1];
+}
+
+// returns the 35mm equiv. focal length
+function tsCFocalLength35(sel){
+	return sel.metadata.read(XMPConst.NS_EXIF, 'FocalLengthIn35mmFilm');
+}
+
 
 
 
@@ -818,3 +927,7 @@ function padTwoDigitNumber(num){
 		if(this[index] === item) return index;
 	}
 } */
+
+
+
+
