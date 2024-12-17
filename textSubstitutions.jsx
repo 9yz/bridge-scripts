@@ -51,7 +51,7 @@ if(BridgeTalk.appName == 'bridge'){
 
 	}
 	catch(e){
-		alert(e + ' ' + e.line);
+		alert("Text Substitutions Error:\n" + e + ' ' + e.line);
 	}
 }
 
@@ -263,12 +263,12 @@ function tsPrefsPanel(){
 			var cbSepTags = panelSepTags.add("checkbox", undefined, undefined, {name: "rbSepTags"}); 
 				cbSepTags.text = "Separate Substitutions in Keywords (recommended)"; 
 
-			if(app.preferences.tsSepTags){ // initalize value
+			if(app.preferences.tsSeparateTags){ // initalize value
 				cbSepTags.value = true;
 			}
 
 			cbSepTags.onClick = function(){ // update values on click
-				app.preferences.tsSepTags = cbSepTags.value;
+				app.preferences.tsSeparateTags = cbSepTags.value;
 			}
 
 
@@ -304,11 +304,11 @@ function tsPrefsPanel(){
 
 // reset prefs to defaults
 function tsSetDefaultPrefs(){
-	// alert("Text Substitutions:\n No preferences found, setting defaults!")
-	app.preferences.tsPrefsSet = true;
+	alert("Text Substitutions:\nNo preferences found, setting defaults!")
 	app.preferences.tsDelimiter = 1; // int representing the `delimiters` array index of the delimiter to use
 	app.preferences.tsDateField = 0; // 0 = EXIF, 1 = IPTC
-	app,preferences.tsSepTags = 1; // 1 = seperate tags
+	app.preferences.tsSeparateTags = 1; // 1 = seperate tags
+	app.preferences.tsPrefsSet = true;
 }
 
 // set vars based on prefs
@@ -358,18 +358,23 @@ function tsRun(){
 	try{
 		app.synchronousMode = true;
 
+		var errorFiles = 0;
 		var selection = app.document.selections; // get selected files
 		if(!selection.length){ // nothing selected
-			alert('Nothing selected!');
+			alert('Text Substitutions Error:\nNothing selected!');
 			return;
 		} 
 
 		if (ExternalObject.AdobeXMPScript == undefined)  ExternalObject.AdobeXMPScript = new ExternalObject('lib:AdobeXMPScript'); // load the xmp scripting API
 		
 		for(var i = 0; i < selection.length; i++){ 
-			if(!selection[i].container && selection[i].core.itemContent.canGetXMP){ // exclude folders and check if this item uses XMP
+			if(!selection[i].container){ // exclude folders and check if this item uses XMP
 				// get existing metadata for this item
 				var existingMetadata = selection[i].synchronousMetadata; 
+				if(!existingMetadata){ // does this file support metadata?
+					errorFiles++;
+					continue;
+				} 
 				var myXMP = new XMPMeta(existingMetadata.serialize());
 				var value;
 				try{
@@ -423,14 +428,14 @@ function tsRun(){
 					myXMP.setProperty(XMPConst.NS_IPTC_CORE, 'ExtDescrAccessibility', value); 
 
 
-					// keywords 
+					// keywords - stored as an array so we split them apart and run tsDoSubstitutions on each individually
 					value = selection[i].metadata.read(XMPConst.NS_DC, 'subject').toString();
 					myXMP.deleteProperty(XMPConst.NS_DC, 'subject'); 
 					value = value.toString().split(',')
 
-					for(var j in value){ // iterate through tags, adding all
+					for(var j in value){ 
 						value[j] = tsDoSubstitutions(selection[i], value[j]); 
-						if(app.preferences.tsSepTags){ // if this pref is enabled, check for commas after processing and split at each one into a seperate tag
+						if(app.preferences.tsSeparateTags){ // if this pref is enabled, check for commas after processing and split at each one into a seperate tag
 							var tags = value[j].toString().split(',');
 							for(var k in tags){
 								myXMP.appendArrayItem(XMPConst.NS_DC, 'subject', tags[k], 0, XMPConst.ARRAY_IS_ORDERED);
@@ -457,12 +462,16 @@ function tsRun(){
 				selection[i].metadata = new Metadata(updatedMetadata);
 			}
 			
-		}		
+		}	
+		
+		if(errorFiles > 0){
+			alert("Text Substitutions Error:\n" + errorFiles + " files were not processed because they do not support metadata.")
+		}
 		
 		app.synchronousMode = false;
 	}
 	catch(e){
-		alert(e + ' ' + e.line);
+		alert("Text Substitutions Error:\n" + e + ' ' + e.line);
 	}
 }
 
@@ -566,7 +575,13 @@ function tsFindReplacement(selection, targetString){
 
 		// metadata-based substitutions
 		"mname"				: tsMFileName,
+		"mfile"				: tsMFileName,
 		"mfilename"			: tsMFileName,
+		"mfilenamepretty"	: tsMFileNamePretty,
+		"mnameshort"		: tsMFileNamePretty,
+		"mfileshort"		: tsMFileNamePretty,
+		"mfiles"			: tsMFileNamePretty,
+		"mnames"			: tsMFileNamePretty,
 		"mfoldername"		: tsMFolderName,
 		"mfolder"			: tsMFolderName,
 		"mtitle"			: tsMTitle,
@@ -590,6 +605,7 @@ function tsFindReplacement(selection, targetString){
 		"cheight"			: tsCHeight, 
 		"ch"				: tsCHeight, 
 		"ccamera"			: tsCCamera, 
+		"ccam"				: tsCCamera, 
 		"cserial"			: tsCSerial, 
 		"clens"				: tsCLens, 
 		"cshutterspeed"		: tsCShutterSpeed, 
@@ -602,6 +618,9 @@ function tsFindReplacement(selection, targetString){
 		"czoom"				: tsCFocalLength, 
 		"cfocallength35"	: tsCFocalLength35, 
 		"czoom35"			: tsCFocalLength35, 
+		"cexposurecomp"		: tsCExposureComp, 
+		"cexpcomp"			: tsCExposureComp, 
+		"ccomp"				: tsCExposureComp, 
 		// "c"				: tsC, 
 	}
 	
@@ -647,7 +666,7 @@ tsMenuRunCont.onSelect = function(){
 function tsSelectionToCreationDate(sel){
 	if(app.preferences.tsDateField == 0) return new XMPDateTime(sel.metadata.read(XMPConst.NS_EXIF, 'DateTimeOriginal'));
 	else if(app.preferences.tsDateField == 1) return new XMPDateTime(sel.metadata.read(XMPConst.NS_XMP, 'CreateDate'));
-	else alert("ERROR: invalid value for app.preferences.tsDateField!");
+	else alert("Text Substitutions Error:\ninvalid value for app.preferences.tsDateField!");
 }
 
 // returns the file's creation date as an XMPDateTime object
@@ -783,6 +802,12 @@ function tsMFileName(sel){
 	return sel.name;
 }
 
+// returns the filename without the file extension
+function tsMFileNamePretty(sel){
+	var n = sel.name;
+	return n.substring(0, n.lastIndexOf('.'));
+}
+
 // returns the name of the parent folder
 function tsMFolderName(sel){
 	return sel.parent.name;
@@ -865,7 +890,7 @@ function tsCHeight(sel){
 
 // returns the name of the camera used to take the photo
 function tsCCamera(sel){
-	return sel.metadata.read(XMPConst.NS_EXIF, 'Model');
+	return sel.metadata.read(XMPConst.NS_TIFF, 'Model');
 }
 
 // returns the serial no of the camera used to take the photo
@@ -889,7 +914,8 @@ function tsCShutterSpeed(sel){
 
 // returns the aperture value
 function tsCAperture(sel){
-	var x = sel.metadata.read(XMPConst.NS_EXIF, 'ExposureTime');
+	var x = sel.metadata.read(XMPConst.NS_EXIF, 'FNumber');
+	if(x == "") return x;
 	// f-num is expressed as a fraction in EXIF, so we need to turn that into a proper decimal
 	x = x.split("/"); 
 	return x[0]/x[1];
@@ -903,14 +929,25 @@ function tsCISO(sel){
 
 // returns the focal length 
 function tsCFocalLength(sel){
-	var x = sel.metadata.read(XMPConst.NS_EXIF, 'FocalLength');
-	x = x.split("/"); 
-	return x[0]/x[1];
+	return sel.metadata.read(XMPConst.NS_EXIF, 'FocalLength');
 }
 
 // returns the 35mm equiv. focal length
 function tsCFocalLength35(sel){
 	return sel.metadata.read(XMPConst.NS_EXIF, 'FocalLengthIn35mmFilm');
+}
+
+// returns the expo. comp
+function tsCExposureComp(sel){
+	x = sel.metadata.read(XMPConst.NS_EXIF, 'ExposureBiasValue');
+	if(x == "") return x;
+	x = x.split("/"); 
+	x = x[0]/x[1]
+	x = x.toFixed(2) // round to 2 decimals
+	if(x > 0){
+		return "+" + x;
+	}
+	return x
 }
 
 
