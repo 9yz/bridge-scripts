@@ -622,22 +622,68 @@ function tsFindReplacement(selection, targetString){
 		"cexpcomp"			: tsCExposureComp, 
 		"ccomp"				: tsCExposureComp, 
 		// "c"				: tsC, 
+
+		// ADDING NEW SUBSTITUTION SECTION: don't forget to add the starting char to the check below!
 	}
 	
-	// check if the string has a matching function, run and return the result if it does
-	if(commandMap.hasOwnProperty(targetString)){ 
-		return commandMap[targetString](selection).toString(); // for some reason not casting this to string causes the program to silently crash when it returns an int???
+	// builtin substitutions will always have start with a prefix we know so we can do a cheap check before looking through the whole list
+	if(targetString[0] == "c" || targetString[0] == "m" || targetString[0] == "t"){
+		// check if the string has a matching function, run and return the result if it does
+		if(commandMap.hasOwnProperty(targetString)){ 
+			return commandMap[targetString](selection).toString(); // for some reason not casting this to string causes the script to silently crash when it returns an int???
+		}
 	}
 	
 	if(typeof tsCustomSubstitutions !== 'undefined'){ // have we loaded a custom substitutions file?
+		var splitString = targetString.split("#"); // for enumerated substitutions - [0] will be the tag, [1] will be the index. if length=1, enumeration is not being used. 
+		if(splitString.length > 1) splitString[1] = parseInt(splitString[1]); // convert to int
+
 		// check if this is one of the custom substitutions
-		for(var i = 0; i < tsCustomSubstitutions.length; i++){
-			if(tsCustomSubstitutions[i].target == targetString){
+		for(var i = 0; i < tsCustomSubstitutions.length; i++){ 
+			if(tsCustomSubstitutions[i].target == splitString[0]){ 
+
+				var replacement;
+
+				if(splitString.length == 1){ // enumeration not used
+					if(!isArray(tsCustomSubstitutions[i].replacement)){ // target repl is not an array
+						replacement = tsCustomSubstitutions[i].replacement;
+
+					} else{ // if it IS an array, grab the first element
+						replacement = tsCustomSubstitutions[i].replacement[0];
+					}
+				}
+				else if(splitString.length == 2) { // enumeration is used
+					if(isArray(tsCustomSubstitutions[i].replacement)){ // target repl is an array
+
+						if(splitString[1] < 1 || splitString[1] > tsCustomSubstitutions[i].replacement.length){ // ERROR: enum index out of bounds
+							alert("TextSubstitutions Error:\nIndex out of bounds: " + targetString + " in " + selection.name + ".\nIndex must be in 1, " + tsCustomSubstitutions[i].replacement.length + " (inclusive).\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
+							throw SyntaxError("unknownSubstitution");
+						}
+						replacement = tsCustomSubstitutions[i].replacement[splitString[1]-1]; // sub 1 to switch to 1-indexing
+
+					}
+					else if(splitString[1] == 1){ // not an array but we're grabbing the first one so it's fine
+						replacement = tsCustomSubstitutions[i].replacement;
+					}
+					else { // ERROR: target repl is NOT an array and we're grabbing not the first index 
+						alert("TextSubstitutions Error:\nEnumeration defined on non-enumerable replacement: " + targetString + " in " + selection.name + ".\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
+						throw SyntaxError("unknownSubstitution");
+					}
+
+				}
+				else{ // ERROR: too many #s
+					alert("TextSubstitutions Error:\nInvalid syntax " + targetString + " in " + selection.name + ". Only one # allowed.\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
+						throw SyntaxError("unknownSubstitution");
+				}
+
+
+
+
 				if(tsCustomSubstitutions[i].recursions > 0){ // does this need recursion?
-					return tsDoSubstitutions(selection, tsCustomSubstitutions[i].replacement, tsCustomSubstitutions[i].recursions-1);
+					return tsDoSubstitutions(selection, replacement, tsCustomSubstitutions[i].recursions-1);
 				}
 				else{
-					return tsCustomSubstitutions[i].replacement;
+					return replacement;
 				}
 			}
 
@@ -645,7 +691,7 @@ function tsFindReplacement(selection, targetString){
 	}
 
 	// no matching function
-	alert("TextSubstitutions Error:\nUnknown substitution " + targetString + " in " + selection.name + ".\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
+	alert("TextSubstitutions Error:\nUnknown substitution " + splitString + " in " + selection.name + ".\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
 	throw SyntaxError("unknownSubstitution");
 
 }
@@ -957,6 +1003,10 @@ function padTwoDigitNumber(num){
 	return num < 10 ? "0" + num.toString() : num;
 }
 
+// not perfect but good enough because we don't have Array.isArray()
+function isArray(a){
+	return (a instanceof Array);
+}
 
 /* Array.prototype.indexOf = function(item){
 	var index = 0, length = this.length;

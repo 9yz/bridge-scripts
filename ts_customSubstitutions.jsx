@@ -8,12 +8,14 @@
     ### Format ###
     {
         target: "<text>",
-        replacement: "<text>",
+        replacement: <text OR array>,
         recursions: <integer>
     },
 
     -  target: A **LOWERCASE** string. The text to be replaced. This cannot override the default substitutions.
-    -  replacement: A string. The text to replace it with.
+    -  replacement: EITHER
+		- A string. The text to replace it with. OR
+		- An array of strings. When using, the index to grab can be specified following a # (1-indexed). Ex. [[array#2]]. If no index is specified, the first is used.
     -  recursions: A non-negative integer. The number of times the replacement text should be analysed for additional subsitutions. 
        *** Unless you're doing something weird, this will typically only need to be 0 or 1.*** 
        Larger numbers can make the program take longer to finish.
@@ -48,6 +50,15 @@ const tsCustomSubstitutions = [ // Place custom content after this line
         replacement: "Taken on [[tDatePretty]] in [[shortLocation]].",
         recursions: 1
     },
+	// Example 4
+	// The replacement can also be an array of strings. You can access an index of the array by puting its number after a #. For example, [[subject#2]] would return "Vance". If an index is not specified, the first will be used. Recursive substitutions also work with arrays.
+	{
+        target: "subject",
+        replacement: ["Hedy Lamarr", "Lamarr", "Headcrab"],
+		// index: 	  1-name  		 2-last	 	3-job
+        recursions: 0
+    },
+
 
    
 ] // Place custom content above this line
