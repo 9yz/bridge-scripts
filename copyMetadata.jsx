@@ -74,7 +74,7 @@ if(BridgeTalk.appName == 'bridge'){
 
 	}
 	catch(e){
-		alert(e + ' ' + e.line);
+		alert("Copy Metadata Error:\n" + e + ' ' + e.line);
 	}
 }
 
@@ -285,21 +285,22 @@ function cmCopy(){
 
 		var selection = app.document.selections; // get selected files
 		if(!selection.length){ // nothing selected
-			alert('Nothing selected!');
+			alert('Copy Metadata Error:\nNothing selected!');
 			return;
 		}
 		if(selection.length > 1){ // more than 1 selected
-			alert('You can only copy from one file at a time.'); 
+			alert('Copy Metadata Error:\nYou can only copy from one file at a time.'); 
 			return;
 		} 
 		if(selection[0].container){ // selection is a folder
-			alert('Folders cannot be copied from.');
+			alert('Copy Metadata Error:\nFolders cannot be copied from.');
 			return;
 		}
-		if(!selection[0].core.itemContent.canGetXMP){ // selection doesn't support xmp
-			alert('This file does not have XMP metadata.');
+		if(!selection[0].synchronousMetadata){ // selection doesn't support xmp
+			alert('Copy Metadata Error:\nThis file does not have XMP metadata.');
 			return;
 		}
+		
 
 		var copyTypes;
 		copyTypes = cmDialog();
@@ -311,11 +312,6 @@ function cmCopy(){
 			cmResetClipboard(CM_ALL_TYPE_FLAGS); // blank the clipboard
 
 			if (ExternalObject.AdobeXMPScript == undefined)  ExternalObject.AdobeXMPScript = new ExternalObject('lib:AdobeXMPScript'); // load the xmp scripting API
-
-			// get existing metadata for this item
-			var newMetadata = selection[0].synchronousMetadata; 
-			var myXMP = new XMPMeta(newMetadata.serialize());
-
 
 			// get copied data and save it based on set flags
 			if(copyTypes & CM_TYPE_FLAGS.description){
@@ -349,7 +345,7 @@ function cmCopy(){
 		app.synchronousMode = false;
 	}
 	catch(e){
-		alert(e + ' ' + e.line);
+		alert("Copy Metadata Error:\n" + e + ' ' + e.line);
 	}
 }
 
@@ -358,19 +354,24 @@ function cmPaste(method){
 	try{
 		app.synchronousMode = true;
 
+		var errorFiles = 0;
 		var selection = app.document.selections; // get selected files
 		if(!selection.length){ // nothing selected
-			alert('Nothing selected!');
+			alert('Copy Metadata Error:\nNothing selected!');
 			return;
 		} 
 
 		if (ExternalObject.AdobeXMPScript == undefined)  ExternalObject.AdobeXMPScript = new ExternalObject('lib:AdobeXMPScript'); // load the xmp scripting API
 		
 		for(var i in selection){ // iterate through selection
-			if(!selection[i].container && selection[i].core.itemContent.canGetXMP){ // exclude folders & files that dont support xmp
+			if(!selection[i].container && selection[i].core.itemContent.canLabelOrRate){ // exclude folders & files that dont support xmp
 
 				// get existing metadata for this item
-				var newMetadata = selection[i].synchronousMetadata; 
+				var newMetadata = selection[i].synchronousMetadata;
+				if(!newMetadata){ // does this file support metadata?
+					errorFiles++;
+					continue;
+				} 
 				var newXMP = new XMPMeta(newMetadata.serialize());
 				
 
@@ -430,11 +431,15 @@ function cmPaste(method){
 			}
 		}
 
+		if(errorFiles > 0){
+			alert("Copy Metadata Error:\n" + errorFiles + " files were not processed because they do not support metadata.")
+		}
+
 
 		app.synchronousMode = false;
 	}
 	catch(e){
-		alert(e + ' ' + e.line);
+		alert("Copy Metadata Error:\n" + e + ' ' + e.line);
 	}
 }
 
