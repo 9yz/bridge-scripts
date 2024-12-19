@@ -1,13 +1,13 @@
 /* 
 
 	textSubstitutions.jsx
-	12/08/24
 
 	Adds code replacements (ala PhotoMechanic). These are predefined strings that are replaced with other strings when the program is run via Tools > Text Substitutions...
 	Codes are wrapped in [[double brackets]]. See https://github.com/9yz/bridge-scripts/wiki/Built%E2%80%90In-Substitutions for a list of default substitutions, or see commandMap in tsFindReplacement.
 	Custom codes can also be added - see ts_customSubstitutions.jsx.
 
 */
+
 
 // start and end strings must be the same size
 var TS_START_CHAR;
@@ -22,7 +22,10 @@ const TS_DELIMITERS = [
 	["=",  "=",  1],
 	["==", "==", 2],
 ]
-const TS_VERSION = 1.1;
+const TS_VERSION = 1.0;
+
+var TS_SUB_TABLE_BUILTIN;
+var TS_SUB_TABLE_USER;
 
 
 #target bridge
@@ -49,14 +52,26 @@ if(BridgeTalk.appName == 'bridge'){
 		tsInitalizePrefs();
 		tsPrefsPanel();
 
+		tsBuildSubstitutionTables();
+
 	}
 	catch(e){
 		alert("Text Substitutions Error:\n" + e + ' ' + e.line);
 	}
 }
 
+// called when text substitutions is selected in menu
+tsMenuRun.onSelect = function(){
+	tsRun();
+}
+tsMenuRunCont.onSelect = function(){
+	tsRun();
+}
+
+
+
 function tsPrefsPanel(){
-	// Event handler;  called when prefs panel is opened  
+	// Event handler; called when prefs panel is opened  
 	var tsPrefHandler = function(event){
 		// Can only add a panel when the Preferences dialog opens
 		if(event.type == "create" && event.location == "prefs"){
@@ -353,7 +368,110 @@ function tsInitalizePrefs(){
 }
 
 
-// Gets user input, selects properties to edit, and passes them to tsDoSubstitutions()
+// Build builtin and custom substitution tables
+function tsBuildSubstitutionTables(){
+	const builtinCommands = [ // map of all program-defined substitutions
+		// time-based substitutions
+		
+		{ target: "tdate",				replacement: tsTDateTaken					},
+		{ target: "tdatep",				replacement: tsTDateTakenPretty				},
+		{ target: "tdatepretty",		replacement: tsTDateTakenPretty				},
+		{ target: "tdateps",			replacement: tsTDateTakenPrettyShort		},
+		{ target: "tdateprettyshort",	replacement: tsTDateTakenPrettyShort		},
+		{ target: "tday",				replacement: tsTDateTakenDay				},
+		{ target: "tdayp",				replacement: tsTDateTakenDayPretty			},
+		{ target: "tdaypretty",			replacement: tsTDateTakenDayPretty			},
+		{ target: "tmonth",				replacement: tsTDateTakenMonth				},
+		{ target: "tmonthp",			replacement: tsTDateTakenMonthPretty		},
+		{ target: "tmonthpretty",		replacement: tsTDateTakenMonthPretty		},
+		{ target: "tmonthps",			replacement: tsTDateTakenMonthPrettyShort	},
+		{ target: "tmonthprettyshort",	replacement: tsTDateTakenMonthPrettyShort	},
+		{ target: "tyear",				replacement: tsTDateTakenYear				},
+		{ target: "tyr",				replacement: tsTDateTakenYear				},
+		{ target: "tyearshort",			replacement: tsTDateTakenYearShort			},
+		{ target: "tyrs",				replacement: tsTDateTakenYearShort			},
+		{ target: "ttime12",			replacement: tsTTimeTaken12					},
+		{ target: "ttime24",			replacement: tsTTimeTaken24					},
+		{ target: "ttime",				replacement: tsTTimeTaken24					},
+		{ target: "ttod",				replacement: tsTTimeOfDay					},
+		{ target: "ttimeofday",			replacement: tsTTimeOfDay					},
+		{ target: "thr",				replacement: tsTHour						},
+		{ target: "thour",				replacement: tsTHour						},
+		{ target: "tmin",				replacement: tsTMinute						},
+		{ target: "tminute",			replacement: tsTMinute						},
+		{ target: "tsec",				replacement: tsTSecond						},
+		{ target: "tsecond",			replacement: tsTSecond						},
+		{ target: "tdt",				replacement: tsTDateTime					},
+		{ target: "tdatetime",			replacement: tsTDateTime					},
+		{ target: "texiftime",			replacement: tsTEXIFTime					},
+		{ target: "tiptctime",			replacement: tsTIPTCTime					},
+
+		// metadata-based substitutions
+		{ target: "mname",				replacement: tsMFileName					},
+		{ target: "mfile",				replacement: tsMFileName					},
+		{ target: "mfilename",			replacement: tsMFileName					},
+		{ target: "mfilenameshort",		replacement: tsMFileNameShort				},
+		{ target: "mnameshort",			replacement: tsMFileNameShort				},
+		{ target: "mfileshort",			replacement: tsMFileNameShort				},
+		{ target: "mfiles",				replacement: tsMFileNameShort				},
+		{ target: "mnames",				replacement: tsMFileNameShort				},
+		{ target: "mfoldername",		replacement: tsMFolderName					},
+		{ target: "mfolder",			replacement: tsMFolderName					},
+		{ target: "mtitle",				replacement: tsMTitle						},
+		{ target: "mheadline",			replacement: tsMHeadline					},
+		{ target: "mcredit",			replacement: tsMCreditLine					},
+		{ target: "mcreditline",		replacement: tsMCreditLine					},
+		{ target: "msublocation",		replacement: tsMSublocation					},
+		{ target: "mlocation",			replacement: tsMLocation					},
+		{ target: "mcity",				replacement: tsMCity						},
+		{ target: "mstate",				replacement: tsMState						},
+		{ target: "mprovince",			replacement: tsMState						},
+		{ target: "mcountry",			replacement: tsMCountry						}, 
+		{ target: "mrating",			replacement: tsMRating						}, 
+		{ target: "mratingpretty",		replacement: tsMRatingPretty				}, 
+		{ target: "mratingp",			replacement: tsMRatingPretty				},
+		{ target: "mlabel",				replacement: tsMLabel						},
+
+		// camera-based substitutions
+		{ target: "cwidth",				replacement: tsCWidth						}, 
+		{ target: "cw",					replacement: tsCWidth						}, 
+		{ target: "cheight",			replacement: tsCHeight						}, 
+		{ target: "ch",					replacement: tsCHeight						}, 
+		{ target: "ccamera",			replacement: tsCCamera						}, 
+		{ target: "ccam",				replacement: tsCCamera						}, 
+		{ target: "cserial",			replacement: tsCSerial						}, 
+		{ target: "clens",				replacement: tsCLens						}, 
+		{ target: "cshutterspeed",		replacement: tsCShutterSpeed				}, 
+		{ target: "cshutter",			replacement: tsCShutterSpeed				}, 
+		{ target: "css",				replacement: tsCShutterSpeed				}, 
+		{ target: "caperture",			replacement: tsCAperture					}, 
+		{ target: "cf",					replacement: tsCAperture					}, 
+		{ target: "ciso",				replacement: tsCISO							}, 
+		{ target: "cfocallength",		replacement: tsCFocalLength					}, 
+		{ target: "czoom",				replacement: tsCFocalLength					}, 
+		{ target: "cfocallength35",		replacement: tsCFocalLength35				}, 
+		{ target: "czoom35",			replacement: tsCFocalLength35				}, 
+		{ target: "cexposurecomp",		replacement: tsCExposureComp				}, 
+		{ target: "cexpcomp",			replacement: tsCExposureComp				}, 
+		{ target: "ccomp",				replacement: tsCExposureComp				}
+
+	]
+
+	// TS_SUB_TABLE_BUILTIN = new SubstitutionTable(builtinCommands.length);
+	TS_SUB_TABLE_BUILTIN = new SubstitutionTable(211);
+	for(var i in builtinCommands){
+		TS_SUB_TABLE_BUILTIN.insert(builtinCommands[i]);
+	}
+}
+
+// Finds custom substitution files and builds them into TS_SUB_TABLE_USER
+function tsBuildCustomSubTables(){
+	return;
+}
+
+
+
+// Run when the script is selected. Gets user input, selects properties to edit, and passes them to tsDoSubstitutions()
 function tsRun(){
 	try{
 		app.synchronousMode = true;
@@ -531,108 +649,16 @@ function tsDoSubstitutions(selection, sourceText, recursions){
 
 // given a target string, returns the replacement for it
 function tsFindReplacement(selection, targetString){
-	// alert("tsFindReplacement(): " + targetString);
-	targetString = targetString.toLowerCase();
-
 	if(targetString.length == 0){ // case: empty replacement
 		return;
 	}
 
-	var commandMap = { // map of all program-defined substitutions
-		// time-based substitutions
-		"tdate"				: tsTDateTaken,
-		"tdatep"			: tsTDateTakenPretty,
-		"tdatepretty"		: tsTDateTakenPretty,
-		"tdateps"			: tsTDateTakenPrettyShort,
-		"tdateprettyshort"	: tsTDateTakenPrettyShort,
-		"tday"				: tsTDateTakenDay,
-		"tdayp"				: tsTDateTakenDayPretty,
-		"tdaypretty"		: tsTDateTakenDayPretty,
-		"tmonth"			: tsTDateTakenMonth,
-		"tmonthp"			: tsTDateTakenMonthPretty,
-		"tmonthpretty"		: tsTDateTakenMonthPretty,
-		"tmonthps"			: tsTDateTakenMonthPrettyShort,
-		"tmonthprettyshort"	: tsTDateTakenMonthPrettyShort,
-		"tyear"				: tsTDateTakenYear,
-		"tyr"				: tsTDateTakenYear,
-		"tyearshort"		: tsTDateTakenYearShort,
-		"tyrs"				: tsTDateTakenYearShort,
-		"ttime12"			: tsTTimeTaken12,
-		"ttime24"			: tsTTimeTaken24,
-		"ttime"				: tsTTimeTaken24,
-		"ttod"				: tsTTimeOfDay,
-		"ttimeofday"		: tsTTimeOfDay,
-		"thr"				: tsTHour,
-		"thour"				: tsTHour,
-		"tmin"				: tsTMinute,
-		"tminute"			: tsTMinute,
-		"tsec"				: tsTSecond,
-		"tsecond"			: tsTSecond,
-		"tdt"				: tsTDateTime,
-		"tdatetime"			: tsTDateTime,
-		"texiftime"			: tsTEXIFTime,
-		"tiptctime"			: tsTIPTCTime,
+	// lookup target in builtin table
+	var repl = TS_SUB_TABLE_BUILTIN.lookup(targetString.toLowerCase()); 
+	if(repl != undefined) // if this is undefined, nothing was found
+		return repl.replacement(selection).toString();
 
-		// metadata-based substitutions
-		"mname"				: tsMFileName,
-		"mfile"				: tsMFileName,
-		"mfilename"			: tsMFileName,
-		"mfilenamepretty"	: tsMFileNamePretty,
-		"mnameshort"		: tsMFileNamePretty,
-		"mfileshort"		: tsMFileNamePretty,
-		"mfiles"			: tsMFileNamePretty,
-		"mnames"			: tsMFileNamePretty,
-		"mfoldername"		: tsMFolderName,
-		"mfolder"			: tsMFolderName,
-		"mtitle"			: tsMTitle,
-		"mheadline"			: tsMHeadline,
-		"mcredit"			: tsMCreditLine,
-		"mcreditline"		: tsMCreditLine,
-		"msublocation"		: tsMSublocation,
-		"mlocation"			: tsMLocation,
-		"mcity"				: tsMCity,
-		"mstate"			: tsMState,
-		"mprovince"			: tsMState,
-		"mcountry"			: tsMCountry, 
-		"mrating"			: tsMRating, 
-		"mratingpretty"		: tsMRatingPretty, 
-		"mratingp"			: tsMRatingPretty,
-		"mlabel"			: tsMLabel,
 
-		// camera-based substitutions
-		"cwidth"			: tsCWidth, 
-		"cw"				: tsCWidth, 
-		"cheight"			: tsCHeight, 
-		"ch"				: tsCHeight, 
-		"ccamera"			: tsCCamera, 
-		"ccam"				: tsCCamera, 
-		"cserial"			: tsCSerial, 
-		"clens"				: tsCLens, 
-		"cshutterspeed"		: tsCShutterSpeed, 
-		"cshutter"			: tsCShutterSpeed, 
-		"css"				: tsCShutterSpeed, 
-		"caperture"			: tsCAperture, 
-		"cf"				: tsCAperture, 
-		"ciso"				: tsCISO, 
-		"cfocallength"		: tsCFocalLength, 
-		"czoom"				: tsCFocalLength, 
-		"cfocallength35"	: tsCFocalLength35, 
-		"czoom35"			: tsCFocalLength35, 
-		"cexposurecomp"		: tsCExposureComp, 
-		"cexpcomp"			: tsCExposureComp, 
-		"ccomp"				: tsCExposureComp, 
-		// "c"				: tsC, 
-
-		// ADDING NEW SUBSTITUTION SECTION: don't forget to add the starting char to the check below!
-	}
-	
-	// builtin substitutions will always have start with a prefix we know so we can do a cheap check before looking through the whole list
-	if(targetString[0] == "c" || targetString[0] == "m" || targetString[0] == "t"){
-		// check if the string has a matching function, run and return the result if it does
-		if(commandMap.hasOwnProperty(targetString)){ 
-			return commandMap[targetString](selection).toString(); // for some reason not casting this to string causes the script to silently crash when it returns an int???
-		}
-	}
 	
 	if(typeof tsCustomSubstitutions !== 'undefined'){ // have we loaded a custom substitutions file?
 		var splitString = targetString.split("#"); // for enumerated substitutions - [0] will be the tag, [1] will be the index. if length=1, enumeration is not being used. 
@@ -642,14 +668,12 @@ function tsFindReplacement(selection, targetString){
 		for(var i = 0; i < tsCustomSubstitutions.length; i++){ 
 			if(tsCustomSubstitutions[i].target == splitString[0]){ 
 
-				var replacement;
-
 				if(splitString.length == 1){ // enumeration not used
 					if(!isArray(tsCustomSubstitutions[i].replacement)){ // target repl is not an array
-						replacement = tsCustomSubstitutions[i].replacement;
+						repl = tsCustomSubstitutions[i].replacement;
 
 					} else{ // if it IS an array, grab the first element
-						replacement = tsCustomSubstitutions[i].replacement[0];
+						repl = tsCustomSubstitutions[i].replacement[0];
 					}
 				}
 				else if(splitString.length == 2) { // enumeration is used
@@ -659,11 +683,11 @@ function tsFindReplacement(selection, targetString){
 							alert("TextSubstitutions Error:\nIndex out of bounds: " + targetString + " in " + selection.name + ".\nIndex must be in 1, " + tsCustomSubstitutions[i].replacement.length + " (inclusive).\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
 							throw SyntaxError("unknownSubstitution");
 						}
-						replacement = tsCustomSubstitutions[i].replacement[splitString[1]-1]; // sub 1 to switch to 1-indexing
+						repl = tsCustomSubstitutions[i].replacement[splitString[1]-1]; // sub 1 to switch to 1-indexing
 
 					}
 					else if(splitString[1] == 1){ // not an array but we're grabbing the first one so it's fine
-						replacement = tsCustomSubstitutions[i].replacement;
+						repl = tsCustomSubstitutions[i].replacement;
 					}
 					else { // ERROR: target repl is NOT an array and we're grabbing not the first index 
 						alert("TextSubstitutions Error:\nEnumeration defined on non-enumerable replacement: " + targetString + " in " + selection.name + ".\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
@@ -680,10 +704,10 @@ function tsFindReplacement(selection, targetString){
 
 
 				if(tsCustomSubstitutions[i].recursions > 0){ // does this need recursion?
-					return tsDoSubstitutions(selection, replacement, tsCustomSubstitutions[i].recursions-1);
+					return tsDoSubstitutions(selection, repl, tsCustomSubstitutions[i].recursions-1);
 				}
 				else{
-					return replacement;
+					return repl;
 				}
 			}
 
@@ -693,19 +717,8 @@ function tsFindReplacement(selection, targetString){
 	// no matching function
 	alert("TextSubstitutions Error:\nUnknown substitution " + splitString + " in " + selection.name + ".\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
 	throw SyntaxError("unknownSubstitution");
-
 }
 
-
-
-
-// called when text substitutions is selected in menu
-tsMenuRun.onSelect = function(){
-	tsRun();
-}
-tsMenuRunCont.onSelect = function(){
-	tsRun();
-}
 
 
 // returns either the IPTC or EXIF creation date, depending on what the user has set in prefs
@@ -726,10 +739,10 @@ function tsSelectionToDate(sel){
 	return date.getDate();
 }
 
-const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-const monthsAbbr = ["Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."];
-const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const timeOfDay = [ "night", "night", "night", "night", "night", "night", "morning", "morning", "morning", "morning", "day", "day", "day", "day", "afternoon", "afternoon", "afternoon", "evening", "evening", "evening", "night", "night", "night", "night"]
+const TS_MONTH_MAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+const TS_MONTH_ABBR_NAMES = ["Jan.", "Feb.", "Mar.", "Apr.", "May", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."];
+const TS_DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const TS_TIME_OF_DAY_NAMES = [ "night", "night", "night", "night", "night", "night", "morning", "morning", "morning", "morning", "day", "day", "day", "day", "afternoon", "afternoon", "afternoon", "evening", "evening", "evening", "night", "night", "night", "night"]
 
 
 //////////////
@@ -744,13 +757,13 @@ function tsTDateTaken(sel){
 // returns the formatted as Monthname date, year. Ex. January 1, 2024
 function tsTDateTakenPretty(sel){
 	var date = tsSelectionToXMPDate(sel);
-	return months[date.month-1] + " " + date.day + ", " + date.year;
+	return TS_MONTH_MAMES[date.month-1] + " " + date.day + ", " + date.year;
 }
 
 // returns the formatted as Mmth. date, year. Ex. Jan. 1, 2024
 function tsTDateTakenPrettyShort(sel){
 	var date = tsSelectionToXMPDate(sel);
-	return monthsAbbr[date.month-1] + " " + date.day + ", " + date.year;
+	return TS_MONTH_ABBR_NAMES[date.month-1] + " " + date.day + ", " + date.year;
 }
 
 // returns the numerical date
@@ -760,7 +773,7 @@ function tsTDateTakenDay(sel){
 
 // returns the day of the week IN UTC at this time.
 function tsTDateTakenDayPretty(sel){
-	return days[tsSelectionToDate(sel).getDay()];
+	return TS_DAY_NAMES[tsSelectionToDate(sel).getDay()];
 }
 
 // returns the numerical month
@@ -770,12 +783,12 @@ function tsTDateTakenMonth(sel){
 
 // returns the name of the month
 function tsTDateTakenMonthPretty(sel){
-	return months[tsSelectionToXMPDate(sel).month-1];
+	return TS_MONTH_MAMES[tsSelectionToXMPDate(sel).month-1];
 }
 
 // returns the short name of the month
 function tsTDateTakenMonthPrettyShort(sel){
-	return monthsAbbr[tsSelectionToXMPDate(sel).month-1];
+	return TS_MONTH_ABBR_NAMES[tsSelectionToXMPDate(sel).month-1];
 }
 
 // returns the numerical year
@@ -786,7 +799,7 @@ function tsTDateTakenYear(sel){
 // returns the last 2 digits of the year
 function tsTDateTakenYearShort(sel){
 	year = tsSelectionToXMPDate(sel).year;
-	return year.substring(year.length-2, year.length);
+	return year.toString().substring(year.length-2, year.length);
 }
 
 // returns the time taken in 12-hour format (ex. 2:43 pm)
@@ -806,7 +819,7 @@ function tsTTimeTaken24(sel){
 
 // time of day. ex. morning, night, afternoon
 function tsTTimeOfDay(sel){
-	return timeOfDay[tsSelectionToXMPDate(sel).hour];
+	return TS_TIME_OF_DAY_NAMES[tsSelectionToXMPDate(sel).hour];
 }
 
 // returns the hour
@@ -849,7 +862,7 @@ function tsMFileName(sel){
 }
 
 // returns the filename without the file extension
-function tsMFileNamePretty(sel){
+function tsMFileNameShort(sel){
 	var n = sel.name;
 	return n.substring(0, n.lastIndexOf('.'));
 }
@@ -999,6 +1012,11 @@ function tsCExposureComp(sel){
 
 
 
+
+
+
+
+// pads with leading zeroes
 function padTwoDigitNumber(num){
 	return num < 10 ? "0" + num.toString() : num;
 }
@@ -1008,13 +1026,90 @@ function isArray(a){
 	return (a instanceof Array);
 }
 
-/* Array.prototype.indexOf = function(item){
-	var index = 0, length = this.length;
-	for(; index < length; index++){
-		if(this[index] === item) return index;
+
+
+
+
+
+
+
+// substitutionTable - a hashtable class (except not really because ES3 doesn't have CLASSES??)
+// stores and looks up substitutions
+
+// substitution objects passed in must have 2 children:
+/// target - the string to replace
+/// replacement - a string, array of strings, or function
+
+// size should roughly equal the number of elements expected in the array
+function SubstitutionTable(size){
+	var tableSize = 0;
+	var tableLoad = 0; // number of objects in table
+	var table;
+
+	this.table = Array(size);
+	this.tableSize = size;
+
+	while(size--) this.table[size] = null; // fill array
+
+	// calculates a simple rolling hash based on the substitution's target, modulos with tableSize
+	this.calculateHash = function(t){
+		const n = t.length;
+		const b = 37; // "choose b as the first prime number greater or equal to the number of characters in the input alphabet." assuming 26+10 chars in alphabet here
+		var h = 1;
+
+		for(var i = 1; i < n+1; i++){
+			h += t.charCodeAt(n-i) + b*h*i;
+			h %= this.tableSize;
+		}
+		return h;
 	}
-} */
 
 
+	// returns true if the table is empty
+	this.empty = function(){
+		return (this.tableLoad == 0)
+	}
+
+	// takes a substitution object; calculates a hash from the target's name inserts it into the table
+	this.insert = function(o){
+		// if(this.tableLoad/this.tableSize > 0.75) alert("table getting full! load = " + (this.tableLoad/this.tableSize));
+
+		var h = this.calculateHash(o.target);
+		var numCollisions = 1;
+
+		while(this.table[h] != null){
+			h += numCollisions++;
+			if(h > this.tableSize) h = 0; // wrap around
+		}
+
+		this.table[h] = o;
+		this.tableLoad++;
+		return;
+
+	}
+
+	// given an substitution target, looks it up in the table and returns a substitution object. returnes undefined if no result
+	this.lookup = function(t){
+		if(this.empty()){
+			return undefined;
+		}
+
+		var h = this.calculateHash(t);
+		var numCollisions = 1;
+		
+		while(this.table[h] && this.table[h].target != t){ // linear probing
+			h += numCollisions++;
+			if(h > this.tableSize) h = 0; // wrap around
+		}
+
+		
+		if(!this.table[h]) return undefined;
+
+		return this.table[h];
+
+	}
 
 
+}
+
+		
