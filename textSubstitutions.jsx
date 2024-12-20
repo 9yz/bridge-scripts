@@ -49,6 +49,8 @@ if(BridgeTalk.appName == 'bridge'){
 		var tsMenuRun 			= MenuElement.create('command', 'Text Substitutions...', 'at the end of Tools');
 		var tsMenuRunCont 		= MenuElement.create('command', 'Text Substitutions...', 'after Thumbnail/Open'); 
 
+		#include "ts_customSubstitutions.jsx"
+
 		tsInitalizePrefs();
 		tsPrefsPanel();
 
@@ -370,9 +372,9 @@ function tsInitalizePrefs(){
 
 // Build builtin and custom substitution tables
 function tsBuildSubstitutionTables(){
+	const builtinTableSize = 211; // size we want for the hashtable - should be a prime at least 2x the size of builtinCommands.
 	const builtinCommands = [ // map of all program-defined substitutions
 		// time-based substitutions
-		
 		{ target: "tdate",				replacement: tsTDateTaken					},
 		{ target: "tdatep",				replacement: tsTDateTakenPretty				},
 		{ target: "tdatepretty",		replacement: tsTDateTakenPretty				},
@@ -457,16 +459,48 @@ function tsBuildSubstitutionTables(){
 
 	]
 
-	// TS_SUB_TABLE_BUILTIN = new SubstitutionTable(builtinCommands.length);
-	TS_SUB_TABLE_BUILTIN = new SubstitutionTable(211);
+
+	// build builtin table
+	TS_SUB_TABLE_BUILTIN = new SubstitutionTable(builtinTableSize);
 	for(var i in builtinCommands){
 		TS_SUB_TABLE_BUILTIN.insert(builtinCommands[i]);
 	}
+
+	tsBuildCustomSubTables();
+	
 }
 
 // Finds custom substitution files and builds them into TS_SUB_TABLE_USER
 function tsBuildCustomSubTables(){
-	return;
+	if(typeof tsCustomSubstitutions == 'undefined') return;
+
+	// prime nums, somewhat evenly spaced for use as user table size for better modulo
+	const primes = [53, 101, 211, 307, 401, 601, 809, 1009, 1201, 1399, 1601, 1901, 2399, 2801, 3203, 6397, 12007, 2400, 48017, 96001]; 
+	
+	var size;
+	var i = 0;
+	
+	// in the ungodly case someone has > 50,000 substitutions, just pick something that's maybe a prime number
+	if(tsCustomSubstitutions.length*2 > primes[primes.length-1]){
+		alert("Text Substitutions is impressed!\nIf you're seeing this, you have more than 48,000 substitutions which is way more than I ever expected anyone would use. Don't worry, I added a fallback to ensure the program still works, it will just be slightly less efficent.\n\nAlso, please leave a github issue or email me (9yz [at] 9yz.dev) so I can learn what the fuck you're doing that requires 48,000 substitutions.");
+		size = (tsCustomSubstitutions.length*2)+1; 
+	}
+	else{
+		for(i in primes){
+			if(tsCustomSubstitutions.length*2 < primes[i]){
+				size = primes[i];
+				break; // find the first prime larger than the number of custom subs *2
+			} 
+		}
+	}
+
+	TS_SUB_TABLE_USER = new SubstitutionTable(size);
+
+	for(var j in tsCustomSubstitutions){ // move items from tsCustomSubstitutions to the table
+		TS_SUB_TABLE_USER.insert(tsCustomSubstitutions[j]);
+	}
+
+
 }
 
 
@@ -654,65 +688,64 @@ function tsFindReplacement(selection, targetString){
 	}
 
 	// lookup target in builtin table
-	var repl = TS_SUB_TABLE_BUILTIN.lookup(targetString.toLowerCase()); 
-	if(repl != undefined) // if this is undefined, nothing was found
-		return repl.replacement(selection).toString();
-
+	var replObject = TS_SUB_TABLE_BUILTIN.lookup(targetString.toLowerCase()); 
+	if(replObject != undefined){ // if this is undefined, nothing was found
+		return replObject.replacement(selection).toString();
+	}
 
 	
-	if(typeof tsCustomSubstitutions !== 'undefined'){ // have we loaded a custom substitutions file?
-		var splitString = targetString.split("#"); // for enumerated substitutions - [0] will be the tag, [1] will be the index. if length=1, enumeration is not being used. 
-		if(splitString.length > 1) splitString[1] = parseInt(splitString[1]); // convert to int
+	// lookup target in custom table - more complicated bc of enumerated replacements
+	var splitString = targetString.split("#"); // for enumerated substitutions - [0] will be the tag, [1] will be the index. if length=1, enumeration is not being used. 
+	if(splitString.length > 1) splitString[1] = parseInt(splitString[1]); // convert to int
 
-		// check if this is one of the custom substitutions
-		for(var i = 0; i < tsCustomSubstitutions.length; i++){ 
-			if(tsCustomSubstitutions[i].target == splitString[0]){ 
+	var replText; // text we're replacing with
+	replObject = TS_SUB_TABLE_USER.lookup(splitString[0].toString()); // object holding the replacement. undefined if not in this table
+	if(replObject != undefined){
 
-				if(splitString.length == 1){ // enumeration not used
-					if(!isArray(tsCustomSubstitutions[i].replacement)){ // target repl is not an array
-						repl = tsCustomSubstitutions[i].replacement;
+		if(splitString.length == 1){ 				// CASE 1: enumeration not used
+			if(!isArray(replObject.replacement)){ 	// CASE 1a: target repl is not an array
+				replText = replObject.replacement;
 
-					} else{ // if it IS an array, grab the first element
-						repl = tsCustomSubstitutions[i].replacement[0];
-					}
+			} else{ 								// CASE 1b: if it IS an array, grab the first element
+				replText = replObject.replacement[0];
+			}
+		}
+		else if(splitString.length == 2) { 			// CASE 2: enumeration is used
+			if(isArray(replObject.replacement)){ 	// CASE 2a: target repl is an array
+
+				if(splitString[1] < 1 || splitString[1] > replObject.replacement.length){ // ERROR: enum index out of bounds
+					alert("TextSubstitutions Error:\nIndex out of bounds: " + targetString + " in " + selection.name + ".\nIndex must be in 1, " + replObject.replacement.length + " (inclusive).\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
+					throw SyntaxError("unknownSubstitution");
 				}
-				else if(splitString.length == 2) { // enumeration is used
-					if(isArray(tsCustomSubstitutions[i].replacement)){ // target repl is an array
+				replText = replObject.replacement[splitString[1]-1]; // sub 1 to switch to 1-indexing
 
-						if(splitString[1] < 1 || splitString[1] > tsCustomSubstitutions[i].replacement.length){ // ERROR: enum index out of bounds
-							alert("TextSubstitutions Error:\nIndex out of bounds: " + targetString + " in " + selection.name + ".\nIndex must be in 1, " + tsCustomSubstitutions[i].replacement.length + " (inclusive).\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
-							throw SyntaxError("unknownSubstitution");
-						}
-						repl = tsCustomSubstitutions[i].replacement[splitString[1]-1]; // sub 1 to switch to 1-indexing
-
-					}
-					else if(splitString[1] == 1){ // not an array but we're grabbing the first one so it's fine
-						repl = tsCustomSubstitutions[i].replacement;
-					}
-					else { // ERROR: target repl is NOT an array and we're grabbing not the first index 
-						alert("TextSubstitutions Error:\nEnumeration defined on non-enumerable replacement: " + targetString + " in " + selection.name + ".\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
-						throw SyntaxError("unknownSubstitution");
-					}
-
-				}
-				else{ // ERROR: too many #s
-					alert("TextSubstitutions Error:\nInvalid syntax " + targetString + " in " + selection.name + ". Only one # allowed.\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
-						throw SyntaxError("unknownSubstitution");
-				}
-
-
-
-
-				if(tsCustomSubstitutions[i].recursions > 0){ // does this need recursion?
-					return tsDoSubstitutions(selection, repl, tsCustomSubstitutions[i].recursions-1);
-				}
-				else{
-					return repl;
-				}
+			}
+			else if(splitString[1] == 1){ 			// CASE 2b: not an array but we're grabbing the first one so it's fine
+				replText = replObject.replacement;
+			}
+			else { 									// CASE 2c ERROR: target repl is NOT an array and we're grabbing not the first index 
+				alert("TextSubstitutions Error:\nEnumeration defined on non-enumerable replacement: " + targetString + " in " + selection.name + ".\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
+				throw SyntaxError("unknownSubstitution");
 			}
 
 		}
+		else{ 										// CASE 3 ERROR: too many #s in targetstring
+			alert("TextSubstitutions Error:\nInvalid syntax " + targetString + " in " + selection.name + ". Only one # allowed.\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
+				throw SyntaxError("unknownSubstitution");
+		}
+
+
+		replText = replText.toString();
+
+		if(replObject.recursions > 0){ // does this need recursion?
+			return tsDoSubstitutions(selection, replText, replObject.recursions-1);
+		}
+		else{
+			return replText;
+		}
+
 	}
+	
 
 	// no matching function
 	alert("TextSubstitutions Error:\nUnknown substitution " + splitString + " in " + selection.name + ".\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
@@ -1040,21 +1073,27 @@ function isArray(a){
 /// target - the string to replace
 /// replacement - a string, array of strings, or function
 
-// size should roughly equal the number of elements expected in the array
+// size should be a prime at least 2x the number of expected elements
 function SubstitutionTable(size){
+	const b = 37; // "choose b as the first prime number greater or equal to the number of characters in the input alphabet." assuming 26+10 chars in alphabet here
 	var tableSize = 0;
 	var tableLoad = 0; // number of objects in table
 	var table;
 
 	this.table = Array(size);
 	this.tableSize = size;
-
 	while(size--) this.table[size] = null; // fill array
+
+
+	// returns true if the table is empty
+	this.empty = function(){
+		return (this.tableLoad == 0)
+	}
+
 
 	// calculates a simple rolling hash based on the substitution's target, modulos with tableSize
 	this.calculateHash = function(t){
 		const n = t.length;
-		const b = 37; // "choose b as the first prime number greater or equal to the number of characters in the input alphabet." assuming 26+10 chars in alphabet here
 		var h = 1;
 
 		for(var i = 1; i < n+1; i++){
@@ -1064,11 +1103,6 @@ function SubstitutionTable(size){
 		return h;
 	}
 
-
-	// returns true if the table is empty
-	this.empty = function(){
-		return (this.tableLoad == 0)
-	}
 
 	// takes a substitution object; calculates a hash from the target's name inserts it into the table
 	this.insert = function(o){
@@ -1088,13 +1122,16 @@ function SubstitutionTable(size){
 
 	}
 
+
 	// given an substitution target, looks it up in the table and returns a substitution object. returnes undefined if no result
 	this.lookup = function(t){
 		if(this.empty()){
 			return undefined;
 		}
 
+		
 		var h = this.calculateHash(t);
+		// alert("looking up " + t + ", h = " + h);
 		var numCollisions = 1;
 		
 		while(this.table[h] && this.table[h].target != t){ // linear probing
@@ -1103,8 +1140,9 @@ function SubstitutionTable(size){
 		}
 
 		
-		if(!this.table[h]) return undefined;
+		if(!this.table[h]){ return undefined;}
 
+		// alert("found " + t+ " at " + h);
 		return this.table[h];
 
 	}
