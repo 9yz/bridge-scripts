@@ -10,9 +10,9 @@
 
 
 // start and end strings must be the same size
-var TS_START_CHAR;
-var TS_END_CHAR;
-var TS_EDGE_CHAR_SIZE; 
+var TS_START_DELIM;
+var TS_END_DELIM;
+var TS_DELIM_SIZE; 
 const TS_DELIMITERS = [
 	// starting delim, ending delim, delim length.
 	["[",  "]",  1],
@@ -169,39 +169,39 @@ function tsPrefsPanel(){
 				// update values on select
 				rbSingleBrackets.onClick = function(){
 					app.preferences.tsDelimiter = 0;
-					TS_START_CHAR = 	TS_DELIMITERS[0][0];
-					TS_END_CHAR = 		TS_DELIMITERS[0][1];
-					TS_EDGE_CHAR_SIZE = TS_DELIMITERS[0][2];
+					TS_START_DELIM = 	TS_DELIMITERS[0][0];
+					TS_END_DELIM = 		TS_DELIMITERS[0][1];
+					TS_DELIM_SIZE = TS_DELIMITERS[0][2];
 				}
 				rbDoubleBrackets.onClick = function(){
 					app.preferences.tsDelimiter = 1;
-					TS_START_CHAR = 	TS_DELIMITERS[1][0];
-					TS_END_CHAR = 		TS_DELIMITERS[1][1];
-					TS_EDGE_CHAR_SIZE = TS_DELIMITERS[1][2];
+					TS_START_DELIM = 	TS_DELIMITERS[1][0];
+					TS_END_DELIM = 		TS_DELIMITERS[1][1];
+					TS_DELIM_SIZE = TS_DELIMITERS[1][2];
 				}
 				rbSingleCurly.onClick = function(){
 					app.preferences.tsDelimiter = 2;
-					TS_START_CHAR = 	TS_DELIMITERS[2][0];
-					TS_END_CHAR = 		TS_DELIMITERS[2][1];
-					TS_EDGE_CHAR_SIZE = TS_DELIMITERS[2][2];
+					TS_START_DELIM = 	TS_DELIMITERS[2][0];
+					TS_END_DELIM = 		TS_DELIMITERS[2][1];
+					TS_DELIM_SIZE = TS_DELIMITERS[2][2];
 				}
 				rbDoubleCurly.onClick = function(){
 					app.preferences.tsDelimiter = 3;
-					TS_START_CHAR = 	TS_DELIMITERS[3][0];
-					TS_END_CHAR = 		TS_DELIMITERS[3][1];
-					TS_EDGE_CHAR_SIZE = TS_DELIMITERS[3][2];
+					TS_START_DELIM = 	TS_DELIMITERS[3][0];
+					TS_END_DELIM = 		TS_DELIMITERS[3][1];
+					TS_DELIM_SIZE = TS_DELIMITERS[3][2];
 				}
 				rbSingleEquals.onClick = function(){
 					app.preferences.tsDelimiter = 4;
-					TS_START_CHAR = 	TS_DELIMITERS[4][0];
-					TS_END_CHAR = 		TS_DELIMITERS[4][1];
-					TS_EDGE_CHAR_SIZE = TS_DELIMITERS[4][2];
+					TS_START_DELIM = 	TS_DELIMITERS[4][0];
+					TS_END_DELIM = 		TS_DELIMITERS[4][1];
+					TS_DELIM_SIZE = TS_DELIMITERS[4][2];
 				}
 				rbDoubleEquals.onClick = function(){
 					app.preferences.tsDelimiter = 5;
-					TS_START_CHAR = 	TS_DELIMITERS[5][0];
-					TS_END_CHAR = 		TS_DELIMITERS[5][1];
-					TS_EDGE_CHAR_SIZE = TS_DELIMITERS[5][2];
+					TS_START_DELIM = 	TS_DELIMITERS[5][0];
+					TS_END_DELIM = 		TS_DELIMITERS[5][1];
+					TS_DELIM_SIZE = TS_DELIMITERS[5][2];
 				}
 
 
@@ -278,7 +278,7 @@ function tsPrefsPanel(){
 				statictext5.alignment = ["fill","top"]; 
 
 			var cbSepTags = panelSepTags.add("checkbox", undefined, undefined, {name: "rbSepTags"}); 
-				cbSepTags.text = "Separate Substitutions in Keywords (recommended)"; 
+				cbSepTags.text = "Separate Substitutions in Keywords"; 
 
 			if(app.preferences.tsSeparateTags){ // initalize value
 				cbSepTags.value = true;
@@ -324,7 +324,7 @@ function tsSetDefaultPrefs(){
 	alert("Text Substitutions:\nNo preferences found, setting defaults!")
 	app.preferences.tsDelimiter = 1; // int representing the `delimiters` array index of the delimiter to use
 	app.preferences.tsDateField = 0; // 0 = EXIF, 1 = IPTC
-	app.preferences.tsSeparateTags = 1; // 1 = seperate tags
+	app.preferences.tsSeparateTags = 0; // 1 = seperate tags
 	app.preferences.tsPrefsSet = true;
 }
 
@@ -335,34 +335,34 @@ function tsInitalizePrefs(){
 
 	switch(app.preferences.tsDelimiter) {
 		case 0:
-			TS_START_CHAR = 	TS_DELIMITERS[0][0];
-			TS_END_CHAR = 		TS_DELIMITERS[0][1];
-			TS_EDGE_CHAR_SIZE = TS_DELIMITERS[0][2];
+			TS_START_DELIM = 	TS_DELIMITERS[0][0];
+			TS_END_DELIM = 		TS_DELIMITERS[0][1];
+			TS_DELIM_SIZE = TS_DELIMITERS[0][2];
 			break;
 		case 1:
-			TS_START_CHAR = 	TS_DELIMITERS[1][0];
-			TS_END_CHAR = 		TS_DELIMITERS[1][1];
-			TS_EDGE_CHAR_SIZE = TS_DELIMITERS[1][2];
+			TS_START_DELIM = 	TS_DELIMITERS[1][0];
+			TS_END_DELIM = 		TS_DELIMITERS[1][1];
+			TS_DELIM_SIZE = TS_DELIMITERS[1][2];
 			break;
 		case 2:
-			TS_START_CHAR = 	TS_DELIMITERS[2][0];
-			TS_END_CHAR = 		TS_DELIMITERS[2][1];
-			TS_EDGE_CHAR_SIZE = TS_DELIMITERS[2][2];
+			TS_START_DELIM = 	TS_DELIMITERS[2][0];
+			TS_END_DELIM = 		TS_DELIMITERS[2][1];
+			TS_DELIM_SIZE = TS_DELIMITERS[2][2];
 			break;
 		case 3:
-			TS_START_CHAR = 	TS_DELIMITERS[3][0];
-			TS_END_CHAR = 		TS_DELIMITERS[3][1];
-			TS_EDGE_CHAR_SIZE = TS_DELIMITERS[3][2];
+			TS_START_DELIM = 	TS_DELIMITERS[3][0];
+			TS_END_DELIM = 		TS_DELIMITERS[3][1];
+			TS_DELIM_SIZE = TS_DELIMITERS[3][2];
 			break;
 		case 4:
-			TS_START_CHAR = 	TS_DELIMITERS[4][0];
-			TS_END_CHAR = 		TS_DELIMITERS[4][1];
-			TS_EDGE_CHAR_SIZE = TS_DELIMITERS[4][2];
+			TS_START_DELIM = 	TS_DELIMITERS[4][0];
+			TS_END_DELIM = 		TS_DELIMITERS[4][1];
+			TS_DELIM_SIZE = TS_DELIMITERS[4][2];
 			break;
 		case 5:
-			TS_START_CHAR = 	TS_DELIMITERS[5][0];
-			TS_END_CHAR = 		TS_DELIMITERS[5][1];
-			TS_EDGE_CHAR_SIZE = TS_DELIMITERS[5][2];
+			TS_START_DELIM = 	TS_DELIMITERS[5][0];
+			TS_END_DELIM = 		TS_DELIMITERS[5][1];
+			TS_DELIM_SIZE = TS_DELIMITERS[5][2];
 			break;
 	}
 
@@ -605,7 +605,7 @@ function tsRun(){
 						
 					
 				} catch(e){
-					if(e instanceof SyntaxError) break;
+					if(e.message == 'bracketMatching' || e.message == "unknownSubstitution") break;
 					else throw e;
 				}
 
@@ -629,55 +629,67 @@ function tsRun(){
 
 
 
-// given a string of text, finds brackets surrpounding substitutions and replaces them with the string given by tsFindReplacement()
-function tsDoSubstitutions(selection, sourceText, recursions){
-	recursions = recursions || 0; // if not passed as a param, assume we want 0
-	sourceText = sourceText.toString(); // for some reason it's not a string to begin with???
-	var progressIndex = 0; // index of sourceText representing the farthest char we've analysed
-
-	while(progressIndex <= sourceText.length){
-		var start, end; 
-		var targetString; // bracket-less string to be replaced
-		var replacementString; 
-
-		// find start and end indicies
-		start = sourceText.indexOf(TS_START_CHAR, progressIndex);
-		progressIndex = start + TS_EDGE_CHAR_SIZE; 
-		end = sourceText.indexOf(TS_END_CHAR, progressIndex);
-		progressIndex = end + TS_EDGE_CHAR_SIZE; 
-		
-		if(start != -1 && end != -1){ // -1 means cant find a bracket
-			targetString = sourceText.substring(start+TS_EDGE_CHAR_SIZE, end); // get the substr between the brackets
-			replacementString = tsFindReplacement(selection, targetString); // find replacement
-
-			sourceText =  // update sourcetext with replacementString
-				sourceText.substring(0, start) + 
-				replacementString + 
-				sourceText.substring(end+TS_EDGE_CHAR_SIZE, sourceText.length); 
-		}
-		else if(start != -1 && end == -1){ // case: mismatched brackets (cant find end)
-			alert("TextSubstitutions Error:\nUnmatched " + TS_START_CHAR + " found in file " + selection.name + " at index " + start + ".\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
-			throw SyntaxError("bracketMatching");
-		}
-		else if(start == -1 && end != -1){ // cant find start
-			alert("TextSubstitutions Error:\nUnmatched " + TS_END_CHAR + " found in file " + selection.name + " at index " + end + ".\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
-			throw SyntaxError("bracketMatching");
-		}
-		else { // if both are -1 there's nothing more to process
-			break;
-		}  
-		
-		// update progressIndex - length of the string is now different
-		progressIndex -= TS_EDGE_CHAR_SIZE*2;
-		progressIndex += replacementString.length - targetString.length;
-	}
-
-	if(recursions > 0){ // certain substitutions may contain more substitutions. if they do, we want to recursively evaluate them
-		sourceText = tsDoSubstitutions(selection, sourceText, recursions-1);
-	}
-
-	return sourceText;
+// finds and recursively replaces any substitutions in the input string
+/// sel - selected thumbnail the text in target is coming from
+/// sourceText - the string we're searching for subs in
+function tsDoSubstitutions(sel, text){
+	if(text.length == 0) return text;
 	
+	try{
+		text = text.toString();
+
+		var brackets = { // objects are pass-by-reference so we use this to keep track of brackets
+			b: 0
+		};
+		text = tsDoSubstitutionsRec(sel, text, -1, brackets);
+		if(brackets.b != 0) throw SyntaxError("bracketMatching"); // final check for mismatched brackets
+		
+		return text;
+	}
+	catch(e){
+		if(e.message == "bracketMatching"){
+			alert("TextSubstitutions Error:\nMismatched delimeters found in file " + sel.name + "\n\nThis file has not been affected. No further files will be proccessed.");
+			throw e;
+		}
+		else throw e;
+	}
+ 
+}
+
+
+// recurisve worker for tsDoSubstitutions() - replaces any complete substitutions (with delims)
+function tsDoSubstitutionsRec(sel, sourceText, start, brackets){
+	// start = start || 0;
+	var nextEndDelim, nextStartDelim = start; // positions of start and end delims
+
+	while(true){
+		// search for start or end delim
+		nextEndDelim = sourceText.indexOf(TS_END_DELIM, nextStartDelim);
+		nextStartDelim = sourceText.indexOf(TS_START_DELIM, nextStartDelim);
+
+		if(nextEndDelim == -1 && nextStartDelim == -1){ 					// CASE1: no more brackets - we're done here!
+			return sourceText;
+		}
+		else if(nextEndDelim == -1){ 										// CASE2: no ending delim but a starting delim exists - this is bad
+			throw SyntaxError("bracketMatching");
+		} 
+		else if((nextStartDelim == -1 ) || nextEndDelim < nextStartDelim ){ // CASE3: we've found the ending of the subst., swap it with the replacement and return
+			if(brackets.b <= 0) throw SyntaxError("bracketMatching"); // we shouldnt encounter an end bracket with no start brkts
+			sourceText = // build repl string
+				sourceText.substring(0, start) + 
+				tsFindReplacement(sel, sourceText.substring(start, nextEndDelim)) + // replacement section
+				sourceText.substring(nextEndDelim+TS_DELIM_SIZE); 
+			brackets.b--;
+			return sourceText;
+		} 
+		else{ 																// CASE4: we've found the start of another subst
+			brackets.b++;
+			sourceText = sourceText.substring(0, nextStartDelim) + sourceText.substring(nextStartDelim+TS_DELIM_SIZE); // remove delim
+			sourceText = tsDoSubstitutionsRec(sel, sourceText, nextStartDelim, brackets);
+		}
+		
+	}
+
 }
 
 
@@ -696,8 +708,9 @@ function tsFindReplacement(selection, targetString){
 	
 	// lookup target in custom table - more complicated bc of enumerated replacements
 	var splitString = targetString.split("#"); // for enumerated substitutions - [0] will be the tag, [1] will be the index. if length=1, enumeration is not being used. 
-	if(splitString.length > 1) splitString[1] = parseInt(splitString[1]); // convert to int
-
+	if(splitString.length > 1){
+		splitString[1] = parseInt(splitString[1]); // convert to int	
+	}
 	var replText; // text we're replacing with
 	replObject = TS_SUB_TABLE_USER.lookup(splitString[0].toString()); // object holding the replacement. undefined if not in this table
 	if(replObject != undefined){
@@ -1150,4 +1163,3 @@ function SubstitutionTable(size){
 
 }
 
-		
