@@ -18,7 +18,7 @@ A simple interface for copying selected metadata fields between files. These fie
 5. Right click > Paste Property OR Tools > Paste Property. You have the option of Overwriting the existing values or Appending, which appends Keywords but overwrites other fields.
 
 ### textSubstitutions
-Inspired by the PhotoMechanic's code replacements feature, this lets you designate special codes to be replaced by any kind of text! For example, typing `[[tTime]]` in the description of an image then running this tool will replace it with the timestamp the photo was created. `[[mFileName]]` will be replaced with the file's name. In addition to nearly 2 dozen special codes that retrieve the file's metadata, you can also create your own substitutions.
+Inspired by the PhotoMechanic's code replacements feature, this lets you designate special codes to be replaced by any kind of text! For example, typing `[[tTime]]` in the description of an image then running this tool will replace it with the timestamp the photo was created. `[[mFileName]]` will be replaced with the file's name. In addition to nearly 50 special codes that retrieve the file's metadata, you can also create your own substitutions.
 
 Text Substiutions currently work in these metadata fields:
 - City, State, Country, Sublocation
@@ -26,6 +26,7 @@ Text Substiutions currently work in these metadata fields:
 - Headline
 - Alt Text
 - Extended Description
+- Keywords
 - Description
 
 #### Usage
@@ -33,7 +34,7 @@ Text Substiutions currently work in these metadata fields:
 2. Run Text Substitutions from the right-click (context) or Tools menu.
 
 ##### Creating Custom Substitutions
-After installing [textSubstitutions.jsx](textSubstitutions.jsx) as described below, install [ts_customSubstitutions.jsx](ts_customSubstitutions.jsx) the same way. The file contains information on the format for custom substitutions.
+After installing [textSubstitutions.jsx](textSubstitutions.jsx) as described below, install [ts_customSubstitutions.jsx](ts_customSubstitutions.txt) the same way. The file contains information on the format for custom substitutions.
 
 ### scratchPad
 Opens a simple, dockable text box for taking notes. Contents are not saved on program close.
