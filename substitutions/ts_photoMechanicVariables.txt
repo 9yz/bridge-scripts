@@ -1,0 +1,79 @@
+// ts_photoMechanicVariables.txt
+// A Custom Substitution list for the Text Substitutions Bridge Script
+//
+// This list aliases PM's variable names to the built-in substitutions.
+// This list also assumes that, for maximum PM compatability, you have changed the script's preferences to
+// the {single bracket} option. If you wish to use a different delimiter, you will need to find and replace 
+// the brackets in this file.
+
+// Image-specific
+aperture	{cf}
+f	{cf}
+filename	{mname}
+file	{mname}
+filenamebase	{mnameshort}
+fbas	{mnameshort}
+focallength	{czoom}
+folder	{mfolder}
+mldr	{mfolder}
+height	{ch}
+h	{ch}
+y	{ch}
+iso	{ciso}
+lens35	{czoom35}
+35mm	{czoom35}
+lenstype	{clens}
+lt	{clens}
+model	{ccam}
+numstars	{mrating}
+num*	{mrating}
+rating	{mratingp}
+stars	{mratingp}
+rate	{mratingp}
+serialnum	{cserial}
+serial	{cserial}
+snum	{cserial}
+shutter	{css}
+ss	{css}
+width	{cw}
+w	{cw}
+h	{ch}
+
+// IPTC fields
+city	{mcity}
+country	{mcountry}
+cnty	{mcountry}
+credit	{mcredit}
+cred	{mcredit}
+headline	{mheadline}
+head	{mheadline}
+location	{msublocation}
+loc	{msublocation}
+state	{mstate}
+stat	{mstate}
+
+// TIme & Date
+ampm	{tampm}
+date	{tdate}
+shot	{tdate}
+day	{tday}
+dow	{tdayp}
+hour	{thour12}
+hour24	{thour}
+h24	{thour}
+minute	{tminute}
+min	{tminute}
+month	{tmonth}
+mn	{tmonth}
+monthname	{tmonthp}
+mnn	{tmonthp}
+monthname3	{tmonthps}
+mnn3	{tmonthps}
+monthnameap	{tmonthps}
+mnap	{tmonthps}
+second	{tsecond}
+sec	{tsecond}
+time	{ttime}
+
+// Special Variables
+nl	\n
