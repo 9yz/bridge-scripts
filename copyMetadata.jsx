@@ -364,7 +364,7 @@ function cmPaste(method){
 		if (ExternalObject.AdobeXMPScript == undefined)  ExternalObject.AdobeXMPScript = new ExternalObject('lib:AdobeXMPScript'); // load the xmp scripting API
 		
 		for(var i in selection){ // iterate through selection
-			if(!selection[i].container && selection[i].core.itemContent.canLabelOrRate){ // exclude folders & files that dont support xmp
+			if(!selection[i].container){ // exclude folders
 
 				// get existing metadata for this item
 				var newMetadata = selection[i].synchronousMetadata;
