@@ -2,9 +2,8 @@
 
 	textSubstitutions.jsx
 
-	Adds code replacements (ala PhotoMechanic). These are predefined strings that are replaced with other strings when the program is run via Tools > Text Substitutions...
-	Codes are wrapped in [[double brackets]]. See https://github.com/9yz/bridge-scripts/wiki/Built%E2%80%90In-Substitutions for a list of default substitutions, or see commandMap in tsFindReplacement.
-	Custom codes can also be added - see ts_customSubstitutions.jsx.
+	See repo for doccumentation:
+	https://github.com/9yz/bridge-scripts
 
 */
 
@@ -459,10 +458,13 @@ function tsBuildSubstitutionTables(){
 		{ target: "ttime12",			replacement: tsTTimeTaken12					},
 		{ target: "ttime24",			replacement: tsTTimeTaken24					},
 		{ target: "ttime",				replacement: tsTTimeTaken24					},
+		{ target: "tdayhalf",			replacement: tsTDayHalf						},
+		{ target: "tampm",				replacement: tsTDayHalf						},
 		{ target: "ttod",				replacement: tsTTimeOfDay					},
 		{ target: "ttimeofday",			replacement: tsTTimeOfDay					},
 		{ target: "thr",				replacement: tsTHour						},
 		{ target: "thour",				replacement: tsTHour						},
+		{ target: "thour12",			replacement: tsTHour12						},
 		{ target: "tmin",				replacement: tsTMinute						},
 		{ target: "tminute",			replacement: tsTMinute						},
 		{ target: "tsec",				replacement: tsTSecond						},
@@ -561,7 +563,7 @@ function tsBuildCustomSubTables(){
 
 
 	// prime nums, somewhat evenly spaced for use as user table size for better modulo
-	const primes = [53, 101, 211, 307, 401, 601, 809, 1009, 1201, 1399, 1601, 1901, 2399, 2801, 3203, 6397, 12007, 2400, 48017, 96001]; 
+	const primes = [53, 101, 211, 307, 401, 601, 809, 1009, 1201, 1399, 1601, 1901, 2399, 2801, 3203, 6397, 12007, 24001, 48017, 96001]; 
 	
 	var size;
 	var i = 0;
@@ -680,32 +682,31 @@ function tsRun(){
 				progressbar1.preferredSize.height = 4; 
 				progressbar1.value = 0; 
 
-			var progresstext1 = progessDialog.add("statictext", undefined, undefined, {name: "statictext1"}); 
+			var progresstext1 = progessDialog.add("statictext", undefined, undefined, {name: "progresstext1"}); 
 				progresstext1.alignment = ["left","top"]; 
 				progresstext1.preferredSize.width = 300; 
 				progresstext1.text = "0 out of " + selection.length + " files processed."; 
 
-			var progresstext2 = progessDialog.add("statictext", undefined, undefined, {name: "statictext2"}); 
+			var progresstext2 = progessDialog.add("statictext", undefined, undefined, {name: "progresstext2"}); 
 				progresstext2.alignment = ["left","top"]; 
 				progresstext2.preferredSize.width = 300; 
-				progresstext2.text = "Proccessing:"; 
+				progresstext2.text = "Proccessing: "; 
 
 			progessDialog.show();
 
 		}
 
-		var meow = $.hiresTimer; // timer resets on access
+		var meow = $.hiresTimer; // dummy var, timer resets on access
 		
 		for(var i = 0; i < selection.length; i++){ 
-			if(useDialog){
+			if(useDialog){ // update the progress dialog
 				progressbar1.value = i;
 				progresstext1.text = i +" out of " + selection.length + " files processed."; 
-				progresstext2.text = "Proccessing:" + selection[i].name;
+				progresstext2.text = "Proccessing: " + selection[i].name;
 				progessDialog.update();
 			}
 			if(!selection[i].container){ // exclude folders 
-				// get existing metadata for this item
-				var existingMetadata = selection[i].synchronousMetadata; 
+				var existingMetadata = selection[i].synchronousMetadata; // get existing metadata for this item
 				if(!existingMetadata){ // does this file support metadata?
 					errorFiles++;
 					continue;
@@ -719,12 +720,13 @@ function tsRun(){
 
 						if(propertyList[j].isArray){
 
-							value = selection[i].metadata.read(propertyList[j].namespace, propertyList[j].key).toString();
-							myXMP.deleteProperty(propertyList[j].namespace, propertyList[j].key); 
-							value = value.toString().split(',')
+							value = selection[i].metadata.read(propertyList[j].namespace, propertyList[j].key).toString(); // grab existing var
+							myXMP.deleteProperty(propertyList[j].namespace, propertyList[j].key); // delete it
+							value = value.toString().split(',') // separate into an array
 
-							for(var k in value){ 
+							for(var k in value){ // proccess each tag in the array seperatley
 								value[k] = tsDoSubstitutions(selection[i], value[k]); 
+
 								if(app.preferences.tsSeparateTags){ // if this pref is enabled, check for commas after processing and split at each one into a seperate tag
 									var tags = value[k].toString().split(',');
 									for(var l in tags){
@@ -744,7 +746,7 @@ function tsRun(){
 					}
 					
 				} catch(e){
-					if(e.message == 'bracketMatching' || e.message == "unknownSubstitution" || e.message == "tooManyRecursions") break;
+					if(e.message == 'bracketMatching' || e.message == "unknownSubstitution" || e.message == "tooManyRecursions") break; // pre-handled errors, we just wanna get out of here
 					else throw e;
 				}
 
@@ -755,9 +757,9 @@ function tsRun(){
 			
 		}
 		if(useDialog) progessDialog.hide();
-		TS_LAST_OP_TIMER = $.hiresTimer/1000000;
+
+		TS_LAST_OP_TIMER = $.hiresTimer/1000000; // timer is in microseconds, div/1m for seconds
 		TS_LAST_OP_FILES = selection.length;	
-		
 		
 		if(errorFiles > 0){
 			alert("Text Substitutions Error:\n" + errorFiles + " files were not processed because they do not support metadata.")
@@ -782,9 +784,8 @@ function tsDoSubstitutions(sel, text){
 	try{
 		text = text.toString();
 
-		var brackets = { // objects are pass-by-reference so we use this to keep track of brackets
-			b: 0
-		};
+		var brackets = { b: 0 }; // stupid hack - objects are pass-by-reference so we use this to keep track of brackets
+
 		text = tsDoSubstitutionsRec(sel, text, 0, brackets);
 		if(brackets.b != 0) throw SyntaxError("bracketMatching"); // final check for mismatched brackets
 		
@@ -843,7 +844,7 @@ function tsFindReplacement(selection, targetString){
 	}
 
 	TS_RECURSIONS++;
-	checkRecursions(selection);
+	checkRecursions(selection); // case: infinite recursion
 
 	// lookup target in builtin table
 	var replObject = TS_SUB_TABLE_BUILTIN.lookup(targetString.toLowerCase()); 
@@ -890,7 +891,7 @@ function tsFindReplacement(selection, targetString){
 		}
 		else{ 										// CASE 3 ERROR: too many #s in targetstring
 			alert("TextSubstitutions Error:\nInvalid syntax " + targetString + " in " + selection.name + ". Only one # allowed.\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
-				throw SyntaxError("unknownSubstitution");
+			throw SyntaxError("unknownSubstitution");
 		}
 
 
@@ -909,6 +910,7 @@ function tsFindReplacement(selection, targetString){
 	throw SyntaxError("unknownSubstitution");
 }
 
+// checks for possible infinite recursion
 function checkRecursions(sel){
 	if(TS_RECURSIONS > app.preferences.tsRecursionLimit){
 		alert("TextSubstitutions Error:\nPossible cyclical reference detected - too many recursions in " + sel.name + ". You can raise the recursion limit in the preferences.\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
@@ -1008,6 +1010,12 @@ function tsTTimeTaken12(sel){
 	return hour.toString() + ":" + padTwoDigitNumber(date.minute) + period;
 }
 
+// returns the day half (am vs pm)
+function tsTDayHalf(sel){
+	var date = tsSelectionToXMPDate(sel);
+	return date.hour > 11 ? " pm" : " am";
+}
+
 // time taken, 24-hr format
 function tsTTimeTaken24(sel){
 	var date = tsSelectionToXMPDate(sel);
@@ -1022,6 +1030,14 @@ function tsTTimeOfDay(sel){
 // returns the hour
 function tsTHour(sel){
 	return tsSelectionToXMPDate(sel).hour;
+}
+
+// returns the 12-hour formatted hour
+function tsTHour12(sel){
+	var date = tsSelectionToXMPDate(sel);
+	var hour = date.hour > 12 ? date.hour-12 : date.hour;
+	hour = hour == 0 ? 12 : hour;
+	return hour.toString() 
 }
 
 // returns the minute
@@ -1209,9 +1225,8 @@ function tsCExposureComp(sel){
 
 
 
-
-
-
+//////////////////////
+// UTILITY FUNCTIONS
 
 // pads with leading zeroes
 function padTwoDigitNumber(num){
@@ -1222,8 +1237,6 @@ function padTwoDigitNumber(num){
 function isArray(a){
 	return (a instanceof Array);
 }
-
-
 
 
 

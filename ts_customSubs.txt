@@ -1,0 +1,69 @@
+// Welcome to ts_customSubs.txt!
+// This is a guide on how to create custom substitutions for the Text Substitutions Bridge Script.
+// You can have as many custom substitution files as you'd like, but they must:
+// - Start with "ts_"
+// - Be a .txt file.
+// - Be in Bridge's Startup Scripts directory or the Startup Scripts/substitutions/ subdirectory.
+// 
+// Additional notes:
+// - Any line that is completely blank or begins with "//" (no leading whitespace) will be ignored by the program.
+// - Custom substitutions are reloaded when Bridge is restarted, or when the "Reload Custom Substitutions" button in the preferences is pressed.
+// - Custom substitution files are not checked for correctness when loaded - incorrect formatting may lead to errors when running the script.
+// - Duplicate substitutions (two substitutions with the same target) are not supported. This is not checked and may lead to undefined behavior.
+// - The ordering of custom substitutions in their files is not important.
+// - Custom substitutions are CaSe-SeNsAtIvE, while built-in substitutions are not.
+// - Tabs are weird - the amount of whitespace a single tab displays as is based on the position of the text around it (and your text editor).
+//    For best results, use a text editor that lets you visualize the tab character. (if you're using Notepad++, this is View > Show Symbol >
+//    "Show Space and Tabs")
+
+// Complete documentation can be found at https://github.com/9yz/bridge-scripts
+
+
+
+// Example 1 - Basics
+// The base format of a custom substitution file is the Tab-Separated-Value (TSV) format. Each portion of a line is separated by the tab character.
+// The first text on a line is the substitution target - what goes in brackets in metadata fields. Here, it would be [[mywebsite]].
+// Next is a tab, then the replacement string - what the target will be replaced with.
+mywebsite	https://example.com
+
+
+// Example 2 - Recursive Substitutions I
+// Replacements can also have more substitutions in them! This substitution will replace [[shortlocation]] with the contents of 
+// the City and State metadata fields.
+// If you change the Delimiter in the preferences, make sure to change this to the new delimiter.
+shortlocation	[[mCity]], [[mState]]
+
+
+// Example 3 - Recursive Substitutions II
+// You can further nest substitutions! This substitution will reference the above [[shortlocation]] target.
+timeplace	Taken on [[tdateps]] in [[shortlocation]].
+
+
+// Example 4 - Enumerated Replacements
+// A single target can have multiple replacements - they must each follow the previous replacement, separated by a tab.
+// By default, [[subject]] will be replaced with "Dash F.". To access the rest of the replacements, follow the target with a "#" and 
+// the (1-indexed) index of the value you wish to access.
+// For example, [[subject#1]] will be replaced with "Dash F.", [[subject#2]] with "San Francisco", and [[subject#3]] with "Photographer".
+subject	Dash F.	San Francisco	Photographer
+
+
+// Example 5 - Recursive Substitutions III
+// Substitutions can be nested and recurse to any depth.
+// Below is a list of camera serial numbers and the photographers they are assigned to, along with the photographer's initals
+// and location.
+// Using the substitutions below the list, a photo editor looking in to quickly swap in the photographer's name just has to use
+// the target [[photogName]]. This will be replaced by "[[s[[cSerial]]#1]]". [[cSerial]] is a builtin replacement that returns
+// the serial number of the camera that took the picture. If the camera's SN is "039091", this will resolve to [[s039091#1]]. Finally,
+// when "s039091" is looked up, it will be identified as one of River's cameras and "#1" will grab the first replacement - "River Shea"
+s983746	Jane Smith	JS	Chicago
+s509124	Jane Smith	JS	Chicago
+s192883	Brock Thock	BT	London
+s039091	River Shea	RS	Taipei
+s49281	River Shea	RS	Taipei
+
+photogName	[[s[[cSerial]]#1]]
+photogAbbr	[[s[[cSerial]]#2]]
+photogCity	[[s[[cSerial]]#3]]
+// Note: for purposes of error handling there *is* a limit on the number of substitutions in a single metadata field. By default this 
+// is 100, but it can be raised in the preferences. Too high a value may lead to an otherwise handled program crash if you accidentally
+// create an infinitely-recursive substitution.
