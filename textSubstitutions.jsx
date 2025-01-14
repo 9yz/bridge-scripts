@@ -21,7 +21,8 @@ const TS_DELIMITERS = [
 	["=",  "=",  1],
 	["==", "==", 2],
 ]
-const TS_VERSION = "1.0";
+const TS_VERSION = "1.0.1";
+const TS_VERSION_PREFS = 100001; // equal to 1.000.01, or 1.0.1
 
 var TS_SUB_TABLE_BUILTIN;
 var TS_SUB_TABLE_USER;
@@ -379,19 +380,24 @@ function tsPrefsPanel(){
 }
 
 // reset prefs to defaults
-function tsSetDefaultPrefs(){
-	app.preferences.tsDelimiter = 1; // int representing the `delimiters` array index of the delimiter to use
-	app.preferences.tsDateField = 0; // 0 = EXIF, 1 = IPTC
-	app.preferences.tsSeparateTags = 0; // 1 = seperate tags
-	app.preferences.tsRecursionLimit = 100; // max number of recursions before error
-	app,preferences.tsPrefsVersion = TS_VERSION;
+// if allPrefs = true, all prefs are set (optional)
+function tsSetDefaultPrefs(allPrefs){
+	if(!allPrefs) allPrefs = false; // set to false if not specified
+	if(allPrefs || app.preferences.tsPrefsVersion < TS_VERSION_PREFS){ // ver 100001
+		app.preferences.tsDelimiter = 1; // int representing the `delimiters` array index of the delimiter to use
+		app.preferences.tsDateField = 0; // 0 = EXIF, 1 = IPTC
+		app.preferences.tsSeparateTags = 0; // 1 = seperate tags
+		app.preferences.tsRecursionLimit = 100; // max number of recursions before error
+	}
+	app.preferences.tsPrefsVersion = TS_VERSION_PREFS;
 	app.preferences.tsPrefsSet = true;
 }
 
 // set vars based on prefs
 function tsInitalizePrefs(){
 	// set default prefs if they havent been set
-	if(app.preferences.tsPrefsSet != true) tsSetDefaultPrefs();
+	if(app.preferences.tsPrefsSet != true) tsSetDefaultPrefs(true); // first run 
+	else if(app.preferences.tsPrefsVersion < TS_VERSION_PREFS) tsSetDefaultPrefs(); // upgrading
 
 	tsInitalizePrefsDelimiter();
 }
