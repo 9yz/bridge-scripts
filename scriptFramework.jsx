@@ -1,3 +1,4 @@
+// Sample script intended for developers to build off of.
 
 // for ESTK
 #target bridge 
