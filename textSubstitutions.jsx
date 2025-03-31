@@ -534,7 +534,7 @@ function tsBuildSubstitutionTables(){
 
 	]
 
-	const builtinFunctionsTableSize = 53; // size we want for the hashtable - should be a prime at least 2x the size of the associated table.
+	const builtinFunctionsTableSize = 101; // size we want for the hashtable - should be a prime at least 2x the size of the associated table.
 	const builtinFunctions = [	// map of built-in functions
 		// math ops
 		{ target: "fadd",				replacement: tsFAdd							},
@@ -562,6 +562,20 @@ function tsBuildSubstitutionTables(){
 		{ target: "fnotequals",			replacement: tsFNotEquals					},
 		{ target: "fneq",				replacement: tsFNotEquals					},
 		{ target: "f!=",				replacement: tsFNotEquals					},
+		{ target: "fgreaterthan",		replacement: tsFGreaterThan					},
+		{ target: "fgt",				replacement: tsFGreaterThan					},
+		{ target: "f>",					replacement: tsFGreaterThan					},
+		{ target: "flessthan",			replacement: tsFLessThan					},
+		{ target: "flt",				replacement: tsFLessThan					},
+		{ target: "f<",					replacement: tsFLessThan					},
+		{ target: "fgreaterequal",		replacement: tsFGreaterEqual				},
+		{ target: "fgeq",				replacement: tsFGreaterEqual				},
+		{ target: "f>=",				replacement: tsFGreaterEqual				},
+		{ target: "f=>",				replacement: tsFGreaterEqual				},
+		{ target: "flessequal",			replacement: tsFLessEqual					},
+		{ target: "fleq",				replacement: tsFLessEqual					},
+		{ target: "f<=",				replacement: tsFLessEqual					},
+		{ target: "f=<",				replacement: tsFLessEqual					},
 		{ target: "for",				replacement: tsFOr							},
 		{ target: "f||",				replacement: tsFOr							},
 		{ target: "fand",				replacement: tsFAnd							},
@@ -628,9 +642,9 @@ function tsBuildCustomSubTables(){
 	var size;
 	var i = 0;
 	
-	// in the ungodly case someone has > 96,000 substitutions, just pick something that's maybe a prime number
+	// in the ungodly case someone has > 48,000 substitutions, just pick something that's maybe a prime number
 	if(customSubs.length*2 > primes[primes.length-1]){
-		alert("Text Substitutions is impressed!\nIf you're seeing this, you have more than 96,000 substitutions which is way more than I ever expected anyone would use. Don't worry, I added a fallback to ensure the program still works, it will just be slightly less efficent.\n\nAlso, please leave a github issue or email me (9yz [at] 9yz.dev) so I can learn what the fuck you're doing that requires 96,000+ substitutions.");
+		alert("Text Substitutions is impressed!\nIf you're seeing this, you have more than 48,000 substitutions which is way more than I ever expected anyone would use. Don't worry, I added a fallback to ensure the program still works, it will just be slightly less efficent.\n\nAlso, please leave a github issue or email me (9yz [at] 9yz.dev) so I can learn what the fuck you're doing that requires 48,000+ substitutions.");
 		size = (customSubs.length*2)+1; 
 	}
 	else{
@@ -1466,6 +1480,52 @@ function tsFSubstitutionExists(sel, argv){
 
 	return "0";
 }
+
+
+// returns "1" if all argv[n>1] > argv[(n>1)+1], "0" otherwise
+function tsFGreaterThan(sel, argv){
+	if(argv.length <= 2) return "1";
+
+	for(var i = 2; i < argv.length; i++){
+		if(argv[i-1] <= argv[i]) return "0";
+	}
+
+	return "1";
+}
+
+// returns "1" if all argv[n>1] < argv[(n>1)+1], "0" otherwise
+function tsFLessThan(sel, argv){
+	if(argv.length <= 2) return "1";
+
+	for(var i = 2; i < argv.length; i++){
+		if(argv[i-1] >= argv[i]) return "0";
+	}
+
+	return "1";
+}
+
+// returns "1" if all argv[n>1] >= argv[(n>1)+1], "0" otherwise
+function tsFGreaterEqual(sel, argv){
+	if(argv.length <= 2) return "1";
+
+	for(var i = 2; i < argv.length; i++){
+		if(argv[i-1] < argv[i]) return "0";
+	}
+
+	return "1";
+}
+
+// returns "1" if all argv[n>1] <= argv[(n>1)+1], "0" otherwise
+function tsFLessEqual(sel, argv){
+	if(argv.length <= 2) return "1";
+
+	for(var i = 2; i < argv.length; i++){
+		if(argv[i-1] > argv[i]) return "0";
+	}
+
+	return "1";
+}
+
 
 
 
