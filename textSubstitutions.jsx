@@ -11,7 +11,9 @@
 // start and end strings must be the same size
 var TS_START_DELIM;
 var TS_END_DELIM;
-var TS_DELIM_SIZE; 
+var TS_DELIM_SIZE;
+var TS_DELIM_ENUM = "#";
+var TS_DELIM_FUNC = "|";
 const TS_DELIMITERS = [
 	// starting delim, ending delim, delim length.
 	["[",  "]",  1],
@@ -21,10 +23,11 @@ const TS_DELIMITERS = [
 	["=",  "=",  1],
 	["==", "==", 2],
 ]
-const TS_VERSION = "1.0.1";
-const TS_VERSION_PREFS = 100001; // equal to 1.000.01, or 1.0.1
+const TS_VERSION = "1.1.0";
+const TS_VERSION_PREFS = 100100; // equal to 1.001.00, or 1.1.0
 
 var TS_SUB_TABLE_BUILTIN;
+var TS_SUB_TABLE_BUILTIN_FUNCTIONS;
 var TS_SUB_TABLE_USER;
 
 var TS_NUM_CUSTOM_FILES_LOADED = 0;
@@ -507,28 +510,73 @@ function tsBuildSubstitutionTables(){
 		{ target: "mlabel",				replacement: tsMLabel						},
 
 		// camera-based substitutions
-		{ target: "cwidth",				replacement: tsCWidth						}, 
-		{ target: "cw",					replacement: tsCWidth						}, 
-		{ target: "cheight",			replacement: tsCHeight						}, 
-		{ target: "ch",					replacement: tsCHeight						}, 
-		{ target: "ccamera",			replacement: tsCCamera						}, 
-		{ target: "ccam",				replacement: tsCCamera						}, 
-		{ target: "cserial",			replacement: tsCSerial						}, 
-		{ target: "clens",				replacement: tsCLens						}, 
-		{ target: "cshutterspeed",		replacement: tsCShutterSpeed				}, 
-		{ target: "cshutter",			replacement: tsCShutterSpeed				}, 
-		{ target: "css",				replacement: tsCShutterSpeed				}, 
-		{ target: "caperture",			replacement: tsCAperture					}, 
-		{ target: "cf",					replacement: tsCAperture					}, 
-		{ target: "ciso",				replacement: tsCISO							}, 
-		{ target: "cfocallength",		replacement: tsCFocalLength					}, 
-		{ target: "czoom",				replacement: tsCFocalLength					}, 
-		{ target: "cfocallength35",		replacement: tsCFocalLength35				}, 
-		{ target: "czoom35",			replacement: tsCFocalLength35				}, 
-		{ target: "cexposurecomp",		replacement: tsCExposureComp				}, 
-		{ target: "cexpcomp",			replacement: tsCExposureComp				}, 
+		{ target: "cwidth",				replacement: tsCWidth						},
+		{ target: "cw",					replacement: tsCWidth						},
+		{ target: "cheight",			replacement: tsCHeight						},
+		{ target: "ch",					replacement: tsCHeight						},
+		{ target: "ccamera",			replacement: tsCCamera						},
+		{ target: "ccam",				replacement: tsCCamera						},
+		{ target: "cserial",			replacement: tsCSerial						},
+		{ target: "clens",				replacement: tsCLens						},
+		{ target: "cshutterspeed",		replacement: tsCShutterSpeed				},
+		{ target: "cshutter",			replacement: tsCShutterSpeed				},
+		{ target: "css",				replacement: tsCShutterSpeed				},
+		{ target: "caperture",			replacement: tsCAperture					},
+		{ target: "cf",					replacement: tsCAperture					},
+		{ target: "ciso",				replacement: tsCISO							},
+		{ target: "cfocallength",		replacement: tsCFocalLength					},
+		{ target: "czoom",				replacement: tsCFocalLength					},
+		{ target: "cfocallength35",		replacement: tsCFocalLength35				},
+		{ target: "czoom35",			replacement: tsCFocalLength35				},
+		{ target: "cexposurecomp",		replacement: tsCExposureComp				},
+		{ target: "cexpcomp",			replacement: tsCExposureComp				},
 		{ target: "ccomp",				replacement: tsCExposureComp				}
 
+	]
+
+	const builtinFunctionsTableSize = 53; // size we want for the hashtable - should be a prime at least 2x the size of the associated table.
+	const builtinFunctions = [	// map of built-in functions
+		// math ops
+		{ target: "fadd",				replacement: tsFAdd							},
+		{ target: "f+",					replacement: tsFAdd							},
+		{ target: "fsub",				replacement: tsFSub							},
+		{ target: "f-",					replacement: tsFSub							},
+		{ target: "fmul",				replacement: tsFMul							},
+		{ target: "f*",					replacement: tsFMul							},
+		{ target: "fdiv",				replacement: tsFDiv							},
+		{ target: "f/",					replacement: tsFDiv							},
+		{ target: "fmod",				replacement: tsFMod							},
+		{ target: "f%",					replacement: tsFMod							},
+		{ target: "ffloor",				replacement: tsFFloor						},
+		{ target: "fceil",				replacement: tsFCeil						},
+		{ target: "fround",				replacement: tsFRound						},
+
+		// string ops
+		{ target: "fprefix",			replacement: tsFPrefix						},
+		{ target: "fsuffix",			replacement: tsFSuffix						},
+		
+		// logic
+		{ target: "fequals",			replacement: tsFEquals						},
+		{ target: "feq",				replacement: tsFEquals						},
+		{ target: "f=",					replacement: tsFEquals						},
+		{ target: "fnotequals",			replacement: tsFNotEquals					},
+		{ target: "fneq",				replacement: tsFNotEquals					},
+		{ target: "f!=",				replacement: tsFNotEquals					},
+		{ target: "for",				replacement: tsFOr							},
+		{ target: "f||",				replacement: tsFOr							},
+		{ target: "fand",				replacement: tsFAnd							},
+		{ target: "f&&",				replacement: tsFAnd							},
+		{ target: "fnot",				replacement: tsFNot							},
+		{ target: "f!",					replacement: tsFNot							},
+		
+		// conditionals
+		{ target: "fcondcontinue",		replacement: tsFConditionalContinue			},
+		{ target: "fcc",				replacement: tsFConditionalContinue			},
+		{ target: "fbeq",				replacement: tsFConditionalContinue			},
+		{ target: "fsubstexists",		replacement: tsFSubstitutionExists			},
+		{ target: "fsubexists",			replacement: tsFSubstitutionExists			},
+		{ target: "fsex",				replacement: tsFSubstitutionExists			},
+		
 	]
 
 
@@ -536,6 +584,12 @@ function tsBuildSubstitutionTables(){
 	TS_SUB_TABLE_BUILTIN = new SubstitutionTable(builtinTableSize);
 	for(var i in builtinCommands){
 		TS_SUB_TABLE_BUILTIN.insert(builtinCommands[i]);
+	}
+
+	// build builtin function table
+	TS_SUB_TABLE_BUILTIN_FUNCTIONS = new SubstitutionTable(builtinFunctionsTableSize);
+	for(var i in builtinFunctions){
+		TS_SUB_TABLE_BUILTIN_FUNCTIONS.insert(builtinFunctions[i]);
 	}
 
 	tsBuildCustomSubTables();
@@ -574,9 +628,9 @@ function tsBuildCustomSubTables(){
 	var size;
 	var i = 0;
 	
-	// in the ungodly case someone has > 50,000 substitutions, just pick something that's maybe a prime number
+	// in the ungodly case someone has > 96,000 substitutions, just pick something that's maybe a prime number
 	if(customSubs.length*2 > primes[primes.length-1]){
-		alert("Text Substitutions is impressed!\nIf you're seeing this, you have more than 48,000 substitutions which is way more than I ever expected anyone would use. Don't worry, I added a fallback to ensure the program still works, it will just be slightly less efficent.\n\nAlso, please leave a github issue or email me (9yz [at] 9yz.dev) so I can learn what the fuck you're doing that requires 48,000+ substitutions.");
+		alert("Text Substitutions is impressed!\nIf you're seeing this, you have more than 96,000 substitutions which is way more than I ever expected anyone would use. Don't worry, I added a fallback to ensure the program still works, it will just be slightly less efficent.\n\nAlso, please leave a github issue or email me (9yz [at] 9yz.dev) so I can learn what the fuck you're doing that requires 96,000+ substitutions.");
 		size = (customSubs.length*2)+1; 
 	}
 	else{
@@ -852,15 +906,24 @@ function tsFindReplacement(selection, targetString){
 	TS_RECURSIONS++;
 	checkRecursions(selection); // case: infinite recursion
 
+	// lookup target in builtin function table
+	var splitString = targetString.split(TS_DELIM_FUNC); // [0] will be the function name, [1+] will be args
+	if(splitString.length > 1){
+		replObject = TS_SUB_TABLE_BUILTIN_FUNCTIONS.lookup(splitString[0].toLowerCase());
+		if(replObject != undefined){ // if this is undefined, nothing was found
+			return replObject.replacement(selection, splitString).toString(); // call function, pass splitstring containing args
+		}
+	}
+
 	// lookup target in builtin table
 	var replObject = TS_SUB_TABLE_BUILTIN.lookup(targetString.toLowerCase()); 
 	if(replObject != undefined){ // if this is undefined, nothing was found
 		return replObject.replacement(selection).toString();
 	}
-
 	
+
 	// lookup target in custom table - more complicated bc of enumerated replacements
-	var splitString = targetString.split("#"); // for enumerated substitutions - [0] will be the tag, [1] will be the index. if length=1, enumeration is not being used. 
+	splitString = targetString.split(TS_DELIM_ENUM); // for enumerated substitutions - [0] will be the tag, [1] will be the index. if length=1, enumeration is not being used. 
 	if(splitString.length > 1){
 		splitString[1] = parseInt(splitString[1]); // convert to int	
 	}
@@ -1230,6 +1293,182 @@ function tsCExposureComp(sel){
 
 
 
+///////////////////////
+// MATH FUNCTIONS
+
+// sums all passed values
+function tsFAdd(sel, argv){
+	var result = parseFloat(argv[1]);
+	if(isNaN(result)) result = 0; 
+
+	for(var i = 2; i < argv.length; i++){
+		argv[i] = parseFloat(argv[i]);
+		if(isNaN(argv[i])) argv[i] = 0; // if this was text or something, just treat it as 0.
+		result += argv[i];
+	}
+
+	return result;
+}
+
+// subtracts all passed values
+function tsFSub(sel, argv){
+	var result = parseFloat(argv[1]);
+	if(isNaN(result)) result = 0; 
+
+	for(var i = 2; i < argv.length; i++){
+		argv[i] = parseFloat(argv[i]);
+		if(isNaN(argv[i])) argv[i] = 0; // if this was text or something, just treat it as 0.
+		result -= argv[i];
+	}
+
+	return result;
+}
+
+// multiplies all passed values
+function tsFMul(sel, argv){
+	var result = parseFloat(argv[1]);
+	if(isNaN(result)) result = 1; 
+
+	for(var i = 2; i < argv.length; i++){
+		argv[i] = parseFloat(argv[i]);
+		if(isNaN(argv[i])) argv[i] = 1; // if this was text or something, just treat it as 1.
+		result *= argv[i];
+	}
+
+	return result;
+}
+
+// divides all passed values ; if any args = 0, returns 0
+function tsFDiv(sel, argv){
+	var result = parseFloat(argv[1]);
+	if(isNaN(result)) result = 1; 
+
+	for(var i = 2; i < argv.length; i++){
+		argv[i] = parseFloat(argv[i]);
+		if(isNaN(argv[i])) argv[i] = 1; // if this was text or something, just treat it as 1.
+		if(argv[i] == 0) return 0; // check div/0
+		result /= argv[i];
+	}
+
+	return result;
+}
+
+// takes 2 params, returns the modulo of the first by the second
+function tsFMod(sel, argv){
+	if(argv.length == 2) return argv[1];
+	if(argv.length == 1) return "";
+	var a = parseFloat(argv[1]);
+	if(isNaN(a)) a = 1; 
+	var b = parseFloat(argv[2]);
+	if(isNaN(b)) b = 1; 
+
+	return a%b;
+}
+
+
+function tsFCeil(sel, argv){
+	if(argv.length == 1) return "";
+	return Math.ceil(argv[1]);
+}
+
+function tsFFloor(sel, argv){
+	if(argv.length == 1) return "";
+	return Math.floor(argv[1]);
+}
+
+function tsFRound(sel, argv){
+	if(argv.length == 1) return "";
+	return Math.round(argv[1]);
+}
+
+
+//////////////////////
+// STRING OPERATIONS
+
+
+// returns the first argv[2] characters of argv[1]
+function tsFPrefix(sel, argv){
+	if(argv.length == 2) return argv[1];
+	if(argv.length == 1) return "";
+	argv[2] = parseFloat(argv[2]);
+	if(isNaN(argv[2])) return "";
+	return argv[1].substring(0, argv[2]);
+}
+
+// returns the last argv[2] characters of argv[1]
+function tsFSuffix(sel, argv){
+	if(argv.length == 2) return argv[1];
+	if(argv.length == 1) return "";
+	argv[2] = parseFloat(argv[2]);
+	if(isNaN(argv[2])) return "";
+	return argv[1].substring(argv[1].length-argv[2]);
+}
+
+
+
+//////////////////////
+// CONDITIONALS
+
+
+// returns "1" if all argv[1+] are equal, "0" otherwise
+function tsFEquals(sel, argv){
+	if(argv.length <= 2) return "1";
+
+	for(var i = 2; i < argv.length; i++){
+		if(argv[1] !== argv[i]) return "0";
+	}
+
+	return "1";
+}
+
+// returns "1" if any argv[1+] are different, "0" otherwise
+function tsFNotEquals(sel, argv){
+	return tsFEquals(sel, argv) == "1" ? "0" : "1";
+}
+
+// returns "1" if any argv[1+] == "1", "0" otherwise
+function tsFOr(sel, argv){
+	for(var i = 1; i < argv.length; i++){
+		if(anyToBool(argv[i])) return "1";
+	}
+
+	return "0";
+}
+
+// returns "1" if any argv[1+] == "0" or "", "1" otherwise
+function tsFAnd(sel, argv){
+	for(var i = 1; i < argv.length; i++){
+		if(!anyToBool(argv[i])) return "0";
+	}
+
+	return "1";
+}
+
+// returns "1" if argv[1] == "0" or "", "0" otherwise
+function tsFNot(sel, argv){
+	if(argv.length == 1) return "1";
+	return anyToBool(argv[1]) ? "0" : "1";
+}
+
+
+// returns argv[2] if argv[1] is true, "" otherwise
+function tsFConditionalContinue(sel, argv){
+	if(argv.length < 3) return "";
+	return anyToBool(argv[1]) ? argv[2] : "";
+}
+
+// returns "1" if argv[1] is a valid subst, "0" otherwise
+function tsFSubstitutionExists(sel, argv){
+	if(argv.length == 1) return "";
+	if(TS_SUB_TABLE_USER.lookup(argv[1].toString()) !== undefined) return "1";
+	if(TS_SUB_TABLE_BUILTIN.lookup(argv[1].toString()) !== undefined) return "1";
+	if(TS_SUB_TABLE_BUILTIN_FUNCTIONS.lookup(argv[1].toString()) !== undefined) return "1";
+
+	return "0";
+}
+
+
+
 
 //////////////////////
 // UTILITY FUNCTIONS
@@ -1244,6 +1483,12 @@ function isArray(a){
 	return (a instanceof Array);
 }
 
+// returns false if s = "" or "0", true otherwise
+function anyToBool(s){
+	if(s.length = 0 || s == "0" || s == 0 || s == false) return false;
+	return true;
+}
+ 
 
 
 
@@ -1258,7 +1503,7 @@ function isArray(a){
 
 // size should be a prime at least 2x the number of expected elements
 function SubstitutionTable(size){
-	const b = 37; // "choose b as the first prime number greater or equal to the number of characters in the input alphabet." assuming 26+10 chars in alphabet here
+	const b = 67; // "choose b as the first prime number greater or equal to the number of characters in the input alphabet." assuming 26*2+10 chars in alphabet here
 	var tableSize = 0;
 	var tableLoad = 0; // number of objects in table
 	var table;
