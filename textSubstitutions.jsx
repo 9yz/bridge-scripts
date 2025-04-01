@@ -494,6 +494,8 @@ function tsBuildSubstitutionTables(){
 		{ target: "mnames",				replacement: tsMFileNameShort				},
 		{ target: "mfoldername",		replacement: tsMFolderName					},
 		{ target: "mfolder",			replacement: tsMFolderName					},
+		{ target: "mextension",			replacement: tsMExtension					},
+		{ target: "mfiletype",			replacement: tsMExtension					},
 		{ target: "mtitle",				replacement: tsMTitle						},
 		{ target: "mheadline",			replacement: tsMHeadline					},
 		{ target: "mcredit",			replacement: tsMCreditLine					},
@@ -530,7 +532,7 @@ function tsBuildSubstitutionTables(){
 		{ target: "czoom35",			replacement: tsCFocalLength35				},
 		{ target: "cexposurecomp",		replacement: tsCExposureComp				},
 		{ target: "cexpcomp",			replacement: tsCExposureComp				},
-		{ target: "ccomp",				replacement: tsCExposureComp				}
+		{ target: "ccomp",				replacement: tsCExposureComp				},
 
 	]
 
@@ -716,7 +718,7 @@ function tsRun(){
 		{ namespace: XMPConst.NS_IPTC_CORE, key: "AltTextAccessibility",	isArray: false },
 		{ namespace: XMPConst.NS_IPTC_CORE, key: "ExtDescrAccessibility",	isArray: false },
 		{ namespace: XMPConst.NS_DC,		key: "subject", 				isArray: true }, // keywords
-		{ namespace: XMPConst.NS_DC,		key: "description", 			isArray: false },
+		{ namespace: XMPConst.NS_DC,		key: "description", 			isArray: false }
 	]
 
 	try{
@@ -770,7 +772,7 @@ function tsRun(){
 
 		}
 
-		var meow = $.hiresTimer; // dummy var, timer resets on access
+		var meow = $.hiresTimer; // dummy var bc timer resets on access
 		
 		for(var i = 0; i < selection.length; i++){ 
 			if(useDialog){ // update the progress dialog
@@ -792,7 +794,7 @@ function tsRun(){
 					for(j in propertyList){
 						TS_RECURSIONS = 0;
 
-						if(propertyList[j].isArray){
+						if(propertyList[j].isArray){ // process array fields
 
 							value = selection[i].metadata.read(propertyList[j].namespace, propertyList[j].key).toString(); // grab existing var
 							myXMP.deleteProperty(propertyList[j].namespace, propertyList[j].key); // delete it
@@ -810,7 +812,7 @@ function tsRun(){
 								else myXMP.appendArrayItem(propertyList[j].namespace, propertyList[j].key, value[k], 0, XMPConst.ARRAY_IS_ORDERED);
 							}
 						}
-						else{
+						else{ // proccess non-array fields
 							value = selection[i].metadata.read(propertyList[j].namespace, propertyList[j].key); // get existing value
 							value = tsDoSubstitutions(selection[i], value); // do substitutions on it
 							myXMP.deleteProperty(propertyList[j].namespace, propertyList[j].key); // delete the existing value
@@ -1166,6 +1168,12 @@ function tsMFileNameShort(sel){
 // returns the name of the parent folder
 function tsMFolderName(sel){
 	return sel.parent.name;
+}
+
+// returns the file extension
+function tsMExtension(sel){
+	var n = sel.name;
+	return n.substring(n.lastIndexOf('.')+1);
 }
 
 // returns the DC title param
