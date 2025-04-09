@@ -591,6 +591,7 @@ function tsBuildSubstitutionTables(){
 		{ target: "fbeq",				replacement: tsFConditionalContinue			},
 		{ target: "fsubstexists",		replacement: tsFSubstitutionExists			},
 		{ target: "fsubexists",			replacement: tsFSubstitutionExists			},
+		{ target: "fexists",			replacement: tsFSubstitutionExists			},
 		{ target: "fsex",				replacement: tsFSubstitutionExists			},
 		
 	]
@@ -1473,18 +1474,32 @@ function tsFNot(sel, argv){
 }
 
 
-// returns argv[2] if argv[1] is true, "" otherwise
+// returns argv[2] if argv[1] is true. if argv[4] exists, return that. otherwise, return "".
 function tsFConditionalContinue(sel, argv){
 	if(argv.length < 3) return "";
-	return anyToBool(argv[1]) ? argv[2] : "";
+
+	var ret = argv[2];
+	if(anyToBool(argv[1])) return;
+	else if(argv.length = 3) return "";
+	else return argv[4];
 }
 
 // returns "1" if argv[1] is a valid subst, "0" otherwise
 function tsFSubstitutionExists(sel, argv){
 	if(argv.length == 1) return "";
-	if(TS_SUB_TABLE_USER.lookup(argv[1].toString()) !== undefined) return "1";
-	if(TS_SUB_TABLE_BUILTIN.lookup(argv[1].toString()) !== undefined) return "1";
-	if(TS_SUB_TABLE_BUILTIN_FUNCTIONS.lookup(argv[1].toString()) !== undefined) return "1";
+
+	var s = argv[1].toString();
+	var t = s.split(TS_DELIM_ENUM); // case: enumerated replacements
+	var r;
+	if(t.length > 1) r = TS_SUB_TABLE_USER.lookup(t[0]);
+	else r = TS_SUB_TABLE_USER.lookup(s);
+
+	if(r !== undefined){
+		if(t.length == 1 || ( 0 < t[1] && t[1] <= r.replacement.length)) return "1"; // either no enum or enum is in range for this subst
+		return "0";
+	}
+	if(TS_SUB_TABLE_BUILTIN.lookup(s) !== undefined) return "1";
+	if(TS_SUB_TABLE_BUILTIN_FUNCTIONS.lookup(s) !== undefined) return "1";
 
 	return "0";
 }
