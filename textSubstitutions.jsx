@@ -710,16 +710,36 @@ function parseTSV(inputFile, output){
 // Run when the script is selected. Gets user input, selects properties to edit, and passes them to tsDoSubstitutions()
 function tsRun(){
 	const propertyList = [
-		{ namespace: XMPConst.NS_PHOTOSHOP, key: "City", 					isArray: false },
-		{ namespace: XMPConst.NS_PHOTOSHOP, key: "State", 					isArray: false },
-		{ namespace: XMPConst.NS_PHOTOSHOP, key: "Country", 				isArray: false },
-		{ namespace: XMPConst.NS_IPTC_CORE, key: "Location", 				isArray: false },
-		{ namespace: XMPConst.NS_DC,		key: "title", 					isArray: false },
-		{ namespace: XMPConst.NS_PHOTOSHOP, key: "Headline", 				isArray: false },
-		{ namespace: XMPConst.NS_IPTC_CORE, key: "AltTextAccessibility",	isArray: false },
-		{ namespace: XMPConst.NS_IPTC_CORE, key: "ExtDescrAccessibility",	isArray: false },
-		{ namespace: XMPConst.NS_DC,		key: "subject", 				isArray: true }, // keywords
-		{ namespace: XMPConst.NS_DC,		key: "description", 			isArray: false }
+		{ type: "simple",	category: "core",	namespace: XMPConst.NS_PHOTOSHOP, 	key: "City", 					},
+		{ type: "simple",	category: "core",	namespace: XMPConst.NS_PHOTOSHOP, 	key: "State", 					},
+		{ type: "simple",	category: "core",	namespace: XMPConst.NS_PHOTOSHOP, 	key: "Country", 				},
+		{ type: "simple",	category: "core",	namespace: XMPConst.NS_IPTC_CORE, 	key: "Location", 				},
+		{ type: "simple",	category: "core",	namespace: XMPConst.NS_DC,			key: "title", 					},
+		{ type: "simple",	category: "core",	namespace: XMPConst.NS_PHOTOSHOP, 	key: "Headline", 				},
+		{ type: "simple",	category: "core",	namespace: XMPConst.NS_IPTC_CORE, 	key: "AltTextAccessibility",	},
+		{ type: "simple",	category: "core",	namespace: XMPConst.NS_IPTC_CORE, 	key: "ExtDescrAccessibility",	},
+		{ type: "array",	category: "core",	namespace: XMPConst.NS_DC,			key: "subject", 				}, // keywords
+		{ type: "simple",	category: "core",	namespace: XMPConst.NS_DC,			key: "description", 			},
+		{ type: "simple",	category: "credit",	namespace: XMPConst.NS_PHOTOSHOP,	key: "AuthorsPosition",			},
+		{ type: "simple",	category: "credit",	namespace: XMPConst.NS_PHOTOSHOP,	key: "Credit",					},
+		{ type: "simple",	category: "credit",	namespace: XMPConst.NS_PHOTOSHOP,	key: "Source",					},
+		{ type: "simple",	category: "credit",	namespace: XMPConst.NS_PHOTOSHOP,	key: "CaptionWriter",			},
+		{ type: "simple",	category: "credit",	namespace: XMPConst.NS_DC,			key: "creator",					},
+		{ type: "simple",	category: "credit",	namespace: XMPConst.NS_DC,			key: "rights",					},
+		{ type: "simple",	category: "credit",	namespace: XMPConst.NS_XMP_RIGHTS,	key: "UsageTerms",				},
+		{ type: "complex",	category: "credit",	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 		fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiEmailWork"	},
+		{ type: "complex",	category: "credit",	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 		fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiUrlWork"		},
+		{ type: "complex",	category: "credit",	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 		fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiAdrExtadr"	},
+		{ type: "complex",	category: "credit",	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 		fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiAdrCity"		},
+		{ type: "complex",	category: "credit",	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 		fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiAdrRegion"	},
+		{ type: "complex",	category: "credit",	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 		fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiAdrPcode"		},
+		{ type: "complex",	category: "credit",	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 		fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiAdrCtry"		},
+		{ type: "complex",	category: "credit",	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 		fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiTelWork"		},
+		{ type: "simple",	category: "misc",	namespace: XMPConst.NS_IPTC_CORE,	key: "SubjectCode",				},
+		{ type: "simple",	category: "misc",	namespace: XMPConst.NS_IPTC_CORE,	key: "IntellectualGenre",		},
+		{ type: "simple",	category: "misc",	namespace: XMPConst.NS_IPTC_CORE,	key: "Scene",					},
+		{ type: "simple",	category: "misc",	namespace: XMPConst.NS_PHOTOSHOP,	key: "TransmissionReference",	},
+		{ type: "simple",	category: "misc",	namespace: XMPConst.NS_PHOTOSHOP,	key: "Instructions",			},
 	]
 
 	try{
@@ -795,7 +815,7 @@ function tsRun(){
 					for(j in propertyList){
 						TS_RECURSIONS = 0;
 
-						if(propertyList[j].isArray){ // process array fields
+						if(propertyList[j].type = "array"){ // process array fields
 
 							value = selection[i].metadata.read(propertyList[j].namespace, propertyList[j].key).toString(); // grab existing var
 							myXMP.deleteProperty(propertyList[j].namespace, propertyList[j].key); // delete it
@@ -813,12 +833,18 @@ function tsRun(){
 								else myXMP.appendArrayItem(propertyList[j].namespace, propertyList[j].key, value[k], 0, XMPConst.ARRAY_IS_ORDERED);
 							}
 						}
-						else{ // proccess non-array fields
+						else if(propertyList[j].type = "simple"){ // proccess simple fields
 							value = selection[i].metadata.read(propertyList[j].namespace, propertyList[j].key); // get existing value
 							value = tsDoSubstitutions(selection[i], value); // do substitutions on it
 							myXMP.deleteProperty(propertyList[j].namespace, propertyList[j].key); // delete the existing value
 							myXMP.setProperty(propertyList[j].namespace, propertyList[j].key, value); // replace with new value
 
+						}
+						else if(propertyList[j].type = "complex"){
+							value = myXMP.getStructField(XMPConst.NS_IPTC_CORE, "CreatorContactInfo", XMPConst.NS_IPTC_CORE, "CiEmailWork"); // get existing value
+							value = tsDoSubstitutions(selection[i], value); // do substitutions on it
+							myXMP.deleteProperty(propertyList[j].namespace, propertyList[j].key); // delete the existing value
+							myXMP.setProperty(propertyList[j].namespace, propertyList[j].key, value); // replace with new value
 						}
 					}
 					
