@@ -477,7 +477,7 @@ function tsSetDefaultPrefs(allPrefs){
 		app.preferences.tsDelimiter = 1; // int representing the `delimiters` array index of the delimiter to use
 		app.preferences.tsDateField = 0; // 0 = EXIF, 1 = IPTC
 		app.preferences.tsSeparateTags = 0; // 1 = seperate tags
-		app.preferences.tsRecursionLimit = 250; // max number of recursions before error
+		app.preferences.tsRecursionLimit = 500; // max number of recursions before error
 	}
 	app.preferences.tsPrefsVersion = TS_VERSION_PREFS;
 	app.preferences.tsPrefsSet = true;
