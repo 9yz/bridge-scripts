@@ -13,7 +13,7 @@ var TS_START_DELIM;
 var TS_END_DELIM;
 var TS_DELIM_SIZE;
 var TS_DELIM_ENUM = "#";
-var TS_DELIM_FUNC = "|";
+var TS_DELIM_FUNC = ";";
 const TS_DELIMITERS = [
 	// starting delim, ending delim, delim length.
 	["[",  "]",  1],
@@ -669,6 +669,8 @@ function tsBuildSubstitutionTables(){
 		// string ops
 		{ target: "fprefix",			replacement: tsFPrefix						},
 		{ target: "fsuffix",			replacement: tsFSuffix						},
+		{ target: "fsubstring",			replacement: tsFSubstring					},
+		{ target: "fsubstr",			replacement: tsFSubstring					},
 		
 		// logic
 		{ target: "fequals",			replacement: tsFEquals						},
@@ -979,7 +981,7 @@ function tsRun(){
 					}
 					
 				} catch(e){
-					if(e.message == 'bracketMatching' || e.message == "unknownSubstitution" || e.message == "tooManyRecursions") break; // pre-handled errors, we just wanna get out of here
+					if(e.message == 'bracketMatching' || e.message == "unknownSubstitution" || e.message == "tooManyRecursions" || e.message == "missingArguments") break; // pre-handled errors, we just wanna get out of here
 					else throw e;
 				}
 
@@ -1116,7 +1118,7 @@ function tsFindReplacement(selection, targetString){
 			if(isArray(replObject.replacement)){ 	// CASE 2a: target repl is an array
 
 				if(splitString[1] < 1 || splitString[1] > replObject.replacement.length){ // ERROR: enum index out of bounds
-					alert("TextSubstitutions Error:\nIndex out of bounds: " + targetString + " in " + selection.name + ".\nIndex must be in 1, " + replObject.replacement.length + " (inclusive).\n\nSome text in this file may have been partially replaced. No further files will be proccessed."); 
+					alert("TextSubstitutions Error:\nIndex out of bounds: " + targetString + " in " + selection.name + ".\nIndex must be in 1, " + replObject.replacement.length + " (inclusive).\n\nThis file has not been affected. No further files will be proccessed."); 
 					throw SyntaxError("unknownSubstitution");
 				}
 				replText = replObject.replacement[splitString[1]-1]; // sub 1 to switch to 1-indexing
@@ -1126,13 +1128,13 @@ function tsFindReplacement(selection, targetString){
 				replText = replObject.replacement;
 			}
 			else { 									// CASE 2c ERROR: target repl is NOT an array and we're grabbing not the first index 
-				alert("TextSubstitutions Error:\nEnumeration defined on non-enumerable replacement: " + targetString + " in " + selection.name + ".\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
+				alert("TextSubstitutions Error:\nEnumeration defined on non-enumerable replacement: " + targetString + " in " + selection.name + ".\n\nThis file has not been affected. No further files will be proccessed.");
 				throw SyntaxError("unknownSubstitution");
 			}
 
 		}
 		else{ 										// CASE 3 ERROR: too many #s in targetstring
-			alert("TextSubstitutions Error:\nInvalid syntax " + targetString + " in " + selection.name + ". Only one # allowed.\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
+			alert("TextSubstitutions Error:\nInvalid syntax " + targetString + " in " + selection.name + ". Only one # allowed.\n\nThis file has not been affected. No further files will be proccessed.");
 			throw SyntaxError("unknownSubstitution");
 		}
 
@@ -1148,14 +1150,14 @@ function tsFindReplacement(selection, targetString){
 	
 
 	// no matching function
-	alert("TextSubstitutions Error:\nUnknown substitution " + splitString + " in " + selection.name + ".\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
+	alert("TextSubstitutions Error:\nUnknown substitution " + splitString + " in " + selection.name + ".\n\nThis file has not been affected. No further files will be proccessed.");
 	throw SyntaxError("unknownSubstitution");
 }
 
 // checks for possible infinite recursion
 function checkRecursions(sel){
 	if(TS_RECURSIONS > app.preferences.tsRecursionLimit){
-		alert("TextSubstitutions Error:\nPossible cyclical reference detected - too many recursions in " + sel.name + ". You can raise the recursion limit in the preferences.\n\nSome text in this file may have been partially replaced. No further files will be proccessed.");
+		alert("TextSubstitutions Error:\nPossible cyclical reference detected - too many recursions in " + sel.name + ". You can raise the recursion limit in the preferences.\n\nThis file has not been affected. No further files will be proccessed.");
 		throw SyntaxError("tooManyRecursions");
 	}
 }
@@ -1655,8 +1657,10 @@ function tsFRound(sel, argv){
 
 // returns the first argv[2] characters of argv[1]
 function tsFPrefix(sel, argv){
-	if(argv.length == 2) return argv[1];
-	if(argv.length == 1) return "";
+	if(argv.length < 3){
+		alert("TextSubstitutions Error:\nfPrefix in "+ sel.name +" expected 2 arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
+		throw SyntaxError("missingArguments");
+	}
 	argv[2] = parseFloat(argv[2]);
 	if(isNaN(argv[2])) return "";
 	return argv[1].substring(0, argv[2]);
@@ -1664,12 +1668,28 @@ function tsFPrefix(sel, argv){
 
 // returns the last argv[2] characters of argv[1]
 function tsFSuffix(sel, argv){
-	if(argv.length == 2) return argv[1];
-	if(argv.length == 1) return "";
+	if(argv.length < 3){
+		alert("TextSubstitutions Error:\nfSuffix in "+ sel.name +" expected 2 arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
+		throw SyntaxError("missingArguments");
+	}
 	argv[2] = parseFloat(argv[2]);
 	if(isNaN(argv[2])) return "";
 	return argv[1].substring(argv[1].length-argv[2]);
 }
+
+// returns characters between argv[2] and argv[3] in argv[1]
+function tsFSubstring(sel, argv){
+	if(argv.length < 4){
+		alert("TextSubstitutions Error:\nfSuffix in "+ sel.name +" expected 3 arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
+		throw SyntaxError("missingArguments");
+	}
+	argv[2] = parseFloat(argv[2]);
+	if(isNaN(argv[2])) return "";
+	argv[3] = parseFloat(argv[3]);
+	if(isNaN(argv[3])) return "";
+	return argv[1].substring(argv[2], argv[3]);
+}
+
 
 
 
