@@ -1,12 +1,11 @@
-// ts_photoMechanicVariables.txt
-// A Custom Substitution list for the Text Substitutions Bridge Script
-//
-// This list aliases PM's variable names to the built-in substitutions.
-// This list also assumes that, for maximum PM compatability, you have changed the script's preferences to
-// the {single bracket} option. If you wish to use a different delimiter, you will need to find and replace 
-// the brackets in this file.
-
-// Image-specific
+// ts_photoMechanicVariables.txt	
+// A Custom Substitution list for the Text Substitutions Bridge Script	
+//	
+// This list aliases PM's variable names to the built-in substitutions.	
+// This list also assumes that, for maximum PM compatability, you have changed the script's preferences to	
+// the {single bracket} option. If you wish to use a different delimiter, you will need to find and replace 	
+// the brackets in this file.	
+// Image-specific	
 aperture	{cf}
 f	{cf}
 filename	{mname}
@@ -15,7 +14,7 @@ filenamebase	{mnameshort}
 fbas	{mnameshort}
 focallength	{czoom}
 folder	{mfolder}
-mldr	{mfolder}
+fldr	{mfolder}
 height	{ch}
 h	{ch}
 y	{ch}
@@ -38,8 +37,10 @@ ss	{css}
 width	{cw}
 w	{cw}
 h	{ch}
+prefix	{fbranch;{feq;{fprefix;{mname};1};_};{fsubstr;{mnameshort};1;4};{fprefix;{mnameshort};3}}
+pfx	{fbranch;{feq;{fprefix;{mname};1};_};{fsubstr;{mnameshort};1;4};{fprefix;{mnameshort};3}}
 
-// IPTC fields
+// IPTC fields	
 city	{mcity}
 country	{mcountry}
 cnty	{mcountry}
@@ -51,8 +52,40 @@ location	{msublocation}
 loc	{msublocation}
 state	{mstate}
 stat	{mstate}
+contactaddress	{mcreatoraddress}
+ciad	{mcreatoraddress}
+contactcity	{mcreatorcity}
+cicy	{mcreatorcity}
+contactstate	{mcreatorstate}
+cist	{mcreatorstate}
+contactzip	{mcreatorzip}
+cizp	{mcreatorzip}
+contactcountry	{mcreatorcountry}
+cicn	{mcreatorcountry}
+contactemail	{mcreatoremail}
+ciem	{mcreatoremail}
+contactphone	{mcreatorphone}
+ciph	{mcreatorphone}
+contactweb	{mcreatorwebsite}
+ciwb	{mcreatorwebsite}
+captionwriter	{mdescwriter}
+cwrt	{mdescwriter}
+instructions	{minstructions}
+inst	{minstructions}
+title	{mcreatorjob}
+titl	{mcreatorjob}
+transref	{mjobidentifier}
+tref	{mjobidentifier}
+usage	{musageterms}
+usag	{musageterms}
+photog	{mcreator}
+phtg	{mcreator}
+copyright	{mcopyright}
+copy	{mcopyright}
+source	{msource}
+srce	{msource}
 
-// TIme & Date
+// TIme & Date	
 ampm	{tampm}
 date	{tdate}
 shot	{tdate}
@@ -74,6 +107,10 @@ mnap	{tmonthps}
 second	{tsecond}
 sec	{tsecond}
 time	{ttime}
-
-// Special Variables
+// Special Variables	
 nl	\n
+	
+	
+	
+	
+	

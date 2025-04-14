@@ -668,7 +668,9 @@ function tsBuildSubstitutionTables(){
 
 		// string ops
 		{ target: "fprefix",			replacement: tsFPrefix						},
+		{ target: "fpfx",				replacement: tsFPrefix						},
 		{ target: "fsuffix",			replacement: tsFSuffix						},
+		{ target: "fsfx",				replacement: tsFSuffix						},
 		{ target: "fsubstring",			replacement: tsFSubstring					},
 		{ target: "fsubstr",			replacement: tsFSubstring					},
 		
