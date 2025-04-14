@@ -531,7 +531,7 @@ function tsInitalizePrefsDelimiter(){
 
 // Build builtin and custom substitution tables
 function tsBuildSubstitutionTables(){
-	const builtinTableSize = 211; // size we want for the hashtable - should be a prime at least 2x the size of builtinCommands.
+	const builtinTableSize = 223; // size we want for the hashtable - should be a prime at least 2x the size of builtinCommands.
 	const builtinCommands = [ // map of all program-defined substitutions
 		// time-based substitutions
 		{ target: "tdate",				replacement: tsTDateTaken					},
@@ -649,7 +649,7 @@ function tsBuildSubstitutionTables(){
 
 	]
 
-	const builtinFunctionsTableSize = 101; // size we want for the hashtable - should be a prime at least 2x the size of the associated table.
+	const builtinFunctionsTableSize = 113; // size we want for the hashtable - should be a prime at least 2x the size of the associated table.
 	const builtinFunctions = [	// map of built-in functions
 		// math ops
 		{ target: "fadd",				replacement: tsFAdd							},
