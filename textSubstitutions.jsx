@@ -43,7 +43,8 @@ var TS_LAST_OP_FILES = 0; // number of files processed in the last operation
 const TS_PROPERTY_CATEGORIES = {
 	core:		1,
 	credit: 	2,
-	misc: 		4
+	misc: 		4,
+	filename:	8,
 };
 
 var TS_USER_PROP_CATS_SELECTON
@@ -100,7 +101,7 @@ function tsPrefsPanel(){
 
 			/*
 			Code for Import https://scriptui.joonas.me — (Triple click to select): 
-			{"activeId":29,"items":{"item-0":{"id":0,"type":"Dialog","parentId":false,"style":{"enabled":true,"varName":"tsPrefsPanelObject","windowType":"Window","creationProps":{"su1PanelCoordinates":true,"maximizeButton":false,"minimizeButton":false,"independent":false,"closeButton":true,"borderless":false,"resizeable":false},"text":"Dialog","preferredSize":[400,0],"margins":16,"orientation":"column","spacing":10,"alignChildren":["left","top"]}},"item-1":{"id":1,"type":"Panel","parentId":7,"style":{"enabled":true,"varName":"panelDelimiter","creationProps":{"borderStyle":"black","su1PanelCoordinates":false},"text":"Code Delimiter","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["fill","top"],"alignment":null}},"item-2":{"id":2,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbSingleBrackets","text":"[Single Brackets]","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":true}},"item-3":{"id":3,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbDoubleBrackets","text":"[[Double Brackets]] ","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":false}},"item-4":{"id":4,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbSingleCurly","text":"{Curly Brackets}","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":false}},"item-5":{"id":5,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbDoubleCurly","text":"{{Double Curlies}}","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":false}},"item-6":{"id":6,"type":"Panel","parentId":7,"style":{"enabled":true,"varName":"panelDateField","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Get Creation Date From","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["fill","top"],"alignment":null}},"item-7":{"id":7,"type":"Group","parentId":17,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":0,"orientation":"column","spacing":10,"alignChildren":["fill","top"],"alignment":null}},"item-8":{"id":8,"type":"RadioButton","parentId":6,"style":{"enabled":true,"varName":"rbUseEXIFDate","text":"EXIF (reccomended)","preferredSize":[0,0],"alignment":null,"helpTip":"Get date from EXIF. This field is updated by Bridge's \"Edit Capture Time\" feature."}},"item-9":{"id":9,"type":"RadioButton","parentId":6,"style":{"enabled":true,"varName":"rbUseIPTCDate","text":"IPTC","preferredSize":[0,0],"alignment":null,"helpTip":"Get date from IPTC. This field is NOT updated by Bridge's \"Edit Capture Time\" feature."}},"item-10":{"id":10,"type":"StaticText","parentId":6,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"Select which field time-based substitutions like tDate and tTime should get the Creation Date from. ","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-11":{"id":11,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbSingleEquals","text":"=Single Equals=","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-12":{"id":12,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbDoubleEquals","text":"==Double Equals==","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-13":{"id":13,"type":"StaticText","parentId":6,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"tEXIFTime and tIPTCTime will always get the ISO 8601 timestamp from their respective fields.","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-14":{"id":14,"type":"Divider","parentId":0,"style":{"enabled":true,"varName":null}},"item-15":{"id":15,"type":"StaticText","parentId":0,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"View documentation and contribute to Text Substitutions at https://github.com/9yz/bridge-scripts","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-16":{"id":16,"type":"StaticText","parentId":1,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"Set the delimiter used to identify substitutions. Don't forget to update  any custom recursive substitutions when changing this setting!","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-17":{"id":17,"type":"Group","parentId":0,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":0,"orientation":"row","spacing":10,"alignChildren":["left","center"],"alignment":null}},"item-18":{"id":18,"type":"Panel","parentId":19,"style":{"enabled":true,"varName":"panelSepTags","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Separate Substitutions in Keywords","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["fill","top"],"alignment":null}},"item-19":{"id":19,"type":"Group","parentId":17,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":0,"orientation":"column","spacing":10,"alignChildren":["left","top"],"alignment":null}},"item-20":{"id":20,"type":"StaticText","parentId":18,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"When set, substitutions used in the Keywords field containing commas will be split into multiple keywords.","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-21":{"id":21,"type":"StaticText","parentId":18,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"For example, if the substitution [[foods]] is set  to be substituted with \"apples,  crackers\" and this setting is enabled, 2 tags will be created - one  each for \"apples\" and \"crackers\". Otherwise, only one tag will be created","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-22":{"id":22,"type":"Checkbox","parentId":18,"style":{"enabled":true,"varName":"rbSepTags","text":"Separate Substitutions in Keywords","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-23":{"id":23,"type":"Panel","parentId":19,"style":{"enabled":true,"varName":"panelCustomSubs","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Custom Substitutions","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["left","top"],"alignment":"fill"}},"item-24":{"id":24,"type":"StaticText","parentId":23,"style":{"enabled":true,"varName":"txtFilesLoaded","creationProps":{},"softWrap":false,"text":"x custom substitution files loaded.\nx custom substitution rules loaded.","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-25":{"id":25,"type":"Button","parentId":23,"style":{"enabled":true,"varName":"butReloadCustSubs","text":"Reload Custom Substitutions","justify":"center","preferredSize":[0,0],"alignment":null,"helpTip":"This will purge all custom substitutions from memory and reload them from disk."}},"item-26":{"id":26,"type":"StaticText","parentId":23,"style":{"enabled":true,"varName":null,"creationProps":{"truncate":"none","multiline":false,"scrolling":false},"softWrap":false,"text":"All .txt files beginning with \"ts_\" in the Startup Scripts directory or  /substitutions/ subdirectory will be loaded.","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-27":{"id":27,"type":"Panel","parentId":19,"style":{"enabled":true,"varName":"panelMaxRecursions","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Max Substitutions","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["left","top"],"alignment":"fill"}},"item-28":{"id":28,"type":"StaticText","parentId":27,"style":{"enabled":true,"varName":null,"creationProps":{"truncate":"none","multiline":false,"scrolling":false},"softWrap":false,"text":"Maximum number of substitutions in a single metadata field before an error occurs. Lower numbers could cause problems when many recursive substitutions are used. ","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-29":{"id":29,"type":"EditText","parentId":27,"style":{"enabled":true,"varName":"edMaxRecursions","creationProps":{"noecho":false,"readonly":false,"multiline":false,"scrollable":false,"borderless":true,"enterKeySignalsOnChange":false},"softWrap":false,"text":"100","justify":"left","preferredSize":[40,0],"alignment":null,"helpTip":null}}},"order":[0,17,7,1,16,2,3,4,5,11,12,6,10,13,8,9,19,18,20,21,22,23,26,25,24,27,28,29,14,15],"settings":{"importJSON":true,"indentSize":false,"cepExport":false,"includeCSSJS":true,"showDialog":true,"functionWrapper":false,"afterEffectsDockable":false,"itemReferenceList":"None"}}
+			{"activeId":38,"items":{"item-0":{"id":0,"type":"Dialog","parentId":false,"style":{"enabled":true,"varName":"tsPrefsPanelObject","windowType":"Window","creationProps":{"su1PanelCoordinates":true,"maximizeButton":false,"minimizeButton":false,"independent":false,"closeButton":true,"borderless":false,"resizeable":false},"text":"Dialog","preferredSize":[400,0],"margins":16,"orientation":"column","spacing":10,"alignChildren":["left","top"]}},"item-1":{"id":1,"type":"Panel","parentId":7,"style":{"enabled":true,"varName":"panelDelimiter","creationProps":{"borderStyle":"black","su1PanelCoordinates":false},"text":"Code Delimiter","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["fill","top"],"alignment":null}},"item-2":{"id":2,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbSingleBrackets","text":"[Single Brackets]","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":true}},"item-3":{"id":3,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbDoubleBrackets","text":"[[Double Brackets]] ","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":false}},"item-4":{"id":4,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbSingleCurly","text":"{Curly Brackets}","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":false}},"item-5":{"id":5,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbDoubleCurly","text":"{{Double Curlies}}","preferredSize":[0,0],"alignment":null,"helpTip":null,"checked":false}},"item-6":{"id":6,"type":"Panel","parentId":7,"style":{"enabled":true,"varName":"panelDateField","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Get Creation Date From","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["fill","top"],"alignment":null}},"item-7":{"id":7,"type":"Group","parentId":17,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":0,"orientation":"column","spacing":10,"alignChildren":["left","top"],"alignment":null}},"item-8":{"id":8,"type":"RadioButton","parentId":6,"style":{"enabled":true,"varName":"rbUseEXIFDate","text":"EXIF (reccomended)","preferredSize":[0,0],"alignment":null,"helpTip":"Get date from EXIF. This field is updated by Bridge's \"Edit Capture Time\" feature."}},"item-9":{"id":9,"type":"RadioButton","parentId":6,"style":{"enabled":true,"varName":"rbUseIPTCDate","text":"IPTC","preferredSize":[0,0],"alignment":null,"helpTip":"Get date from IPTC. This field is NOT updated by Bridge's \"Edit Capture Time\" feature."}},"item-10":{"id":10,"type":"StaticText","parentId":6,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"Select which field time-based substitutions like tDate and tTime should get the Creation Date from. ","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-11":{"id":11,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbSingleEquals","text":"=Single Equals=","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-12":{"id":12,"type":"RadioButton","parentId":1,"style":{"enabled":true,"varName":"rbDoubleEquals","text":"==Double Equals==","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-13":{"id":13,"type":"StaticText","parentId":6,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"tEXIFTime and tIPTCTime will always get the ISO 8601 timestamp from their respective fields.","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-14":{"id":14,"type":"Divider","parentId":0,"style":{"enabled":true,"varName":null}},"item-15":{"id":15,"type":"StaticText","parentId":0,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"View documentation and contribute to Text Substitutions at https://github.com/9yz/bridge-scripts","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-16":{"id":16,"type":"StaticText","parentId":1,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"Set the delimiter used to identify substitutions. Don't forget to update  any custom recursive substitutions when changing this setting!","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-17":{"id":17,"type":"Group","parentId":0,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":0,"orientation":"row","spacing":10,"alignChildren":["left","center"],"alignment":null}},"item-18":{"id":18,"type":"Panel","parentId":19,"style":{"enabled":true,"varName":"panelSepTags","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Separate Substitutions in Keywords","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["fill","top"],"alignment":null}},"item-19":{"id":19,"type":"Group","parentId":17,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":0,"orientation":"column","spacing":10,"alignChildren":["left","top"],"alignment":null}},"item-20":{"id":20,"type":"StaticText","parentId":18,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"When set, substitutions used in the Keywords field containing commas will be split into multiple keywords.","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-21":{"id":21,"type":"StaticText","parentId":18,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"For example, if the substitution [[foods]] is set  to be substituted with \"apples,  crackers\" and this setting is enabled, 2 tags will be created - one  each for \"apples\" and \"crackers\". Otherwise, only one tag will be created","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-22":{"id":22,"type":"Checkbox","parentId":18,"style":{"enabled":true,"varName":"rbSepTags","text":"Separate Substitutions in Keywords","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-23":{"id":23,"type":"Panel","parentId":19,"style":{"enabled":true,"varName":"panelCustomSubs","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Custom Substitutions","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["left","top"],"alignment":"fill"}},"item-24":{"id":24,"type":"StaticText","parentId":23,"style":{"enabled":true,"varName":"txtFilesLoaded","creationProps":{},"softWrap":false,"text":"x custom substitution files loaded.\nx custom substitution rules loaded.","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-25":{"id":25,"type":"Button","parentId":23,"style":{"enabled":true,"varName":"butReloadCustSubs","text":"Reload Custom Substitutions","justify":"center","preferredSize":[0,0],"alignment":null,"helpTip":"This will purge all custom substitutions from memory and reload them from disk."}},"item-26":{"id":26,"type":"StaticText","parentId":23,"style":{"enabled":true,"varName":null,"creationProps":{"truncate":"none","multiline":false,"scrolling":false},"softWrap":false,"text":"All .txt files beginning with \"ts_\" in the Startup Scripts directory or  /substitutions/ subdirectory will be loaded.","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-27":{"id":27,"type":"Panel","parentId":19,"style":{"enabled":true,"varName":"panelMaxRecursions","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Max Substitutions","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["left","top"],"alignment":"fill"}},"item-28":{"id":28,"type":"StaticText","parentId":27,"style":{"enabled":true,"varName":null,"creationProps":{"truncate":"none","multiline":false,"scrolling":false},"softWrap":false,"text":"Maximum number of substitutions in a single metadata field before an error occurs. Lower numbers could cause problems when many recursive substitutions are used. ","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-29":{"id":29,"type":"EditText","parentId":27,"style":{"enabled":true,"varName":"edMaxRecursions","creationProps":{"noecho":false,"readonly":false,"multiline":false,"scrollable":false,"borderless":true,"enterKeySignalsOnChange":false},"softWrap":false,"text":"100","justify":"left","preferredSize":[40,0],"alignment":null,"helpTip":null}},"item-30":{"id":30,"type":"Panel","parentId":31,"style":{"enabled":true,"varName":"panelPropertyCategories","creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Fields to Analyze","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["left","top"],"alignment":null}},"item-31":{"id":31,"type":"Group","parentId":17,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":0,"orientation":"column","spacing":10,"alignChildren":["left","top"],"alignment":null}},"item-32":{"id":32,"type":"StaticText","parentId":30,"style":{"enabled":true,"varName":null,"creationProps":{"truncate":"none","multiline":false,"scrolling":false},"softWrap":false,"text":"Only these fields will be checked for custom substitutions when the program is run. Reducing the number of fields analyzed will improve performance. Only fields in IPTC Core (not IPTC Extension) are analyzed.","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-34":{"id":34,"type":"Checkbox","parentId":30,"style":{"enabled":true,"varName":"cbPropCatCore","text":"Core","preferredSize":[0,0],"alignment":null,"helpTip":"Description, keywords, alt-text, extended description,\\nheadline, title, sublocation, city, state, country."}},"item-35":{"id":35,"type":"Checkbox","parentId":30,"style":{"enabled":true,"varName":"cbPropCatCredit","text":"Credit","preferredSize":[0,0],"alignment":null,"helpTip":"Creator contact info, credit, source,\\ndescription writer, rights, and usage terms."}},"item-36":{"id":36,"type":"Checkbox","parentId":30,"style":{"enabled":true,"varName":"cbPropCatMisc","text":"Misc","preferredSize":[0,0],"alignment":null,"helpTip":"IPTC Subject & Scene codes, intellectual genre, \\njob identifier, instructions."}},"item-37":{"id":37,"type":"StaticText","parentId":30,"style":{"enabled":true,"varName":null,"creationProps":{"truncate":"none","multiline":false,"scrolling":false},"softWrap":false,"text":"(hover for details)","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-38":{"id":38,"type":"Checkbox","parentId":30,"style":{"enabled":true,"varName":"cbPropCatFilename","text":"Filename","preferredSize":[0,0],"alignment":null,"helpTip":"The file's filename. Use caution\\nwhen changing file extensions."}}},"order":[0,17,7,1,16,2,3,4,5,11,12,6,10,13,8,9,19,18,20,21,22,23,26,25,24,27,28,29,31,30,32,38,34,35,36,37,14,15],"settings":{"importJSON":true,"indentSize":false,"cepExport":false,"includeCSSJS":true,"showDialog":true,"functionWrapper":false,"afterEffectsDockable":false,"itemReferenceList":"None"}}
 
 			*/ 
 
@@ -381,6 +382,10 @@ function tsPrefsPanel(){
 			var statictext8 = panelPropertyCategories.add("statictext", undefined, undefined, {name: "statictext8", multiline: true}); 
     		statictext8.text = "Only these fields will be checked for custom substitutions when the program is run. Reducing the number of fields analyzed will improve performance. Only fields in IPTC Core (not IPTC Extension) are analyzed."; 
 
+			var cbPropCatFilename = panelPropertyCategories.add("checkbox", undefined, undefined, {name: "cbPropCatFilename"}); 
+				cbPropCatFilename.helpTip = "The file's filename. Use caution\nwhen changing file extensions."; 
+				cbPropCatFilename.text = "Filename"; 
+
 			var cbPropCatCore = panelPropertyCategories.add("checkbox", undefined, undefined, {name: "cbPropCatCore"}); 
 				cbPropCatCore.helpTip = "Description, keywords, alt-text, extended description,\nheadline, title, sublocation, city, state, country, and country code."; 
 				cbPropCatCore.text = "Core"; 
@@ -394,6 +399,9 @@ function tsPrefsPanel(){
 				cbPropCatMisc.text = "Misc"; 
 
 				// initalize delimiter values
+				if(app.preferences.tsPropertyCategories & TS_PROPERTY_CATEGORIES.filename){
+					cbPropCatFilename.value = true;
+				}
 				if(app.preferences.tsPropertyCategories & TS_PROPERTY_CATEGORIES.core){
 					cbPropCatCore.value = true;
 				}
@@ -405,6 +413,10 @@ function tsPrefsPanel(){
 				}
 
 				// update values on select
+				cbPropCatFilename.onClick = function(){
+					if(cbPropCatFilename.value) app.preferences.tsPropertyCategories |= TS_PROPERTY_CATEGORIES.filename;
+					else app.preferences.tsPropertyCategories ^= TS_PROPERTY_CATEGORIES.filename;
+				}
 				cbPropCatCore.onClick = function(){
 					if(cbPropCatCore.value) app.preferences.tsPropertyCategories |= TS_PROPERTY_CATEGORIES.core;
 					else app.preferences.tsPropertyCategories ^= TS_PROPERTY_CATEGORIES.core;
@@ -579,12 +591,38 @@ function tsBuildSubstitutionTables(){
 		{ target: "mlocation",			replacement: tsMLocation					},
 		{ target: "mcity",				replacement: tsMCity						},
 		{ target: "mstate",				replacement: tsMState						},
+		{ target: "mregion",			replacement: tsMState						},
 		{ target: "mprovince",			replacement: tsMState						},
 		{ target: "mcountry",			replacement: tsMCountry						}, 
 		{ target: "mrating",			replacement: tsMRating						}, 
 		{ target: "mratingpretty",		replacement: tsMRatingPretty				}, 
 		{ target: "mratingp",			replacement: tsMRatingPretty				},
 		{ target: "mlabel",				replacement: tsMLabel						},
+		{ target: "msource",			replacement: tsMSource						},
+		{ target: "mcaptionwriter",		replacement: tsMCaptionWriter				},
+		{ target: "mdescwriter",		replacement: tsMCaptionWriter				},
+		{ target: "mcopyrightnotice",	replacement: tsMCopyrightNotice				},
+		{ target: "mcopyright",			replacement: tsMCopyrightNotice				},
+		{ target: "mrightsusageterms",	replacement: tsMUsageTerms					},
+		{ target: "musageterms",		replacement: tsMUsageTerms					},
+		{ target: "mjobidentifier",		replacement: tsMJobIdentifier				},
+		{ target: "mjobident",			replacement: tsMJobIdentifier				},
+		{ target: "mjob",				replacement: tsMJobIdentifier				},
+		{ target: "minstructions",		replacement: tsMInstructions				},
+		{ target: "mcreator",			replacement: tsMCreator						},
+		{ target: "mcreatorjob",		replacement: tsMCreatorJob					},
+		{ target: "mcreatoraddress",	replacement: tsMCreatorAddress				},
+		{ target: "mcreatorcity",		replacement: tsMCreatorCity					},
+		{ target: "mcreatorregion",		replacement: tsMCreatorState				},
+		{ target: "mcreatorprovince",	replacement: tsMCreatorState				},
+		{ target: "mcreatorstate",		replacement: tsMCreatorState				},
+		{ target: "mcreatorcountry",	replacement: tsMCreatorCountry				},
+		{ target: "mcreatorzip",		replacement: tsMCreatorPostalCode			},
+		{ target: "mcreatorpostal",		replacement: tsMCreatorPostalCode			},
+		{ target: "mcreatorphone",		replacement: tsMCreatorPhone				},
+		{ target: "mcreatoremail",		replacement: tsMCreatorEmail				},
+		{ target: "mcreatorwebsite",	replacement: tsMCreatorWebsite				},
+		
 
 		// camera-based substitutions
 		{ target: "cwidth",				replacement: tsCWidth						},
@@ -803,7 +841,7 @@ function tsRun(){
 		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.credit,	namespace: XMPConst.NS_PHOTOSHOP,	key: "CaptionWriter",			},
 		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.credit,	namespace: XMPConst.NS_DC,			key: "creator",					},
 		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.credit,	namespace: XMPConst.NS_DC,			key: "rights",					},
-		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.credit,	namespace: XMPConst.NS_XMP_RIGHTS,	key: "UsageTerms",				},
+		{ type: "localized",category: TS_PROPERTY_CATEGORIES.credit,	namespace: XMPConst.NS_XMP_RIGHTS,	key: "UsageTerms",				},	// because UsageTerms just wants to be special and refuses to behave like other tags that USE LOCALIZATION but don't FREAK THE FUCK OUT when you dont explicitly insert localized text
 		{ type: "complex",	category: TS_PROPERTY_CATEGORIES.credit,	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 	fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiEmailWork"	},
 		{ type: "complex",	category: TS_PROPERTY_CATEGORIES.credit,	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 	fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiUrlWork"		},
 		{ type: "complex",	category: TS_PROPERTY_CATEGORIES.credit,	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 	fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiAdrExtadr"	},
@@ -891,6 +929,7 @@ function tsRun(){
 
 					for(j in propertyList){
 						if(app.preferences.tsPropertyCategories & propertyList[j].category){ // check if users has enabled this cat
+							// alert("checking param # " + j + ", " + propertyList[j].type != "complex" ? propertyList[j].key : propertyList[j].fieldName);
 							TS_RECURSIONS = 0;
 
 							if(propertyList[j].type == "array"){ // process array fields
@@ -915,7 +954,6 @@ function tsRun(){
 								value = tsDoSubstitutions(selection[i], value); // do substitutions on it
 								myXMP.deleteProperty(propertyList[j].namespace, propertyList[j].key); // delete the existing value
 								myXMP.setProperty(propertyList[j].namespace, propertyList[j].key, value); // replace with new value
-
 							}
 							else if(propertyList[j].type == "complex"){
 								value = myXMP.getStructField(propertyList[j].schemaNS, propertyList[j].structName, propertyList[j].fieldNS, propertyList[j].fieldName); // get existing value
@@ -923,7 +961,21 @@ function tsRun(){
 								myXMP.deleteStructField(propertyList[j].schemaNS, propertyList[j].structName, propertyList[j].fieldNS, propertyList[j].fieldName); // delete the existing value
 								myXMP.setStructField(propertyList[j].schemaNS, propertyList[j].structName, propertyList[j].fieldNS, propertyList[j].fieldName, value); // replace with new value
 							}
+							else if(propertyList[j].type == "localized"){ // because UsageTerms is the product of the devil himself and reading/writing to it refuses to behave like EVERY OTHER FUCKING PROPERTY???
+								if(myXMP.doesPropertyExist(propertyList[j].namespace, propertyList[j].key)){ // fuck you for making me do this
+									value = selection[i].metadata.read(propertyList[j].namespace, propertyList[j].key);
+									value = tsDoSubstitutions(selection[i], value); 
+									myXMP.deleteProperty(propertyList[j].namespace, propertyList[j].key); 
+									myXMP.setLocalizedText(propertyList[j].namespace, propertyList[j].key, "x-default", "x-default", value); // localized properties need to have their language explicitly defined or they refuse to work
+								}
+							}
 						}
+					}
+
+					if(app.preferences.tsPropertyCategories & TS_PROPERTY_CATEGORIES.filename){ // process filename
+						value = selection[i].name;
+						value = tsDoSubstitutions(selection[i], value);
+						selection[i].name = value;
 					}
 					
 				} catch(e){
@@ -943,7 +995,7 @@ function tsRun(){
 		TS_LAST_OP_FILES = selection.length;	
 		
 		if(errorFiles > 0){
-			alert("Text Substitutions Error:\n" + errorFiles + " files were not processed because they do not support metadata.")
+			alert("Text Substitutions Warning:\n" + errorFiles + " files were not processed because they do not support metadata.")
 		}
 		
 		app.synchronousMode = false;
@@ -1340,7 +1392,95 @@ function tsMLabel(sel){
 	return sel.core.quickMetadata.label;
 }
 
+// returns the Source field
+function tsMSource(sel){
+	return sel.metadata.read(XMPConst.NS_PHOTOSHOP, "Source");
+}
 
+// returns the Desc Writer
+function tsMCaptionWriter(sel){
+	return sel.metadata.read(XMPConst.NS_PHOTOSHOP, "CaptionWriter");
+}
+
+// returns the Copyright Notice
+function tsMCopyrightNotice(sel){
+	return sel.metadata.read(XMPConst.NS_DC, "rights");
+}
+
+// returns the Rights Usage Terms
+function tsMUsageTerms(sel){
+	var myXMP = new XMPMeta(sel.synchronousMetadata.serialize());
+	if(myXMP.doesPropertyExist(XMPConst.NS_XMP_RIGHTS, "UsageTerms")) return sel.metadata.read(XMPConst.NS_XMP_RIGHTS, "UsageTerms"); // likes to error if you dont check first
+	return "";
+}
+
+// returns the Job Ident
+function tsMJobIdentifier(sel){
+	return sel.metadata.read(XMPConst.NS_PHOTOSHOP, "TransmissionReference");
+}
+
+// returns the Instructions field
+function tsMInstructions(sel){
+	return sel.metadata.read(XMPConst.NS_PHOTOSHOP, "Instructions");
+}
+
+// returns the creator's name
+function tsMCreator(sel){
+	return sel.metadata.read(XMPConst.NS_DC, "creator");
+}
+
+// returns the creator's name
+function tsMCreatorJob(sel){
+	return sel.metadata.read(XMPConst.NS_PHOTOSHOP, "AuthorsPosition");
+}
+
+// returns the creator's email
+function tsMCreatorEmail(sel){
+	var myXMP = new XMPMeta(sel.synchronousMetadata.serialize());
+	return myXMP.getStructField(XMPConst.NS_IPTC_CORE, "CreatorContactInfo", XMPConst.NS_IPTC_CORE, "CiEmailWork");
+}
+
+// returns the creator's website
+function tsMCreatorWebsite(sel){
+	var myXMP = new XMPMeta(sel.synchronousMetadata.serialize());
+	return myXMP.getStructField(XMPConst.NS_IPTC_CORE, "CreatorContactInfo", XMPConst.NS_IPTC_CORE, "CiUrlWork");
+}
+
+// returns the creator's address
+function tsMCreatorAddress(sel){
+	var myXMP = new XMPMeta(sel.synchronousMetadata.serialize());
+	return myXMP.getStructField(XMPConst.NS_IPTC_CORE, "CreatorContactInfo", XMPConst.NS_IPTC_CORE, "CiAdrExtadr");
+}
+
+// returns the creator's city
+function tsMCreatorCity(sel){
+	var myXMP = new XMPMeta(sel.synchronousMetadata.serialize());
+	return myXMP.getStructField(XMPConst.NS_IPTC_CORE, "CreatorContactInfo", XMPConst.NS_IPTC_CORE, "CiAdrCity");
+}
+
+// returns the creator's state
+function tsMCreatorState(sel){
+	var myXMP = new XMPMeta(sel.synchronousMetadata.serialize());
+	return myXMP.getStructField(XMPConst.NS_IPTC_CORE, "CreatorContactInfo", XMPConst.NS_IPTC_CORE, "CiAdrRegion");
+}
+
+// returns the creator's zip
+function tsMCreatorPostalCode(sel){
+	var myXMP = new XMPMeta(sel.synchronousMetadata.serialize());
+	return myXMP.getStructField(XMPConst.NS_IPTC_CORE, "CreatorContactInfo", XMPConst.NS_IPTC_CORE, "CiAdrPcode");
+}
+
+// returns the creator's country
+function tsMCreatorCountry(sel){
+	var myXMP = new XMPMeta(sel.synchronousMetadata.serialize());
+	return myXMP.getStructField(XMPConst.NS_IPTC_CORE, "CreatorContactInfo", XMPConst.NS_IPTC_CORE, "CiAdrCtry");
+}
+
+// returns the creator's phone
+function tsMCreatorPhone(sel){
+	var myXMP = new XMPMeta(sel.synchronousMetadata.serialize());
+	return myXMP.getStructField(XMPConst.NS_IPTC_CORE, "CreatorContactInfo", XMPConst.NS_IPTC_CORE, "CiTelWork");
+}
 
 
 //////////////////////////
