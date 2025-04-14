@@ -356,8 +356,8 @@ function tsPrefsPanel(){
 				if(!isNaN(parseInt(edMaxRecursions.text)))
 					app.preferences.tsRecursionLimit = parseInt(edMaxRecursions.text);
 				else{
-					app.preferences.tsRecursionLimit = 100
-					edMaxRecursions.text = 100;
+					app.preferences.tsRecursionLimit = 500
+					edMaxRecursions.text = 500;
 				}
 			}
 
@@ -647,6 +647,9 @@ function tsBuildSubstitutionTables(){
 		{ target: "cexpcomp",			replacement: tsCExposureComp				},
 		{ target: "ccomp",				replacement: tsCExposureComp				},
 
+		// special
+		{ target: "",					replacement: tsBlank						},
+
 	]
 
 	const builtinFunctionsTableSize = 113; // size we want for the hashtable - should be a prime at least 2x the size of the associated table.
@@ -807,6 +810,9 @@ function parseTSV(inputFile, output){
 		var obj = { target: "", replacement: [], recursions: 0 };
 		if(line.indexOf(TS_END_DELIM) != -1) obj.recursions = 1; // might we need to recurse on this?
 		line = line.split(sep); // split at tabs
+		if(line[0] == "" && line[1] == ""){ // blank line, ignore;
+			continue;
+		}
 
 		obj.target = line[0]; // add the first one as the target 
 		for(var j = 1; j < line.length; j++){ // and the rest as replacements
@@ -1742,7 +1748,10 @@ function tsFNot(sel, argv){
 
 // returns argv[2] if argv[1] is true. if argv[3] exists, return that. otherwise, return "".
 function tsFBranch(sel, argv){
-	if(argv.length < 3) return "";
+	if(argv.length < 3){
+		alert("TextSubstitutions Error:\nfBranch in "+ sel.name +" expected 2+ arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
+		throw SyntaxError("missingArguments");
+	}
 
 	if(anyToBool(argv[1])) return argv[2]; // true, return 2nd param
 	else if(argv.length == 3) return ""; // false, no 3rd param - return blank
@@ -1751,9 +1760,17 @@ function tsFBranch(sel, argv){
 
 // returns "1" if argv[1] is a valid subst, "0" otherwise
 function tsFSubstitutionExists(sel, argv){
-	if(argv.length == 1) return "";
+	if(argv.length < 2){
+		alert("TextSubstitutions Error:\nfSubstitutionExists in "+ sel.name +" expected 1 argument but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
+		throw SyntaxError("missingArguments");
+	}
 
-	var s = argv[1].toString();
+	return tsFSubstitutionExistsHelper(argv[1]);
+}
+
+// returns "1" if s is a valid subst, "0" otherwise
+function tsFSubstitutionExistsHelper(s){
+	s = s.toString();
 	var t = s.split(TS_DELIM_ENUM); // case: enumerated replacements
 	var r;
 	if(t.length > 1) r = TS_SUB_TABLE_USER.lookup(t[0]);
@@ -1769,10 +1786,18 @@ function tsFSubstitutionExists(sel, argv){
 	return "0";
 }
 
-// if argv[1] is a valid subst, returns it surrounded by delims. otherwise, just returns it.
+// returns the first valid substitution
 function tsFSafeExecute(sel, argv){
-	if(anyToBool(tsFSubstitutionExists(sel, argv))) return TS_START_DELIM+argv[1]+TS_END_DELIM;
-	else return argv[1];
+	if(argv.length < 2){
+		alert("TextSubstitutions Error:\nfSafeExecute in "+ sel.name +" expected 1+ arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
+		throw SyntaxError("missingArguments");
+	}
+	for(var i = 1; i < argv.length; i++){
+		if(anyToBool(tsFSubstitutionExistsHelper(argv[i]))) return argv[i];
+	}
+
+	return "";
+
 }
 
 
@@ -1820,6 +1845,10 @@ function tsFLessEqual(sel, argv){
 	return "1";
 }
 
+// returns a blank space
+function tsBlank(sel, argv){
+	return "";
+}
 
 
 
