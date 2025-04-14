@@ -38,6 +38,15 @@ var TS_RECURSIONS;
 var TS_LAST_OP_TIMER = 0; // time it took to complete last operation
 var TS_LAST_OP_FILES = 0; // number of files processed in the last operation
 
+// basically just an enum
+// the categories of metadata fields
+const TS_PROPERTY_CATEGORIES = {
+	core:		1,
+	credit: 	2,
+	misc: 		4
+};
+
+var TS_USER_PROP_CATS_SELECTON
 
 #target bridge
 // STARTUP FUNCTION: run when bridge starts, used for setup
@@ -350,6 +359,69 @@ function tsPrefsPanel(){
 					edMaxRecursions.text = 100;
 				}
 			}
+
+
+			// GROUP4
+			// ======
+			var group4 = group1.add("group", undefined, {name: "group4"}); 
+			group4.orientation = "column"; 
+			group4.alignChildren = ["left","top"]; 
+			group4.spacing = 10; 
+			group4.margins = 0; 
+
+			// PANELPROPERTYCATEGORIES
+			// =======================
+			var panelPropertyCategories = group4.add("panel", undefined, undefined, {name: "panelPropertyCategories"}); 
+			panelPropertyCategories.text = "Fields to Analyze"; 
+			panelPropertyCategories.orientation = "column"; 
+			panelPropertyCategories.alignChildren = ["left","top"]; 
+			panelPropertyCategories.spacing = 10; 
+			panelPropertyCategories.margins = 10; 
+
+			var statictext8 = panelPropertyCategories.add("statictext", undefined, undefined, {name: "statictext8", multiline: true}); 
+    		statictext8.text = "Only these fields will be checked for custom substitutions when the program is run. Reducing the number of fields analyzed will improve performance. Only fields in IPTC Core (not IPTC Extension) are analyzed."; 
+
+			var cbPropCatCore = panelPropertyCategories.add("checkbox", undefined, undefined, {name: "cbPropCatCore"}); 
+				cbPropCatCore.helpTip = "Description, keywords, alt-text, extended description,\nheadline, title, sublocation, city, state, country, and country code."; 
+				cbPropCatCore.text = "Core"; 
+			
+			var cbPropCatCredit = panelPropertyCategories.add("checkbox", undefined, undefined, {name: "cbPropCatCredit"}); 
+				cbPropCatCredit.helpTip = "Creator contact info, credit, source,\ndescription writer, rights, and usage terms."; 
+				cbPropCatCredit.text = "Credit"; 
+			
+			var cbPropCatMisc = panelPropertyCategories.add("checkbox", undefined, undefined, {name: "cbPropCatMisc"}); 
+				cbPropCatMisc.helpTip = "IPTC subject & scene codes, intellectual genre,\njob identifier, and instructions."; 
+				cbPropCatMisc.text = "Misc"; 
+
+				// initalize delimiter values
+				if(app.preferences.tsPropertyCategories & TS_PROPERTY_CATEGORIES.core){
+					cbPropCatCore.value = true;
+				}
+				if(app.preferences.tsPropertyCategories & TS_PROPERTY_CATEGORIES.credit){
+					cbPropCatCredit.value = true;
+				}
+				if(app.preferences.tsPropertyCategories & TS_PROPERTY_CATEGORIES.misc){
+					cbPropCatMisc.value = true;
+				}
+
+				// update values on select
+				cbPropCatCore.onClick = function(){
+					if(cbPropCatCore.value) app.preferences.tsPropertyCategories |= TS_PROPERTY_CATEGORIES.core;
+					else app.preferences.tsPropertyCategories ^= TS_PROPERTY_CATEGORIES.core;
+				}
+				cbPropCatCredit.onClick = function(){
+					if(cbPropCatCredit.value) app.preferences.tsPropertyCategories |= TS_PROPERTY_CATEGORIES.credit;
+					else app.preferences.tsPropertyCategories ^= TS_PROPERTY_CATEGORIES.credit;
+				}
+				cbPropCatMisc.onClick = function(){
+					if(cbPropCatMisc.value) app.preferences.tsPropertyCategories |= TS_PROPERTY_CATEGORIES.misc;
+					else app.preferences.tsPropertyCategories ^= TS_PROPERTY_CATEGORIES.misc;
+				}
+
+
+			
+			var statictext9 = panelPropertyCategories.add("statictext", undefined, undefined, {name: "statictext9"}); 
+				statictext9.text = "(hover for details)"; 
 			
 
 			
@@ -386,11 +458,14 @@ function tsPrefsPanel(){
 // if allPrefs = true, all prefs are set (optional)
 function tsSetDefaultPrefs(allPrefs){
 	if(!allPrefs) allPrefs = false; // set to false if not specified
-	if(allPrefs || app.preferences.tsPrefsVersion < TS_VERSION_PREFS){ // ver 100001
+	if(allPrefs || app.preferences.tsPrefsVersion < 100100){
+		app.preferences.tsPropertyCategories = TS_PROPERTY_CATEGORIES.core;
+	}
+	if(allPrefs || app.preferences.tsPrefsVersion < 100001){ 
 		app.preferences.tsDelimiter = 1; // int representing the `delimiters` array index of the delimiter to use
 		app.preferences.tsDateField = 0; // 0 = EXIF, 1 = IPTC
 		app.preferences.tsSeparateTags = 0; // 1 = seperate tags
-		app.preferences.tsRecursionLimit = 100; // max number of recursions before error
+		app.preferences.tsRecursionLimit = 250; // max number of recursions before error
 	}
 	app.preferences.tsPrefsVersion = TS_VERSION_PREFS;
 	app.preferences.tsPrefsSet = true;
@@ -586,13 +661,14 @@ function tsBuildSubstitutionTables(){
 		{ target: "f!",					replacement: tsFNot							},
 		
 		// conditionals
-		{ target: "fcondcontinue",		replacement: tsFConditionalContinue			},
-		{ target: "fcc",				replacement: tsFConditionalContinue			},
-		{ target: "fbeq",				replacement: tsFConditionalContinue			},
+		{ target: "fbranch",			replacement: tsFBranch						},
+		{ target: "fbch",				replacement: tsFBranch						},
 		{ target: "fsubstexists",		replacement: tsFSubstitutionExists			},
 		{ target: "fsubexists",			replacement: tsFSubstitutionExists			},
 		{ target: "fexists",			replacement: tsFSubstitutionExists			},
 		{ target: "fsex",				replacement: tsFSubstitutionExists			},
+		{ target: "fsafeexecute",		replacement: tsFSafeExecute					},
+		{ target: "fsafe",				replacement: tsFSafeExecute					},
 		
 	]
 
@@ -709,37 +785,38 @@ function parseTSV(inputFile, output){
 
 // Run when the script is selected. Gets user input, selects properties to edit, and passes them to tsDoSubstitutions()
 function tsRun(){
-	const propertyList = [
-		{ type: "simple",	category: "core",	namespace: XMPConst.NS_PHOTOSHOP, 	key: "City", 					},
-		{ type: "simple",	category: "core",	namespace: XMPConst.NS_PHOTOSHOP, 	key: "State", 					},
-		{ type: "simple",	category: "core",	namespace: XMPConst.NS_PHOTOSHOP, 	key: "Country", 				},
-		{ type: "simple",	category: "core",	namespace: XMPConst.NS_IPTC_CORE, 	key: "Location", 				},
-		{ type: "simple",	category: "core",	namespace: XMPConst.NS_DC,			key: "title", 					},
-		{ type: "simple",	category: "core",	namespace: XMPConst.NS_PHOTOSHOP, 	key: "Headline", 				},
-		{ type: "simple",	category: "core",	namespace: XMPConst.NS_IPTC_CORE, 	key: "AltTextAccessibility",	},
-		{ type: "simple",	category: "core",	namespace: XMPConst.NS_IPTC_CORE, 	key: "ExtDescrAccessibility",	},
-		{ type: "array",	category: "core",	namespace: XMPConst.NS_DC,			key: "subject", 				}, // keywords
-		{ type: "simple",	category: "core",	namespace: XMPConst.NS_DC,			key: "description", 			},
-		{ type: "simple",	category: "credit",	namespace: XMPConst.NS_PHOTOSHOP,	key: "AuthorsPosition",			},
-		{ type: "simple",	category: "credit",	namespace: XMPConst.NS_PHOTOSHOP,	key: "Credit",					},
-		{ type: "simple",	category: "credit",	namespace: XMPConst.NS_PHOTOSHOP,	key: "Source",					},
-		{ type: "simple",	category: "credit",	namespace: XMPConst.NS_PHOTOSHOP,	key: "CaptionWriter",			},
-		{ type: "simple",	category: "credit",	namespace: XMPConst.NS_DC,			key: "creator",					},
-		{ type: "simple",	category: "credit",	namespace: XMPConst.NS_DC,			key: "rights",					},
-		{ type: "simple",	category: "credit",	namespace: XMPConst.NS_XMP_RIGHTS,	key: "UsageTerms",				},
-		{ type: "complex",	category: "credit",	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 		fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiEmailWork"	},
-		{ type: "complex",	category: "credit",	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 		fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiUrlWork"		},
-		{ type: "complex",	category: "credit",	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 		fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiAdrExtadr"	},
-		{ type: "complex",	category: "credit",	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 		fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiAdrCity"		},
-		{ type: "complex",	category: "credit",	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 		fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiAdrRegion"	},
-		{ type: "complex",	category: "credit",	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 		fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiAdrPcode"		},
-		{ type: "complex",	category: "credit",	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 		fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiAdrCtry"		},
-		{ type: "complex",	category: "credit",	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 		fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiTelWork"		},
-		{ type: "simple",	category: "misc",	namespace: XMPConst.NS_IPTC_CORE,	key: "SubjectCode",				},
-		{ type: "simple",	category: "misc",	namespace: XMPConst.NS_IPTC_CORE,	key: "IntellectualGenre",		},
-		{ type: "simple",	category: "misc",	namespace: XMPConst.NS_IPTC_CORE,	key: "Scene",					},
-		{ type: "simple",	category: "misc",	namespace: XMPConst.NS_PHOTOSHOP,	key: "TransmissionReference",	},
-		{ type: "simple",	category: "misc",	namespace: XMPConst.NS_PHOTOSHOP,	key: "Instructions",			},
+	const propertyList = [ 
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.core,		namespace: XMPConst.NS_PHOTOSHOP, 	key: "City", 					},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.core,		namespace: XMPConst.NS_PHOTOSHOP, 	key: "State", 					},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.core,		namespace: XMPConst.NS_PHOTOSHOP, 	key: "Country", 				},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.core,		namespace: XMPConst.NS_IPTC_CORE, 	key: 'CountryCode',				},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.core,		namespace: XMPConst.NS_IPTC_CORE, 	key: "Location", 				},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.core,		namespace: XMPConst.NS_DC,			key: "title", 					},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.core,		namespace: XMPConst.NS_PHOTOSHOP, 	key: "Headline", 				},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.core,		namespace: XMPConst.NS_IPTC_CORE, 	key: "AltTextAccessibility",	},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.core,		namespace: XMPConst.NS_IPTC_CORE, 	key: "ExtDescrAccessibility",	},
+		{ type: "array",	category: TS_PROPERTY_CATEGORIES.core,		namespace: XMPConst.NS_DC,			key: "subject", 				}, // keywords
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.core,		namespace: XMPConst.NS_DC,			key: "description", 			},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.credit,	namespace: XMPConst.NS_PHOTOSHOP,	key: "AuthorsPosition",			},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.credit,	namespace: XMPConst.NS_PHOTOSHOP,	key: "Credit",					},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.credit,	namespace: XMPConst.NS_PHOTOSHOP,	key: "Source",					},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.credit,	namespace: XMPConst.NS_PHOTOSHOP,	key: "CaptionWriter",			},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.credit,	namespace: XMPConst.NS_DC,			key: "creator",					},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.credit,	namespace: XMPConst.NS_DC,			key: "rights",					},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.credit,	namespace: XMPConst.NS_XMP_RIGHTS,	key: "UsageTerms",				},
+		{ type: "complex",	category: TS_PROPERTY_CATEGORIES.credit,	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 	fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiEmailWork"	},
+		{ type: "complex",	category: TS_PROPERTY_CATEGORIES.credit,	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 	fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiUrlWork"		},
+		{ type: "complex",	category: TS_PROPERTY_CATEGORIES.credit,	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 	fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiAdrExtadr"	},
+		{ type: "complex",	category: TS_PROPERTY_CATEGORIES.credit,	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 	fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiAdrCity"		},
+		{ type: "complex",	category: TS_PROPERTY_CATEGORIES.credit,	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 	fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiAdrRegion"	},
+		{ type: "complex",	category: TS_PROPERTY_CATEGORIES.credit,	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 	fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiAdrPcode"		},
+		{ type: "complex",	category: TS_PROPERTY_CATEGORIES.credit,	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 	fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiAdrCtry"		},
+		{ type: "complex",	category: TS_PROPERTY_CATEGORIES.credit,	schemaNS: XMPConst.NS_IPTC_CORE,	structName: "CreatorContactInfo", 	fieldNS: XMPConst.NS_IPTC_CORE, fieldName: "CiTelWork"		},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.misc,		namespace: XMPConst.NS_IPTC_CORE,	key: "SubjectCode",				},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.misc,		namespace: XMPConst.NS_IPTC_CORE,	key: "IntellectualGenre",		},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.misc,		namespace: XMPConst.NS_IPTC_CORE,	key: "Scene",					},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.misc,		namespace: XMPConst.NS_PHOTOSHOP,	key: "TransmissionReference",	},
+		{ type: "simple",	category: TS_PROPERTY_CATEGORIES.misc,		namespace: XMPConst.NS_PHOTOSHOP,	key: "Instructions",			},
 	]
 
 	try{
@@ -747,15 +824,15 @@ function tsRun(){
 
 		var errorFiles = 0;
 		var selection = app.document.selections; // get selected files
-		var useDialog = false;
 		if(!selection.length){ // nothing selected
 			alert('Text Substitutions Error:\nNothing selected!');
 			return;
 		} 
-		if(selection.length > 20) useDialog = true;
 
 		if(ExternalObject.AdobeXMPScript == undefined)  ExternalObject.AdobeXMPScript = new ExternalObject('lib:AdobeXMPScript'); // load the xmp scripting API
-
+		
+		var useDialog = false;
+		if(selection.length > 20) useDialog = true;
 		if(useDialog){ // progress bar dialog
 			/*
 			Code for Import https://scriptui.joonas.me — (Triple click to select): 
@@ -813,38 +890,39 @@ function tsRun(){
 				try{
 
 					for(j in propertyList){
-						TS_RECURSIONS = 0;
+						if(app.preferences.tsPropertyCategories & propertyList[j].category){ // check if users has enabled this cat
+							TS_RECURSIONS = 0;
 
-						if(propertyList[j].type = "array"){ // process array fields
+							if(propertyList[j].type == "array"){ // process array fields
+								value = selection[i].metadata.read(propertyList[j].namespace, propertyList[j].key).toString(); // grab existing var
+								myXMP.deleteProperty(propertyList[j].namespace, propertyList[j].key); // delete it
+								value = value.toString().split(',') // separate into an array
 
-							value = selection[i].metadata.read(propertyList[j].namespace, propertyList[j].key).toString(); // grab existing var
-							myXMP.deleteProperty(propertyList[j].namespace, propertyList[j].key); // delete it
-							value = value.toString().split(',') // separate into an array
+								for(var k in value){ // proccess each tag in the array seperatley
+									value[k] = tsDoSubstitutions(selection[i], value[k]); 
 
-							for(var k in value){ // proccess each tag in the array seperatley
-								value[k] = tsDoSubstitutions(selection[i], value[k]); 
-
-								if(app.preferences.tsSeparateTags){ // if this pref is enabled, check for commas after processing and split at each one into a seperate tag
-									var tags = value[k].toString().split(',');
-									for(var l in tags){
-										myXMP.appendArrayItem(propertyList[j].namespace, propertyList[j].key, tags[l], 0, XMPConst.ARRAY_IS_ORDERED);
+									if(app.preferences.tsSeparateTags){ // if this pref is enabled, check for commas after processing and split at each one into a seperate tag
+										var tags = value[k].toString().split(',');
+										for(var l in tags){
+											myXMP.appendArrayItem(propertyList[j].namespace, propertyList[j].key, tags[l], 0, XMPConst.ARRAY_IS_ORDERED);
+										}
 									}
+									else myXMP.appendArrayItem(propertyList[j].namespace, propertyList[j].key, value[k], 0, XMPConst.ARRAY_IS_ORDERED);
 								}
-								else myXMP.appendArrayItem(propertyList[j].namespace, propertyList[j].key, value[k], 0, XMPConst.ARRAY_IS_ORDERED);
 							}
-						}
-						else if(propertyList[j].type = "simple"){ // proccess simple fields
-							value = selection[i].metadata.read(propertyList[j].namespace, propertyList[j].key); // get existing value
-							value = tsDoSubstitutions(selection[i], value); // do substitutions on it
-							myXMP.deleteProperty(propertyList[j].namespace, propertyList[j].key); // delete the existing value
-							myXMP.setProperty(propertyList[j].namespace, propertyList[j].key, value); // replace with new value
+							else if(propertyList[j].type == "simple"){ // proccess simple fields
+								value = selection[i].metadata.read(propertyList[j].namespace, propertyList[j].key); // get existing value
+								value = tsDoSubstitutions(selection[i], value); // do substitutions on it
+								myXMP.deleteProperty(propertyList[j].namespace, propertyList[j].key); // delete the existing value
+								myXMP.setProperty(propertyList[j].namespace, propertyList[j].key, value); // replace with new value
 
-						}
-						else if(propertyList[j].type = "complex"){
-							value = myXMP.getStructField(XMPConst.NS_IPTC_CORE, "CreatorContactInfo", XMPConst.NS_IPTC_CORE, "CiEmailWork"); // get existing value
-							value = tsDoSubstitutions(selection[i], value); // do substitutions on it
-							myXMP.deleteProperty(propertyList[j].namespace, propertyList[j].key); // delete the existing value
-							myXMP.setProperty(propertyList[j].namespace, propertyList[j].key, value); // replace with new value
+							}
+							else if(propertyList[j].type == "complex"){
+								value = myXMP.getStructField(propertyList[j].schemaNS, propertyList[j].structName, propertyList[j].fieldNS, propertyList[j].fieldName); // get existing value
+								value = tsDoSubstitutions(selection[i], value); // do substitutions on it
+								myXMP.deleteStructField(propertyList[j].schemaNS, propertyList[j].structName, propertyList[j].fieldNS, propertyList[j].fieldName); // delete the existing value
+								myXMP.setStructField(propertyList[j].schemaNS, propertyList[j].structName, propertyList[j].fieldNS, propertyList[j].fieldName, value); // replace with new value
+							}
 						}
 					}
 					
@@ -1500,14 +1578,13 @@ function tsFNot(sel, argv){
 }
 
 
-// returns argv[2] if argv[1] is true. if argv[4] exists, return that. otherwise, return "".
-function tsFConditionalContinue(sel, argv){
+// returns argv[2] if argv[1] is true. if argv[3] exists, return that. otherwise, return "".
+function tsFBranch(sel, argv){
 	if(argv.length < 3) return "";
 
-	var ret = argv[2];
-	if(anyToBool(argv[1])) return;
-	else if(argv.length = 3) return "";
-	else return argv[4];
+	if(anyToBool(argv[1])) return argv[2]; // true, return 2nd param
+	else if(argv.length == 3) return ""; // false, no 3rd param - return blank
+	else return argv[3]; // false, return 3rd param
 }
 
 // returns "1" if argv[1] is a valid subst, "0" otherwise
@@ -1528,6 +1605,12 @@ function tsFSubstitutionExists(sel, argv){
 	if(TS_SUB_TABLE_BUILTIN_FUNCTIONS.lookup(s) !== undefined) return "1";
 
 	return "0";
+}
+
+// if argv[1] is a valid subst, returns it surrounded by delims. otherwise, just returns it.
+function tsFSafeExecute(sel, argv){
+	if(anyToBool(tsFSubstitutionExists(sel, argv))) return TS_START_DELIM+argv[1]+TS_END_DELIM;
+	else return argv[1];
 }
 
 
@@ -1594,7 +1677,7 @@ function isArray(a){
 
 // returns false if s = "" or "0", true otherwise
 function anyToBool(s){
-	if(s.length = 0 || s == "0" || s == 0 || s == false) return false;
+	if(s.length == 0 || s == "0" || s == 0 || s == false) return false;
 	return true;
 }
  
