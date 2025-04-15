@@ -1,0 +1,39 @@
+// This substitution file allows you to mimic the behavior of Photo Mechanic's "hot codes" feature.			
+// When one of the column titles is used as a substitution, the lookups are used to identify which row the data should be grabbed from.			
+// Lookups are searched in the order specified.			
+// For example, if you type [[cname]], this substitution will first check to see if the camera's serial number is listed in the data table. If it is, the first match will be used. Otherwise, the model of the camera will be checked. If the camera model does not match a row, then the "Creator" metadata field will be checked. FInally if no matches can be found, "UNKNOWN" will be used.			
+// This substitution file uses a large amount of recursions - if you get an error, you may want to increase the recursion limit in the script preferences.			
+			
+// COLUMN TITLES - using one of these as a substitution will grab that column in the row identified by the lookups above.			
+cname	[[[[hclogic]]#1]]		
+clast	[[[[hclogic]]#2]]		
+cpos	[[[[hclogic]]#3]]		
+			
+			
+			
+// LOOKUPS - the result of these are looked up in the table below			
+lkup1	[[cserial]]		
+lkup2	[[ccamera]]		
+lkup3	[[mcreator]]		
+lkup4			
+lkup5			
+lkup6			
+lkup7			
+lkup8			
+lkup9			
+lkup10			
+// if you add more than 10 lookups, you will need to add them to hcselector: 			
+hcselector	[[fsafe;[[lkup1]];[[lkup2]];[[lkup3]];[[lkup4]];[[lkup5]];[[lkup6]];[[lkup7]];[[lkup8]];[[lkup9]];[[lkup10]]]]		
+// hclogic uses fbranch to first check if hcselector identifies any valid substitutions (it will return an empty string if none are identified). If any are identified, fbranch passes the result of hcselector. Otherwise, it passes "??UKN??".			
+hclogic	[[fbranch;[[hcselector]];[[hcselector]];??UKN??]]		
+			
+			
+// DATA TABLE			
+// Photog info:	Name (#1)	Last Name (#2)	Position (#3)
+3004849	Pluto Polaris	Polaris	Photographer
+3027706	Jason Bates	Bates	Media Specialist III
+Canon EOS 77D	Gordon Yonel	Yonel	Stringer
+Dash Zach	Dash Zach	Zach	Photographer
+			
+??UKN??	UNKNOWN	UNKNOWN	UNKNOWN
+// Default substitution. If no lookups match, this is used.			

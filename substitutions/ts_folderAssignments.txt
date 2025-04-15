@@ -1,0 +1,28 @@
+// This custom substitution setup allows you to map the name of the folder your files are in to the names of your subjects.					
+// The suggested usage of this is for photoshoots. For each subject you are photographing, change your camera settings to put their photos in different folders. This substitution file will then let you quickly type their names.					
+// For example, if your photos of Miss Terry are in a folder beginning with "102", you can type [[pfirst]] in one of the photo's metadata fields to have it replaced with "Miss"					
+					
+// fldrnum grabs the first 3 characters of the folder this file is in. The "3" can be changed to increase or decrease the amount of the filename to grab.					
+fldrnum	[[fprefix;[[mfolder]];3]]				
+					
+// Using enumerated replacements to grab the column they are associated with.					
+pname	[[fn[[fldrnum]]#1]]				
+pfirst	[[fn[[fldrnum]]#2]]				
+plast	[[fn[[fldrnum]]#3]]				
+pnum	[[fn[[fldrnum]]#4]]				
+ppos	[[fn[[fldrnum]]#5]]				
+					
+// Data table - the folder nums are prefixed with "fn" to avoid any potential conflicts with other custom substitutions.					
+// folder num	Full Name (#1)	First Name (#2)	Last Name (#3)	Number (#4)	Position (#5)
+fn100	Apple Banana	Apple	Banana	44	Defense
+fn101	Milk Shake	Milk	Shake	12	Striker
+fn102	Miss Terry	Miss	Terry	00	Investigator
+fn103					
+fn104					
+fn105					
+fn106					
+fn107					
+fn108					
+fn109					
+fn110					
+					

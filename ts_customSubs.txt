@@ -11,7 +11,7 @@
 // - Custom substitution files are not checked for correctness when loaded - incorrect formatting may lead to errors when running the script.
 // - Duplicate substitutions (two substitutions with the same target) are not supported. This is not checked and may lead to undefined behavior.
 // - The ordering of custom substitutions in their files is not important.
-// - Custom substitutions are CaSe-SeNsAtIvE, while built-in substitutions are not.
+// - Custom substitutions are CaSe-SeNsItIvE, while built-in substitutions are not.
 // - Tabs are weird - the amount of whitespace a single tab displays as is based on the position of the text around it (and your text editor).
 //    For best results, use a text editor that lets you visualize the tab character. (if you're using Notepad++, this is View > Show Symbol >
 //    "Show Space and Tabs")
