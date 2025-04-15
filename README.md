@@ -45,6 +45,9 @@ Opens a simple, dockable text box for taking notes. Contents are not saved on pr
 1. Select Window > Scratch Pad
 2. Move the newly-created window to the location of your choice.
 
+### scriptFramework
+A simple example script, intended for others to learn from and build upon.
+
 ## Installation
 1. Go to Preferences and select the "Startup Scripts" tab.
 2. Click "Reveal Scripts in Explorer"
