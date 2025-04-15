@@ -14,7 +14,7 @@ A collection of useful scripts I've made for Adobe Bridge. This readme contains 
 ### textSubstitutions
 Inspired by the PhotoMechanic's code replacements feature, this lets you designate special codes to be replaced by any kind of text! For example, typing `[[tTime]]` in the description of an image then running this tool will replace it with the timestamp the photo was created. `[[mFileName]]` will be replaced with the file's name. In addition to over 90 special codes that retrieve file metadata and perform complex behaviors, you can also create your own substitutions.
 
-Text Substitutions work all metadata fields in Bridge's IPTC Core panel as well as the filename.
+Text Substitutions work in all metadata fields in Bridge's IPTC Core panel as well as in the filename.
 
 #### Usage
 1. Edit one of the above properties of any file to include a [code](https://github.com/9yz/bridge-scripts/wiki/Built%E2%80%90In-Substitutions).
