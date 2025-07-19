@@ -23,8 +23,8 @@ const TS_DELIMITERS = [
 	["=",  "=",  1],
 	["==", "==", 2],
 ]
-const TS_VERSION = "1.1.0";
-const TS_VERSION_PREFS = 100100; // equal to 1.001.00, or 1.1.0
+const TS_VERSION = "1.2.0";
+const TS_VERSION_PREFS = 100200; // equal to 1.002.00, or 1.2.0
 
 var TS_SUB_TABLE_BUILTIN;
 var TS_SUB_TABLE_BUILTIN_FUNCTIONS;
@@ -676,11 +676,23 @@ function tsBuildSubstitutionTables(){
 		{ target: "fsfx",				replacement: tsFSuffix						},
 		{ target: "fsubstring",			replacement: tsFSubstring					},
 		{ target: "fsubstr",			replacement: tsFSubstring					},
+		{ target: "flength",			replacement: tsFLength						},
+		{ target: "flen",				replacement: tsFLength						},
+		{ target: "fgetindex",			replacement: tsFGetIndex					},
+		{ target: "findex",				replacement: tsFGetIndex					},
+		{ target: "findexof",			replacement: tsFGetIndex					},
+		{ target: "fgetlastindex",		replacement: tsFGetLastIndex				},
+		{ target: "flastindex",			replacement: tsFGetLastIndex				},
+		{ target: "flastindexof",		replacement: tsFGetLastIndex				},
+		{ target: "ffindreplace",		replacement: tsFFindReplace					},
+		{ target: "freplace",			replacement: tsFFindReplace					},
 		
 		// logic
 		{ target: "fequals",			replacement: tsFEquals						},
 		{ target: "feq",				replacement: tsFEquals						},
 		{ target: "f=",					replacement: tsFEquals						},
+		{ target: "fanyequals",			replacement: tsFAnyEquals					},
+		{ target: "fanyeq",				replacement: tsFAnyEquals					},
 		{ target: "fnotequals",			replacement: tsFNotEquals					},
 		{ target: "fneq",				replacement: tsFNotEquals					},
 		{ target: "f!=",				replacement: tsFNotEquals					},
@@ -1698,6 +1710,64 @@ function tsFSubstring(sel, argv){
 	return argv[1].substring(argv[2], argv[3]);
 }
 
+// returns the length of argv[1]
+function tsFLength(sel, argv){
+	if(argv[1]) return argv[1].length;
+	return "0";
+}
+
+// string, char, number
+// returns the index of the argv[3]-th occurance of argv[2] in argv[1]. Returns -1 if not found
+function tsFGetIndex(sel, argv){
+	if(argv.length < 3){
+		alert("TextSubstitutions Error:\nfGetIndex in "+ sel.name +" expected 2+ arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
+		throw SyntaxError("missingArguments");
+	}
+	if(!argv[3]) argv[3] = 1; // if not defined, assume they want the first one
+
+	var pos = 0;
+	for(var i = 0; i < argv[3]; i++){
+		if(i>0) pos++; // if we aren't on our first go-around, increment the pos so we don't just repeatedly hit the same match
+		pos = argv[1].indexOf(argv[2], pos);
+	}
+
+	return pos;
+}
+
+// returns the index of the argv[3]-th occurance of argv[2] in argv[1], counting from the end. Returns -1 if not found
+function tsFGetLastIndex(sel, argv){
+	if(argv.length < 3){
+		alert("TextSubstitutions Error:\nfGetIndex in "+ sel.name +" expected 2+ arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
+		throw SyntaxError("missingArguments");
+	}
+	if(!argv[3]) argv[3] = 1; // if not defined, assume they want the first one
+
+	var pos = argv[1].length;
+	for(var i = 0; i < argv[3]; i++){
+		if(i>0) pos--; // if we aren't on our first go-around, decrement the pos so we don't just repeatedly hit the same match
+		pos = argv[1].lastIndexOf(argv[2], pos);
+	}
+
+	return pos;
+}
+
+// replaces all instances of argv[2] in argv[1] with argv[3]
+function tsFFindReplace(sel, argv){
+	if(argv.length < 3){
+		alert("TextSubstitutions Error:\nfFindReplace in "+ sel.name +" expected 2+ arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
+		throw SyntaxError("missingArguments");
+	}
+
+	if(!argv[3]) argv[3] = ""; // default to blank if not provided
+	var s1 = argv[1].split(argv[2]);
+	var s2 = s1[0];
+
+	for(var i = 1; i < s1.length; i++){
+		s2 = s2 + argv[3] + s1[i]; // concat with the separator character between
+	}
+
+	return s2;
+}
 
 
 
@@ -1714,6 +1784,17 @@ function tsFEquals(sel, argv){
 	}
 
 	return "1";
+}
+
+// returns "1" if argv[1] equals any argv[2+], "0" otherwise
+function tsFAnyEquals(sel, argv){
+	if(argv.length <= 2) return "0";
+
+	for(var i = 2; i < argv.length; i++){
+		if(argv[1] == argv[i]) return "1";
+	}
+
+	return "0";
 }
 
 // returns "1" if any argv[1+] are different, "0" otherwise
