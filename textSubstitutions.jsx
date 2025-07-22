@@ -382,10 +382,6 @@ function tsPrefsPanel(){
 			var statictext8 = panelPropertyCategories.add("statictext", undefined, undefined, {name: "statictext8", multiline: true}); 
     		statictext8.text = "Only these fields will be checked for custom substitutions when the program is run. Reducing the number of fields analyzed will improve performance. Only fields in IPTC Core (not IPTC Extension) are analyzed."; 
 
-			var cbPropCatFilename = panelPropertyCategories.add("checkbox", undefined, undefined, {name: "cbPropCatFilename"}); 
-				cbPropCatFilename.helpTip = "The file's filename. Use caution\nwhen changing file extensions."; 
-				cbPropCatFilename.text = "Filename"; 
-
 			var cbPropCatCore = panelPropertyCategories.add("checkbox", undefined, undefined, {name: "cbPropCatCore"}); 
 				cbPropCatCore.helpTip = "Description, keywords, alt-text, extended description,\nheadline, title, sublocation, city, state, country, and country code."; 
 				cbPropCatCore.text = "Core"; 
@@ -397,6 +393,10 @@ function tsPrefsPanel(){
 			var cbPropCatMisc = panelPropertyCategories.add("checkbox", undefined, undefined, {name: "cbPropCatMisc"}); 
 				cbPropCatMisc.helpTip = "IPTC subject & scene codes, intellectual genre,\njob identifier, and instructions."; 
 				cbPropCatMisc.text = "Misc"; 
+
+			var cbPropCatFilename = panelPropertyCategories.add("checkbox", undefined, undefined, {name: "cbPropCatFilename"}); 
+				cbPropCatFilename.helpTip = "The file's filename. Use caution\nwhen changing file extensions."; 
+				cbPropCatFilename.text = "Filename"; 
 
 				// initalize delimiter values
 				if(app.preferences.tsPropertyCategories & TS_PROPERTY_CATEGORIES.filename){
