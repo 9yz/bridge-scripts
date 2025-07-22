@@ -815,12 +815,37 @@ function parseTSV(inputFile, output){
 	
 	for (var i = 1; !inputFile.eof; i++) {
 		var line = inputFile.readln(); // grab a line
-		if(line.length < 2 || (line.length >= 2 && line[0] == "/" && line[1] == "/") ){  // line is blank or commented out - skip it
+		if( line.length < 2 || (line.length >= 2 && line[0] == "/" && line[1] == "/") ){  // line is blank or commented out - skip it
 			continue;
 		}
 		
 		var obj = { target: "", replacement: [], recursions: 0 };
 		if(line.indexOf(TS_END_DELIM) != -1) obj.recursions = 1; // might we need to recurse on this?
+
+		while(line[line.length-1] == "\\"){ // check if line ends with backslash, read a new line to append if it does
+			while(!inputFile.eof){
+				var nl = inputFile.readln();
+				if(nl.length < 2){
+					continue; // blank, discard
+				}
+
+				var start = 0;
+				while(nl[start] && nl[start] == "\t"){
+					start++; // skip leading tabs
+				}
+				if(!nl[start]|| (nl.length >= 2 && nl[start] == "/" && nl[start+1] == "/")){
+					continue; // only contains tabs or commented out, discard
+				}
+
+				line = line.substring(0, line.length-1); // chop off that backslash
+				line += nl.substring(start); // trim leading tabs, append to existing string
+				break;
+			}
+			if(inputFile.eof && line[line.length-1] == "\\"){ // case: the last valid line ends with a backslash - gotta make sure we trim it
+				line = line.substring(0, line.length-1);
+			}
+		}
+
 		line = line.split(sep); // split at tabs
 		if(line[0] == "" && line[1] == ""){ // blank line, ignore;
 			continue;
