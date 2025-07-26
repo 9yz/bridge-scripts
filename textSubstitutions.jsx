@@ -26,11 +26,11 @@ const TS_DELIMITERS = [
 const TS_VERSION = "1.2.0";
 const TS_VERSION_PREFS = 100200; // equal to 1.002.00, or 1.2.0
 
-var TS_SUB_TABLE_BUILTIN;
-var TS_SUB_TABLE_BUILTIN_FUNCTIONS;
-var TS_SUB_TABLE_USER;
+var TS_SUB_TABLE_BUILTIN = [];
+var TS_SUB_TABLE_BUILTIN_FUNCTIONS = [];
+var TS_SUB_TABLE_USER = [];
 
-var TS_NUM_CUSTOM_FILES_LOADED = 0;
+var TS_LOADED_CUSTOM_FILES = [];
 var TS_NUM_CUSTOM_RULES_LOADED = 0;
 var TS_SCRIPTS_DIR;
 
@@ -69,6 +69,8 @@ if(BridgeTalk.appName == 'bridge'){
 	
 		var libfile = new File( pathToLib );
 		var xmpLib = new ExternalObject("lib:" + pathToLib );
+
+		app.addLegalNotice("TextSubstitutions", "View contributors at https://github.com/9yz/bridge-scripts");
 
 		var tsMenuRun 			= MenuElement.create('command', 'Text Substitutions...', 'at the end of Tools');
 		var tsMenuRunCont 		= MenuElement.create('command', 'Text Substitutions...', 'after Thumbnail/Open'); 
@@ -317,7 +319,7 @@ function tsPrefsPanel(){
 				panelCustomSubs.alignment = ["fill","top"]; 
 
 			var statictext6 = panelCustomSubs.add("statictext", undefined, undefined, {name: "statictext6", multiline: true}); 
-				statictext6.text = "All .txt files beginning with \u0022ts_\u0022 in the Startup Scripts directory or /substitutions/ subdirectory will be loaded."; 
+				statictext6.text = "All .txt files beginning with \u0022ts_\u0022 in the Startup Scripts directory or /substitutions/ subdirectory will be loaded. On script run, substitutions are reloaded if changes were made to previously loaded files."; 
 				statictext6.alignment = ["fill","top"]; 
 
 			var butReloadCustSubs = panelCustomSubs.add("button", undefined, undefined, {name: "butReloadCustSubs"}); 
@@ -325,19 +327,28 @@ function tsPrefsPanel(){
 				butReloadCustSubs.text = "Reload Custom Substitutions"; 
 
 			var txtFilesLoaded = panelCustomSubs.add("statictext", undefined, undefined, {name: "txtFilesLoaded", multiline: true}); 
-				txtFilesLoaded.text = TS_NUM_CUSTOM_FILES_LOADED + " custom substitution files loaded.\n" + TS_NUM_CUSTOM_RULES_LOADED + " custom substitution rules loaded."
+				txtFilesLoaded.text = TS_LOADED_CUSTOM_FILES.length + " custom substitution files loaded.\n" + TS_NUM_CUSTOM_RULES_LOADED + " custom substitution rules loaded."
 				txtFilesLoaded.alignment = ["fill","top"]; 
 
 
 			butReloadCustSubs.onClick = function(){
 				txtFilesLoaded.text = "Loading...";
 				tsBuildCustomSubTables();
-				txtFilesLoaded.text = TS_NUM_CUSTOM_FILES_LOADED + " custom substitution files loaded.\n" + TS_NUM_CUSTOM_RULES_LOADED + " custom substitution rules loaded.";
+				txtFilesLoaded.text = TS_LOADED_CUSTOM_FILES.length + " custom substitution files loaded.\n" + TS_NUM_CUSTOM_RULES_LOADED + " custom substitution rules loaded.";
 			}
+
+
+			// GROUP4
+			// ======
+			var group4 = group1.add("group", undefined, {name: "group4"}); 
+			group4.orientation = "column"; 
+			group4.alignChildren = ["left","top"]; 
+			group4.spacing = 10; 
+			group4.margins = 0; 
 
 			// PANELMAXRECURSIONS
 			// ==================
-			var panelMaxRecursions = group3.add("panel", undefined, undefined, {name: "panelMaxRecursions"}); 
+			var panelMaxRecursions = group4.add("panel", undefined, undefined, {name: "panelMaxRecursions"}); 
 				panelMaxRecursions.text = "Max Substitutions"; 
 				panelMaxRecursions.orientation = "column"; 
 				panelMaxRecursions.alignChildren = ["left","top"]; 
@@ -360,15 +371,6 @@ function tsPrefsPanel(){
 					edMaxRecursions.text = 500;
 				}
 			}
-
-
-			// GROUP4
-			// ======
-			var group4 = group1.add("group", undefined, {name: "group4"}); 
-			group4.orientation = "column"; 
-			group4.alignChildren = ["left","top"]; 
-			group4.spacing = 10; 
-			group4.margins = 0; 
 
 			// PANELPROPERTYCATEGORIES
 			// =======================
@@ -448,8 +450,9 @@ function tsPrefsPanel(){
 				statictext3.alignChildren = ["left","center"]; 
 				statictext3.spacing = 0; 
 			
-				statictext3.add("statictext", undefined, "Version " + TS_VERSION + ".          Last operation on " + TS_LAST_OP_FILES + " files completed in " + TS_LAST_OP_TIMER.toFixed(2) + "s."); 
-				statictext3.add("statictext", undefined, "View documentation and contribute to Text Substitutions at https://github.com/9yz/bridge-scripts"); 
+				// uses a newline or the descender in the 'g' in github will get cut off 
+				statictext3.add("statictext", undefined, "Version " + TS_VERSION + ".            Last operation on " + TS_LAST_OP_FILES + " files completed in " + TS_LAST_OP_TIMER.toFixed(2) + "s.            See docs and contribute at github.com/9yz/bridge-scripts\n"); 
+				// statictext3.add("statictext", undefined, "View documentation and contribute to Text Substitutions at https://github.com/9yz/bridge-scripts"); 
 		
 			
 
@@ -652,7 +655,7 @@ function tsBuildSubstitutionTables(){
 
 	]
 
-	const builtinFunctionsTableSize = 113; // size we want for the hashtable - should be a prime at least 2x the size of the associated table.
+	const builtinFunctionsTableSize = 139; // size we want for the hashtable - should be a prime at least 2x the size of the associated table.
 	const builtinFunctions = [	// map of built-in functions
 		// math ops
 		{ target: "fadd",				replacement: tsFAdd							},
@@ -729,22 +732,13 @@ function tsBuildSubstitutionTables(){
 		
 	]
 
-
-	// build builtin table
-	TS_SUB_TABLE_BUILTIN = new SubstitutionTable(builtinTableSize);
-	for(var i in builtinCommands){
-		TS_SUB_TABLE_BUILTIN.insert(builtinCommands[i]);
-	}
-
-	// build builtin function table
-	TS_SUB_TABLE_BUILTIN_FUNCTIONS = new SubstitutionTable(builtinFunctionsTableSize);
-	for(var i in builtinFunctions){
-		TS_SUB_TABLE_BUILTIN_FUNCTIONS.insert(builtinFunctions[i]);
-	}
+	TS_SUB_TABLE_BUILTIN = tsFillSubTables(builtinCommands, builtinTableSize);
+	TS_SUB_TABLE_BUILTIN_FUNCTIONS = tsFillSubTables(builtinFunctions, builtinFunctionsTableSize);
 
 	tsBuildCustomSubTables();
 	
 }
+
 
 // Finds custom substitution files and builds them into TS_SUB_TABLE_USER
 function tsBuildCustomSubTables(){
@@ -753,58 +747,37 @@ function tsBuildCustomSubTables(){
 	var dir = new Folder(TS_SCRIPTS_DIR.fsName);
 	var failFiles = [];
 	var customSubs = [];
-	TS_NUM_CUSTOM_FILES_LOADED = 0;
 	TS_NUM_CUSTOM_RULES_LOADED = 0;
-	
+	TS_LOADED_CUSTOM_FILES = [];
+
 	files = dir.getFiles(searchpattern); // returns an array of files matching the pattern
 	for(i in files){
-		if(!parseTSV(files[i], customSubs)) 
+		if(!tsParseTSV(files[i], customSubs)) 
 			failFiles.push(files[i].name);
-		else TS_NUM_CUSTOM_FILES_LOADED++;
+		else{
+			var newfile = { path: files[i].absoluteURI, modified: files[i].modified };
+			TS_LOADED_CUSTOM_FILES.push(newfile);
+		}
 	}
 	dir.changePath("./substitutions/") // check subs folder
 	files = dir.getFiles(searchpattern);
 	for(i in files){
-		if(!parseTSV(files[i], customSubs)) 
-			failFiles.push("substitutions/"+ files[i].name);
-		else TS_NUM_CUSTOM_FILES_LOADED++;
+		if(!tsParseTSV(files[i], customSubs)) 
+			failFiles.push(files[i].name);
+		else{
+			var newfile = { path: files[i].absoluteURI, modified: files[i].modified };
+			TS_LOADED_CUSTOM_FILES.push(newfile);
+		}
 	}
 	if(failFiles.length > 0) alert("Text Substitutions Warning:\nThese files were empty or could not be opened:\n\n" + failFiles);
 
-
-	// prime nums, somewhat evenly spaced for use as user table size for better modulo
-	const primes = [53, 101, 211, 307, 401, 601, 809, 1009, 1201, 1399, 1601, 1901, 2399, 2801, 3203, 6397, 12007, 24001, 48017, 96001]; 
-	
-	var size;
-	var i = 0;
-	
-	// in the ungodly case someone has > 48,000 substitutions, just pick something that's maybe a prime number
-	if(customSubs.length*2 > primes[primes.length-1]){
-		alert("Text Substitutions is impressed!\nIf you're seeing this, you have more than 48,000 substitutions which is way more than I ever expected anyone would use. Don't worry, I added a fallback to ensure the program still works, it will just be slightly less efficent.\n\nAlso, please leave a github issue or email me (9yz [at] 9yz.dev) so I can learn what the fuck you're doing that requires 48,000+ substitutions.");
-		size = (customSubs.length*2)+1; 
-	}
-	else{
-		for(i in primes){
-			if(customSubs.length*2 < primes[i]){
-				size = primes[i];
-				break; // find the first prime larger than the number of custom subs *2
-			} 
-		}
-	}
-
-	TS_SUB_TABLE_USER = new SubstitutionTable(size);
-
-	for(var j in customSubs){ // move items from custSubs to the table
-		TS_SUB_TABLE_USER.insert(customSubs[j]);
-	}
-
-
+	TS_SUB_TABLE_USER = tsFillSubTables(customSubs);
 }
 
 
 // opens and reads from a File object, parses the tsv into object as a series of target/replacement pairs
 // returns false if the file cant be opened or is empty
-function parseTSV(inputFile, output){
+function tsParseTSV(inputFile, output){
 	const sep = "\t";
 
 	inputFile.open("r"); // r = read mode
@@ -866,6 +839,70 @@ function parseTSV(inputFile, output){
 
 }
 
+// returns a substitution table with the contents of substArray. Optionally sets substTable size to tableSize, if specified.
+function tsFillSubTables(substArray, tableSize){
+	if(!tableSize){ // if not specified, choose one.
+
+		// prime nums, somewhat evenly spaced for use as user table size for better modulo
+		const primes = [53, 101, 211, 307, 401, 601, 809, 1009, 1201, 1399, 1601, 1901, 2399, 2801, 3203, 6397, 12007, 24001, 48017, 96001]; 	
+		var i = 0;
+		
+		// in the ungodly case someone has > 48,000 substitutions, just pick something that's maybe a prime number
+		if(substArray.length*2 > primes[primes.length-1]){
+			alert("Text Substitutions is impressed!\nIf you're seeing this, you have more than 48,000 substitutions which is way more than I ever expected anyone would use. Don't worry, I added a fallback to ensure the program still works, it will just be slightly less efficent.\n\nAlso, please leave a github issue or email me (9yz [at] 9yz.dev) so I can learn what the fuck you're doing that requires 48,000+ substitutions.");
+			tableSize = (substArray.length*2)-1; 
+		}
+		else{
+			for(i in primes){
+				if(substArray.length*2 < primes[i]){
+					tableSize = primes[i];
+					break; // find the first prime larger than the number of custom subs *2
+				} 
+			}
+		}
+	}
+
+	var substTable = new SubstitutionTable(tableSize);
+	for(var i in substArray){ // move items to the table
+		substTable.insert(substArray[i]);
+	}
+
+	return substTable;
+
+}
+
+// Checks if any of the files in TS_LOADED_CUSTOM_FILES have been modified since their stored date; calls tsBuildCustomSubTables(true) if so.
+function tsHotloadCustomSubTables(){
+	if(!TS_LOADED_CUSTOM_FILES) return;
+
+	for(var i = 0; i < TS_LOADED_CUSTOM_FILES.length; i++){
+		var f = new File(TS_LOADED_CUSTOM_FILES[i].path);
+		if(f.modified > TS_LOADED_CUSTOM_FILES[i].modified){ // if one of the files was modified after the date we stored, we need to rebuild the sub tables.
+			tsBuildCustomSubTables();
+
+			/* var failFiles = [];
+			var customSubs = [];
+			TS_NUM_CUSTOM_RULES_LOADED = 0;
+			var newLoadedFilesList = [];
+
+			for(var j = 0; j < TS_LOADED_CUSTOM_FILES.length; j++){
+				var file = new File(TS_LOADED_CUSTOM_FILES[j].path);
+				if(!tsParseTSV(file, customSubs)) 
+					failFiles.push(file.name);
+				else{
+					var newfile = { path: file.absoluteURI, modified: file.modified };
+					newLoadedFilesList.push(newfile);
+				}
+			}
+
+			if(failFiles.length > 0) alert("Text Substitutions Warning:\nThese files were empty or could not be opened:\n\n" + failFiles);
+
+			TS_LOADED_CUSTOM_FILES = newLoadedFilesList;
+			tsFillSubTables(TS_SUB_TABLE_USER, customSubs); */
+
+		}
+	}
+}
 
 
 // Run when the script is selected. Gets user input, selects properties to edit, and passes them to tsDoSubstitutions()
@@ -905,6 +942,8 @@ function tsRun(){
 	]
 
 	try{
+		tsHotloadCustomSubTables(); // rebuild sub tables if we need to 
+
 		app.synchronousMode = true;
 
 		var errorFiles = 0;
