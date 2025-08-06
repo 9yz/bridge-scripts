@@ -1,0 +1,37 @@
+// Some substitutions that may be useful for a variety of purposes
+
+// Plural detector. Returns "1" if the string that's passed in ends with -es or -s but not -is or -ss. "0" otherwise
+ispluralinput	[[mheadline]]
+// ispluralinput   <replace with your input>
+isplural	[[fOr;
+		[[\
+			f=;[[fSfx;[[ispluralinput]];2]];es\
+		]];\
+		[[\
+			f&&;\
+			[[f=;[[fSfx;[[ispluralinput]];1]];s]];\
+			[[f!;[[fAnyEq;[[fSfx;[[ispluralinput]];2]];is;ss]]]]\
+		]]\
+	]]
+
+
+// n-inator - returns "n" if the supplied string starts with a vowel. Intended to be used to turn "a" into "an" when the following word dictates.
+ninatorinput	[[mheadline]]
+// ninatorinput    <replace with your input>
+ninator	[[fBch;\
+		[[fAnyEq;\
+			[[fPfx;[[ninatorinput]];1]];
+			\a;e;i;o;u\
+		]]\
+	;n]]
+
+// an-inator - Returns "a " if the input string is plural or "an " if the input string is plural and starts with a vowel; "" otherwise.
+aninatorinput	[[mheadline]]
+// aninatorinput   <replace with your input>
+aninator	[[fBch;\
+		// plural checker
+		[[f!;[[fOr;[[f=;[[fSfx;[[aninatorinput]];2]];es]];[[f&&;[[f=;[[fSfx;[[aninatorinput]];1]];s]];[[f!;[[fAnyEq;[[fSfx;[[aninatorinput]];2]];is;ss]]]]]]]]]];\
+		// n-inator
+		a[[fBch;[[fAnyEq;[[fPfx;[[aninatorinput]];1]];a;e;i;o;u]];n]]\
+	]]
+
