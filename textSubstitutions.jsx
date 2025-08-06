@@ -1863,6 +1863,7 @@ function tsFToLowerCase(sel, argv){
 /// 2. Lowercase the words 'a', 'an', 'and', and 'the'
 /// 3. Capitalize the first and last words
 function tsFToTitleCase(sel, argv){
+	argv[1] = argv[1].toLowerCase();
 	var s = argv[1].split(" ");
 	if(s[0][0]) s[0] = s[0][0].toUpperCase() + s[0].substr(1); // cap first letter;
 	if(s[s.length-1][0]) s[s.length-1] = s[s.length-1][0].toUpperCase()  + s[s.length-1].substr(1); // cap first letter of last word
