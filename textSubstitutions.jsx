@@ -545,6 +545,8 @@ function tsBuildSubstitutionTables(){
 		{ target: "tday",				replacement: tsTDateTakenDay				},
 		{ target: "tdayp",				replacement: tsTDateTakenDayPretty			},
 		{ target: "tdaypretty",			replacement: tsTDateTakenDayPretty			},
+		{ target: "tdayofweek",			replacement: tsTDateTakenDayPretty			},
+		{ target: "tdow",				replacement: tsTDateTakenDayPretty			},
 		{ target: "tmonth",				replacement: tsTDateTakenMonth				},
 		{ target: "tmonthp",			replacement: tsTDateTakenMonthPretty		},
 		{ target: "tmonthpretty",		replacement: tsTDateTakenMonthPretty		},
@@ -688,6 +690,7 @@ function tsBuildSubstitutionTables(){
 		{ target: "flastindex",			replacement: tsFGetLastIndex				},
 		{ target: "flastindexof",		replacement: tsFGetLastIndex				},
 		{ target: "ffindreplace",		replacement: tsFFindReplace					},
+		{ target: "freplace",			replacement: tsFFindReplace					},
 		{ target: "freplace",			replacement: tsFFindReplace					},
 		
 		// logic
