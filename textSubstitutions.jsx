@@ -693,7 +693,12 @@ function tsBuildSubstitutionTables(){
 		{ target: "flastindexof",		replacement: tsFGetLastIndex				},
 		{ target: "ffindreplace",		replacement: tsFFindReplace					},
 		{ target: "freplace",			replacement: tsFFindReplace					},
-		{ target: "freplace",			replacement: tsFFindReplace					},
+		{ target: "ftouppercase",		replacement: tsFToUpperCase					},
+		{ target: "ftoupper",			replacement: tsFToUpperCase					},
+		{ target: "ftolowercase",		replacement: tsFToLowerCase					},
+		{ target: "ftolower",			replacement: tsFToLowerCase					},
+		{ target: "ftotitlecase",		replacement: tsFToTitleCase					},
+		{ target: "ftotitle",			replacement: tsFToTitleCase					},
 		
 		// logic
 		{ target: "fequals",			replacement: tsFEquals						},
@@ -1841,6 +1846,40 @@ function tsFFindReplace(sel, argv){
 	}
 
 	return s2;
+}
+
+// returns argv[1] in upper case
+function tsFToUpperCase(sel, argv){
+	return argv[1].toUpperCase();
+}
+
+// returns argv[1] in lower case
+function tsFToLowerCase(sel, argv){
+	return argv[1].toLowerCase();
+}
+
+// returns argv[1] in Title Case, following these steps
+/// 1. Capitalize all words
+/// 2. Lowercase the words 'a', 'an', 'and', and 'the'
+/// 3. Capitalize the first and last words
+function tsFToTitleCase(sel, argv){
+	var s = argv[1].split(" ");
+	if(s[0][0]) s[0] = s[0][0].toUpperCase() + s[0].substr(1); // cap first letter;
+	if(s[s.length-1][0]) s[s.length-1] = s[s.length-1][0].toUpperCase()  + s[s.length-1].substr(1); // cap first letter of last word
+
+	for(var i = 1; i < s.length-1; i++){ // go thru all words bewteen the first and last, noninclusive
+		if(s[i] == "a" || s[i] == "an" || s[i] == "the" || s[i] == "and"){ // lowercase all instances of "a", "an", "and", and "the"
+			if(s[i][0]) s[i] = s[i][0].toLowerCase() + s[i].substr(1);
+		}
+		else if(s[i][0]) s[i] = s[i][0].toUpperCase() + s[i].substr(1); // cap all others
+	}
+
+	var r = s[0];
+	for(var i = 1; i < s.length; i++){ // recombine w/ spaces
+		r += " " + s[i];
+	}
+
+	return r;
 }
 
 
