@@ -627,6 +627,8 @@ function tsBuildSubstitutionTables(){
 		{ target: "mcreatorphone",		replacement: tsMCreatorPhone				},
 		{ target: "mcreatoremail",		replacement: tsMCreatorEmail				},
 		{ target: "mcreatorwebsite",	replacement: tsMCreatorWebsite				},
+		{ target: "mdescription",		replacement: tsMDescription					},
+		{ target: "mdesc",				replacement: tsMDescription					},
 		
 
 		// camera-based substitutions
@@ -1571,6 +1573,11 @@ function tsMCreatorPhone(sel){
 	return myXMP.getStructField(XMPConst.NS_IPTC_CORE, "CreatorContactInfo", XMPConst.NS_IPTC_CORE, "CiTelWork");
 }
 
+// returns the Description field
+function tsMDescription(sel){
+	return sel.metadata.read(XMPConst.NS_DC, "description");
+
+}
 
 //////////////////////////
 // CAMERA FUNCTIONS
