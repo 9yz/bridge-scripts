@@ -23,8 +23,8 @@ const TS_DELIMITERS = [
 	["=",  "=",  1],
 	["==", "==", 2],
 ]
-const TS_VERSION = "1.2.0";
-const TS_VERSION_PREFS = 100200; // equal to 1.002.00, or 1.2.0
+const TS_VERSION = "1.2.1";
+const TS_VERSION_PREFS = 100201; // equal to 1.002.01, or 1.2.1
 
 var TS_SUB_TABLE_BUILTIN = [];
 var TS_SUB_TABLE_BUILTIN_FUNCTIONS = [];
