@@ -1,5 +1,5 @@
 # Bridge Scripts
-[![Textsubs version](https://img.shields.io/badge/text_substitutions-v1.1.0-blue)](https://github.com/9yz/bridge-scripts/releases)
+[![Textsubs version](https://img.shields.io/badge/text_substitutions-v1.2.0-blue)](https://github.com/9yz/bridge-scripts/releases)
 [![Static Badge](https://img.shields.io/badge/wiki!-teal)](https://github.com/9yz/bridge-scripts/wiki)
 ![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)
 ![recent commits](https://img.shields.io/github/commit-activity/m/9yz/bridge-scripts)
