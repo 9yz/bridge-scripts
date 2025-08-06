@@ -15,6 +15,8 @@ fbas	{mnameshort}
 focallength	{czoom}
 folder	{mfolder}
 fldr	{mfolder}
+foldernum	{fprefix;{mfolder};3}
+fldn	{fprefix;{mfolder};3}
 height	{ch}
 h	{ch}
 y	{ch}
@@ -84,6 +86,7 @@ copyright	{mcopyright}
 copy	{mcopyright}
 source	{msource}
 srce	{msource}
+description	{mdescription}
 
 // TIme & Date	
 ampm	{tampm}
@@ -91,6 +94,7 @@ date	{tdate}
 shot	{tdate}
 day	{tday}
 dow	{tdayp}
+dow3	{fpfx;{tdayp};3}
 hour	{thour12}
 hour24	{thour}
 h24	{thour}
@@ -107,6 +111,7 @@ mnap	{tmonthps}
 second	{tsecond}
 sec	{tsecond}
 time	{ttime}
+
 // Special Variables	
 nl	\n
 	
