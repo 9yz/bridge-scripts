@@ -21,7 +21,7 @@ Text Substitutions work in all metadata fields in Bridge's IPTC Core panel as we
 2. Run Text Substitutions from the right-click (context) or Tools menu.
 
 ##### Creating Custom Substitutions
-After installing [textSubstitutions.jsx](textSubstitutions.jsx) as described below, install [ts_customSubstitutions.jsx](ts_customSubstitutions.txt) the same way. The file contains information on the format for custom substitutions. Also see [ts_folderAssignments.txt](https://github.com/9yz/bridge-scripts/blob/main/substitutions/ts_folderAssignments.txt) and [ts_hotCodes.txt](https://github.com/9yz/bridge-scripts/blob/main/substitutions/ts_hotCodes.txt) for examples of complex behaviours using functional substitutions.
+After installing [textSubstitutions.jsx](textSubstitutions.jsx) as described below, add [ts_customSubs.txt](ts_customSubs.txt) to the same folder. The file contains information on the format for custom substitutions. Also see [ts_folderAssignments.txt](https://github.com/9yz/bridge-scripts/blob/main/substitutions/ts_folderAssignments.txt) and [ts_hotCodes.txt](https://github.com/9yz/bridge-scripts/blob/main/substitutions/ts_hotCodes.txt) for examples of complex behaviours using functional substitutions.
 
 ### copyMetadata
 A simple interface for copying selected metadata fields between files. These fields can be copied:
