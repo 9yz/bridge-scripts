@@ -58,13 +58,14 @@ if(BridgeTalk.appName == 'bridge'){
 			if( xmpLib == undefined ) var pathToLib = Folder.startup.fsName + "/AdobeXMPScript.dll"; // Load the XMP Script library
 
 			TS_SCRIPTS_DIR = Folder.userData; // %APPDATA%
-			TS_SCRIPTS_DIR.changePath("./Adobe/Bridge 2025/Startup Scripts/");
+			TS_SCRIPTS_DIR.changePath("./Adobe/Bridge " + tsGetFolderYear() + "/Startup Scripts/");
+			
 		} 
 		else {
 			if( xmpLib == undefined ) var pathToLib = Folder.startup.fsName + "/AdobeXMPScript.framework"; // Load the XMP Script library
 
 			TS_SCRIPTS_DIR = Folder.userData; // ~/Library/Application Support
-			TS_SCRIPTS_DIR.changePath("./Adobe/Bridge 2025/Startup Scripts/");
+			TS_SCRIPTS_DIR.changePath("./Adobe/Bridge " + tsGetFolderYear() + "/Startup Scripts/");
 		}
 	
 		var libfile = new File( pathToLib );
@@ -93,6 +94,12 @@ tsMenuRunCont.onSelect = function(){
 	tsRun();
 }
 
+// returns the application's year number. Ex. for "Adobe Bridge 2026", returns "2026"
+function tsGetFolderYear(){
+	path = BridgeTalk.getAppPath();
+	i = path.indexOf("Adobe Bridge 20");
+	return path.substring(i+13, i+17);
+}
 
 
 function tsPrefsPanel(){
@@ -1212,7 +1219,7 @@ function tsFindReplacement(selection, targetString){
 			if(isArray(replObject.replacement)){ 	// CASE 2a: target repl is an array
 
 				if(splitString[1] < 1 || splitString[1] > replObject.replacement.length){ // ERROR: enum index out of bounds
-					alert("TextSubstitutions Error:\nIndex out of bounds: " + targetString + " in " + selection.name + ".\nIndex must be in 1, " + replObject.replacement.length + " (inclusive).\n\nThis file has not been affected. No further files will be proccessed."); 
+					alert("TextSubstitutions Error:\nIndex out of bounds: " + targetString + " in " + selection.name + ".\nIndex must be in range [1, " + replObject.replacement.length + "] (inclusive).\n\nThis file has not been affected. No further files will be proccessed."); 
 					throw SyntaxError("unknownSubstitution");
 				}
 				replText = replObject.replacement[splitString[1]-1]; // sub 1 to switch to 1-indexing
@@ -1858,7 +1865,7 @@ function tsFToLowerCase(sel, argv){
 	return argv[1].toLowerCase();
 }
 
-// returns argv[1] in Title Case, following these steps
+// returns argv[1] in Title Case, following these rules:
 /// 1. Capitalize all words
 /// 2. Lowercase the words 'a', 'an', 'and', and 'the'
 /// 3. Capitalize the first and last words
