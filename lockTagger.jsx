@@ -81,7 +81,7 @@ function ltRun(runWithoutDialog){
 function ltMenu(){
 	var applyLabel = "";
 	var unlockFiles = true; 
-	if(app.preferences.ltPrefsSet == true){
+	if(app.preferences.ltPrefsSet == true){ // load from saved preferences, if they've been saved before
 		applyLabel = app.preferences.ltLabel;
 		unlockFiles = app.preferences.ltUnlockFiles;
 	}
@@ -149,7 +149,7 @@ function ltMenu(){
 
 	var ltCBUnlockFiles = row2.add("checkbox", undefined, undefined, {name: "ltCBUnlockFiles"}); 
 		ltCBUnlockFiles.text = "Unlock files"; 
-		ltCBUnlockFiles.value = unlockFiles;
+		ltCBUnlockFiles.value = unlockFiles; // initalize with saved value
 
 
 	// GROUP2
@@ -197,18 +197,20 @@ function ltMenu(){
 	}
 
 	/// GROUP 3 INTERACTIVITY
+	// cancel button
 	ltDialog.group3.ltBTCancel.onClick = function(){
 		ltDialog.close();
 		return false;
 	}
 
+	// run button
 	ltDialog.group3.ltBTRun.onClick = function(){
+		// save to prefs
 		app.preferences.ltLabel = applyLabel.toString();
 		app.preferences.ltUnlockFiles = unlockFiles;
 		app.preferences.ltPrefsSet = true;
 
 		ltDialog.close();
-		alert("Prefs:\n" + app.preferences.ltLabel + "\n" + app.preferences.ltUnlockFiles);
 		return true;
 	}
 
