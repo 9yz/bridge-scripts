@@ -26,7 +26,7 @@ if(BridgeTalk.appName == 'bridge'){
 		}
 
 		// Tools menu button
-		var ltToolsMenuItem = MenuElement.create('command', 'Tag locked files...', 'at the end of Tools'); // create an item in the Tools menu
+		var ltToolsMenuItem = MenuElement.create('command', 'Tag Locked Files...', 'at the end of Tools'); // create an item in the Tools menu
 	
 
 	} catch(e){
@@ -37,32 +37,35 @@ if(BridgeTalk.appName == 'bridge'){
 
 // called when menu item is selected
 ltToolsMenuItem.onSelect = function(){
-	if(this.ShiftDown) alertDescriptions(true); // shift key was pressed when selected
-	alertDescriptions();
+	if(this.ShiftDown) ltRun(true); // shift key was pressed when selected
+	ltRun(false);
 }
 
 
 
 // Runs the script: shows dialog for settings, then tags locked files and unlocks them if requested.
 // if runWithoutDialog is true, dialog is not shown and tagging is done using the settings stored in preferences.
-function ltRun(runWithoutDialog = false){
+function ltRun(runWithoutDialog){
 	try{
 		app.synchronousMode = true; // make sure we're getting the most current data
-
+		
 		var selection = app.document.selections; // get selected files
 		if(selection.length == 0){ // check for empty selection
 			alert("LockTagger Error:\nNothing selected!")
 			return;
 		}
+		
+		if(!runWithoutDialog){ // open dialog
+			if(!ltMenu()) return; // don't proceed if the user canceled
+		}
 
-
-		for(var i in selection){ // iterate through each selected item
+		/* for(var i in selection){ // iterate through each selected item
 			if(selection[i].container == false){ // only does this code if the selection is not a folder
 				var description = selection[i].metadata.read(XMPConst.NS_DC, "description"); // Get the Dublin Core Description field
 				var name = selection[i].name; // get the file name
 				alert("Name: " + name + "\nDescription: " + description);
 			}
-		}
+		} */
 
 
 		app.synchronousMode = false;
@@ -76,7 +79,12 @@ function ltRun(runWithoutDialog = false){
 // Returns true if the script is to continue, false if it should terminate.
 // When returning true, the settings are saved into app preferences.
 function ltMenu(){
-
+	var applyLabel = "";
+	var unlockFiles = true; 
+	if(app.preferences.ltPrefsSet == true){
+		applyLabel = app.preferences.ltLabel;
+		unlockFiles = app.preferences.ltUnlockFiles;
+	}
 
 	/*
 	Code for Import https://scriptui.joonas.me — (Triple click to select): 
@@ -87,7 +95,7 @@ function ltMenu(){
 	// ========
 	var ltDialog = new Window("dialog"); 
 		ltDialog.text = "LockTagger"; 
-		ltDialog.preferredSize.width = 280; 
+		// ltDialog.preferredSize.width = 300; 
 		ltDialog.orientation = "column"; 
 		ltDialog.alignChildren = ["left","top"]; 
 		ltDialog.spacing = 10; 
@@ -123,7 +131,13 @@ function ltMenu(){
 
 	var ltDDApplyLabel_array = ["0 Stars","1 Star","2 Stars","3 Stars","4 Stars","5 Stars","-","No Label","Red Label","Yellow Label","Green Label","Blue Label","Purple Label","-","Reject"]; 
 	var ltDDApplyLabel = row1.add("dropdownlist", undefined, undefined, {name: "ltDDApplyLabel", items: ltDDApplyLabel_array}); 
-		ltDDApplyLabel.selection = 0; 
+
+	ltDDApplyLabel.selection = 1; 
+	// initalize value in dropdown with one stored in preferences
+	for(var i = 0; i < ltDDApplyLabel_array.length; i++){
+		if(ltDDApplyLabel_array[i] == applyLabel)
+			ltDDApplyLabel.selection = i; 
+	}
 
 	// ROW2
 	// ====
@@ -135,6 +149,8 @@ function ltMenu(){
 
 	var ltCBUnlockFiles = row2.add("checkbox", undefined, undefined, {name: "ltCBUnlockFiles"}); 
 		ltCBUnlockFiles.text = "Unlock files"; 
+		ltCBUnlockFiles.value = unlockFiles;
+
 
 	// GROUP2
 	// ======
@@ -144,14 +160,8 @@ function ltMenu(){
 		group2.spacing = 10; 
 		group2.margins = 4; 
 
-	var statictext2 = group2.add("group", undefined , {name: "statictext2"}); 
-		statictext2.getText = function() { var t=[]; for ( var n=0; n<statictext2.children.length; n++ ) { var text = statictext2.children[n].text || ''; if ( text === '' ) text = ' '; t.push( text ); } return t.join('\n'); }; 
-		statictext2.orientation = "column"; 
-		statictext2.alignChildren = ["left","center"]; 
-		statictext2.spacing = 0; 
-
-		statictext2.add("statictext", undefined, "Hold Shift when selecting this menu item to"); 
-		statictext2.add("statictext", undefined, "Run using the previous settings."); 
+	var statictext2 = group2.add("statictext", undefined, undefined, {name: "statictext2", multiline: true}); 
+		statictext2.text = "Hold Shift when selecting this menu item to Run using the previous settings."; 
 
 	// GROUP3
 	// ======
@@ -168,14 +178,41 @@ function ltMenu(){
 	var ltBTRun = group3.add("button", undefined, undefined, {name: "ltBTRun"}); 
 		ltBTRun.text = "Run"; 
 
-	/// GROUP 3 Interactivity
-	ltDialog.group3.ltBTCancel.onClick = function(){
-		//TODO
+
+
+	/// DROPDOWN INTERACTIVITY
+	ltDialog.panel1.group1.row1.ltDDApplyLabel.onChange = function(){
+		if(ltDialog.panel1.group1.row1.ltDDApplyLabel.selection == "-"){ // disable ok button if a divider is selected
+			ltDialog.group3.ltBTRun.enabled = false;
+		}
+		else{
+			ltDialog.group3.ltBTRun.enabled = true;
+			applyLabel = ltDialog.panel1.group1.row1.ltDDApplyLabel.selection;
+		}
 	}
 
+	/// CHECKBOX INTERACTIVITY
+	ltDialog.panel1.group1.row2.ltCBUnlockFiles.onClick = function(){
+		unlockFiles = ltDialog.panel1.group1.row2.ltCBUnlockFiles.value;
+	}
 
+	/// GROUP 3 INTERACTIVITY
+	ltDialog.group3.ltBTCancel.onClick = function(){
+		ltDialog.close();
+		return false;
+	}
+
+	ltDialog.group3.ltBTRun.onClick = function(){
+		app.preferences.ltLabel = applyLabel.toString();
+		app.preferences.ltUnlockFiles = unlockFiles;
+		app.preferences.ltPrefsSet = true;
+
+		ltDialog.close();
+		alert("Prefs:\n" + app.preferences.ltLabel + "\n" + app.preferences.ltUnlockFiles);
+		return true;
+	}
 
 	ltDialog.show();
 
-
 }
+
