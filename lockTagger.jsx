@@ -1,3 +1,13 @@
+/*
+@@@START_XML@@@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScriptInfo xmlns:dc="http://purl.org/dc/elements/1.1/" xml:lang="en_US">
+<dc:title>LockTagger</dc:title>
+<dc:description>This script allows bulk tagging and unlocking of locked files. Select a group of files then run from Tools -> "Tag locked files..."</dc:description>
+<dc:source>https://github.com/9yz/bridge-scripts</dc:source>
+@@@END_XML@@
+*/
+
 /* 
 
 	lockTagger.jsx
@@ -37,8 +47,8 @@ if(BridgeTalk.appName == 'bridge'){
 
 // called when menu item is selected
 ltToolsMenuItem.onSelect = function(){
-	if(this.ShiftDown) ltRun(true); // shift key was pressed when selected
-	ltRun(false);
+	if(this.shiftDown) ltRun(true); // shift key was pressed when selected
+	else ltRun(false);
 }
 
 
@@ -59,13 +69,24 @@ function ltRun(runWithoutDialog){
 			if(!ltMenu()) return; // don't proceed if the user canceled
 		}
 
-		/* for(var i in selection){ // iterate through each selected item
-			if(selection[i].container == false){ // only does this code if the selection is not a folder
-				var description = selection[i].metadata.read(XMPConst.NS_DC, "description"); // Get the Dublin Core Description field
-				var name = selection[i].name; // get the file name
-				alert("Name: " + name + "\nDescription: " + description);
+		if(ExternalObject.AdobeXMPScript == undefined)  ExternalObject.AdobeXMPScript = new ExternalObject('lib:AdobeXMPScript'); // load the xmp scripting API
+
+		for(var i in selection){ // iterate through each selected item
+			// if(selection[i].container == false){ // only does this code if the selection is not a folder
+			
+			
+			if(selection[i].locked){
+				alert("Name: " + selection[i].name + "\nlocked: " + selection[i].locked);
+				selection[i].core.unlock();
+
+				var myXMP = new XMPMeta();
+				myXMP.setProperty(XMPConst.NS_XMP, "Rating", 5); // replace with new value
+				var updatedMetadata = myXMP.serialize(XMPConst.SERIALIZE_OMIT_PACKET_WRAPPER | XMPConst.SERIALIZE_USE_COMPACT_FORMAT);
+				selection[i].metadata = new Metadata(updatedMetadata);
 			}
-		} */
+			// }
+
+		}
 
 
 		app.synchronousMode = false;
