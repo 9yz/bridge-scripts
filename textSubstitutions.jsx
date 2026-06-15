@@ -73,8 +73,8 @@ if(BridgeTalk.appName == 'bridge'){
 
 		app.addLegalNotice("TextSubstitutions", "View contributors at https://github.com/9yz/bridge-scripts");
 
-		var tsMenuRun 			= MenuElement.create('command', 'Text Substitutions...', 'at the end of Tools');
-		var tsMenuRunCont 		= MenuElement.create('command', 'Text Substitutions...', 'after Thumbnail/Open'); 
+		var tsMenuRun 			= MenuElement.create('command', 'Text Substitutions', 'at the end of Tools');
+		var tsMenuRunCont 		= MenuElement.create('command', 'Text Substitutions', 'after Thumbnail/Open'); 
 
 		tsInitalizePrefs();
 		tsPrefsPanel();
