@@ -1,40 +1,37 @@
+/*
+@@@START_XML@@@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScriptInfo xmlns:dc="http://purl.org/dc/elements/1.1/" xml:lang="en_US">
+<dc:title>Scratch Pad</dc:title>
+<dc:description>Adds a new "Scratch Pad" window for taking notes or whatever. Accessed through Window > Scratch Pad.</dc:description>
+<dc:source>https://github.com/9yz/bridge-scripts</dc:source>
+@@@END_XML@@
+*/
+
 /* 
 	
 	scratchPad.jsx
-	12/08/24
 
 	Adds a new "Scratch Pad" window for taking notes or whatever. Accessed through Window > Scratch Pad.
 	Text is not saved between sessions.
 
 	Derived from TextPreview.jsx by David M. Converse, availible under the Apache 2.0 License.
 
+	See repo for documentation:
+	https://github.com/9yz/bridge-scripts
+
 */
 
 
 #target bridge
+
 // STARTUP FUNCTION: run when bridge starts, used for setup
 if(BridgeTalk.appName == 'bridge'){ 
 	try{
-
-		// Load the XMP Script library
-		if( xmpLib == undefined ){
-			if(Folder.fs == "Windows"){
-				var pathToLib = Folder.startup.fsName + "/AdobeXMPScript.dll";
-			} 
-			else {
-				var pathToLib = Folder.startup.fsName + "/AdobeXMPScript.framework";
-			}
-		
-			var libfile = new File( pathToLib );
-			var xmpLib = new ExternalObject("lib:" + pathToLib );
-		}
-
-		var spMenuRun 			= MenuElement.create('command', 'Scratch Pad', 'at the beginning of Window-');
-		// var spMenuRun 			= MenuElement.create('command', 'Scratch Pad', 'at the beginning of Window');
-
+		var spMenuRun = MenuElement.create('command', 'Scratch Pad', 'at the beginning of Window-');
 	}
 	catch(e){
-		alert(e + ' ' + e.line);
+		alert("ScratchPad error:\n" + e + ' ' + e.line);
 	}
 }
 
@@ -46,8 +43,6 @@ spMenuRun.onSelect = function(){
 
 function spCreateWindow(){
 	try{
-
-		// why this code works and 
 		
 		this.paletteRefs = new Array();
 		var spWrapper = this;
@@ -77,6 +72,6 @@ function spCreateWindow(){
 
 
 	} catch(e){
-        alert(e + ' ' + e.line);
+        alert("ScratchPad error:\n" + e + ' ' + e.line);
     }
 }

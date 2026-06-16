@@ -1,10 +1,22 @@
 ﻿/*
+@@@START_XML@@@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScriptInfo xmlns:dc="http://purl.org/dc/elements/1.1/" xml:lang="en_US">
+<dc:title>Copy Metadata</dc:title>
+<dc:description>This script allows copying some metadata between files. Activated from the Tools or Context (right-click) menus.</dc:description>
+<dc:source>https://github.com/9yz/bridge-scripts</dc:source>
+@@@END_XML@@
+*/
 
-	copyMetadataCont Script created by 9yz
-	12/08/24
+/*
+
+	copyMetadata.jsx
 
 	Adds the ability to copy IPTC metadata between files.
-	Activate via Tools > Copy Property or Tools > Paste Property..
+	Activate via Tools > Copy Property or Tools > Paste Property...
+
+	See repo for documentation:
+	https://github.com/9yz/bridge-scripts
 
 */
 
@@ -74,7 +86,7 @@ if(BridgeTalk.appName == 'bridge'){
 
 	}
 	catch(e){
-		alert("Copy Metadata Error:\n" + e + ' ' + e.line);
+		alert("Copy Metadata error:\n" + e + ' ' + e.line);
 	}
 }
 
@@ -285,19 +297,19 @@ function cmCopy(){
 
 		var selection = app.document.selections; // get selected files
 		if(!selection.length){ // nothing selected
-			alert('Copy Metadata Error:\nNothing selected!');
+			alert('Copy Metadata error:\nNothing selected!');
 			return;
 		}
 		if(selection.length > 1){ // more than 1 selected
-			alert('Copy Metadata Error:\nYou can only copy from one file at a time.'); 
+			alert('Copy Metadata error:\nYou can only copy from one file at a time.'); 
 			return;
 		} 
 		if(selection[0].container){ // selection is a folder
-			alert('Copy Metadata Error:\nFolders cannot be copied from.');
+			alert('Copy Metadata error:\nFolders cannot be copied from.');
 			return;
 		}
 		if(!selection[0].synchronousMetadata){ // selection doesn't support xmp
-			alert('Copy Metadata Error:\nThis file does not have XMP metadata.');
+			alert('Copy Metadata error:\nThis file does not have XMP metadata.');
 			return;
 		}
 		
@@ -345,7 +357,7 @@ function cmCopy(){
 		app.synchronousMode = false;
 	}
 	catch(e){
-		alert("Copy Metadata Error:\n" + e + ' ' + e.line);
+		alert("Copy Metadata error:\n" + e + ' ' + e.line);
 	}
 }
 
@@ -357,7 +369,7 @@ function cmPaste(method){
 		var errorFiles = 0;
 		var selection = app.document.selections; // get selected files
 		if(!selection.length){ // nothing selected
-			alert('Copy Metadata Error:\nNothing selected!');
+			alert('Copy Metadata error:\nNothing selected!');
 			return;
 		} 
 
@@ -432,14 +444,14 @@ function cmPaste(method){
 		}
 
 		if(errorFiles > 0){
-			alert("Copy Metadata Error:\n" + errorFiles + " files were not processed because they do not support metadata.")
+			alert("Copy Metadata error:\n" + errorFiles + " files were not processed because they do not support metadata.")
 		}
 
 
 		app.synchronousMode = false;
 	}
 	catch(e){
-		alert("Copy Metadata Error:\n" + e + ' ' + e.line);
+		alert("Copy Metadata error:\n" + e + ' ' + e.line);
 	}
 }
 
