@@ -86,7 +86,7 @@ if(BridgeTalk.appName == 'bridge'){
 
 	}
 	catch(e){
-		alert("Copy Metadata Error:\n" + e + ' ' + e.line);
+		alert("Copy Metadata error:\n" + e + ' ' + e.line);
 	}
 }
 
@@ -297,19 +297,19 @@ function cmCopy(){
 
 		var selection = app.document.selections; // get selected files
 		if(!selection.length){ // nothing selected
-			alert('Copy Metadata Error:\nNothing selected!');
+			alert('Copy Metadata error:\nNothing selected!');
 			return;
 		}
 		if(selection.length > 1){ // more than 1 selected
-			alert('Copy Metadata Error:\nYou can only copy from one file at a time.'); 
+			alert('Copy Metadata error:\nYou can only copy from one file at a time.'); 
 			return;
 		} 
 		if(selection[0].container){ // selection is a folder
-			alert('Copy Metadata Error:\nFolders cannot be copied from.');
+			alert('Copy Metadata error:\nFolders cannot be copied from.');
 			return;
 		}
 		if(!selection[0].synchronousMetadata){ // selection doesn't support xmp
-			alert('Copy Metadata Error:\nThis file does not have XMP metadata.');
+			alert('Copy Metadata error:\nThis file does not have XMP metadata.');
 			return;
 		}
 		
@@ -357,7 +357,7 @@ function cmCopy(){
 		app.synchronousMode = false;
 	}
 	catch(e){
-		alert("Copy Metadata Error:\n" + e + ' ' + e.line);
+		alert("Copy Metadata error:\n" + e + ' ' + e.line);
 	}
 }
 
@@ -369,7 +369,7 @@ function cmPaste(method){
 		var errorFiles = 0;
 		var selection = app.document.selections; // get selected files
 		if(!selection.length){ // nothing selected
-			alert('Copy Metadata Error:\nNothing selected!');
+			alert('Copy Metadata error:\nNothing selected!');
 			return;
 		} 
 
@@ -444,14 +444,14 @@ function cmPaste(method){
 		}
 
 		if(errorFiles > 0){
-			alert("Copy Metadata Error:\n" + errorFiles + " files were not processed because they do not support metadata.")
+			alert("Copy Metadata error:\n" + errorFiles + " files were not processed because they do not support metadata.")
 		}
 
 
 		app.synchronousMode = false;
 	}
 	catch(e){
-		alert("Copy Metadata Error:\n" + e + ' ' + e.line);
+		alert("Copy Metadata error:\n" + e + ' ' + e.line);
 	}
 }
 
