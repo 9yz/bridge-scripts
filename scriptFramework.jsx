@@ -1,6 +1,25 @@
-// Sample script intended for developers to build off of.
+/*
+@@@START_XML@@@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScriptInfo xmlns:dc="http://purl.org/dc/elements/1.1/" xml:lang="en_US">
+<dc:title>Script Name</dc:title>
+<dc:description>The text here is displayed in Bridge's Startup Script listing and defined in the header of the script file.</dc:description>
+<dc:source>This field is not displayed in Bridge but is suggested as a helpful include in Adobe's documentation.</dc:source>
+@@@END_XML@@
+*/
 
-// for ESTK
+// The above block defines metadata for the script; it is used by Bridge in the listing for Startup Scripts in the preferences window.
+
+/* 
+
+	scriptFramework.jsx
+
+	A simple framework for developers to builf off of.
+
+*/
+
+
+// for the ExtendScript ToolKit (ESTK)
 #target bridge 
 
 // STARTUP FUNCTION: run when bridge starts, used for setup
@@ -13,7 +32,6 @@ if(BridgeTalk.appName == 'bridge'){
 		} 
 		else { // run only on mac
 			if( xmpLib == undefined ) var pathToLib = Folder.startup.fsName + "/AdobeXMPScript.framework"; // Load the XMP Script library
-
 		}
 
 
@@ -35,7 +53,7 @@ if(BridgeTalk.appName == 'bridge'){
 
 
 	} catch(e){
-		alert("Script Error:\n" + e + ' ' + e.line);
+		alert("Script error:\n" + e + ' ' + e.line);
 	}
 }
 
@@ -67,7 +85,7 @@ function alertDescriptions(){
 
 		var selection = app.document.selections; // get selected files
 		if(selection.length == 0){ // check for empty selection
-			alert("Nothing selected!")
+			alert("Nothing selected!");
 			return;
 		}
 
@@ -83,6 +101,6 @@ function alertDescriptions(){
 
 		app.synchronousMode = false;
 	} catch(e){
-		alert("Script Error:\n" + e + ' ' + e.line);
+		alert("Script error:\n" + e + ' ' + e.line);
 	}
 }
