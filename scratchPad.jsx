@@ -24,29 +24,14 @@
 
 
 #target bridge
+
 // STARTUP FUNCTION: run when bridge starts, used for setup
 if(BridgeTalk.appName == 'bridge'){ 
 	try{
-
-		// Load the XMP Script library
-		if( xmpLib == undefined ){
-			if(Folder.fs == "Windows"){
-				var pathToLib = Folder.startup.fsName + "/AdobeXMPScript.dll";
-			} 
-			else {
-				var pathToLib = Folder.startup.fsName + "/AdobeXMPScript.framework";
-			}
-		
-			var libfile = new File( pathToLib );
-			var xmpLib = new ExternalObject("lib:" + pathToLib );
-		}
-
-		var spMenuRun 			= MenuElement.create('command', 'Scratch Pad', 'at the beginning of Window-');
-		// var spMenuRun 			= MenuElement.create('command', 'Scratch Pad', 'at the beginning of Window');
-
+		var spMenuRun = MenuElement.create('command', 'Scratch Pad', 'at the beginning of Window-');
 	}
 	catch(e){
-		alert(e + ' ' + e.line);
+		alert("ScratchPad error:\n" + e + ' ' + e.line);
 	}
 }
 
@@ -58,8 +43,6 @@ spMenuRun.onSelect = function(){
 
 function spCreateWindow(){
 	try{
-
-		// why this code works and 
 		
 		this.paletteRefs = new Array();
 		var spWrapper = this;
@@ -89,6 +72,6 @@ function spCreateWindow(){
 
 
 	} catch(e){
-        alert(e + ' ' + e.line);
+        alert("ScratchPad error:\n" + e + ' ' + e.line);
     }
 }
