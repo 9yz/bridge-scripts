@@ -1,5 +1,5 @@
 # Bridge Scripts
-[![Textsubs version](https://img.shields.io/badge/text_substitutions-v1.2.1-blue)](https://github.com/9yz/bridge-scripts/releases)
+[![Textsubs version](https://img.shields.io/badge/text_substitutions-v1.2.2-blue)](https://github.com/9yz/bridge-scripts/releases)
 [![Static Badge](https://img.shields.io/badge/wiki!-teal)](https://github.com/9yz/bridge-scripts/wiki)
 ![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)
 ![recent commits](https://img.shields.io/github/commit-activity/m/9yz/bridge-scripts)
@@ -11,7 +11,7 @@ A collection of useful scripts I've made for Adobe Bridge. This readme contains 
 
 ## Scripts
 
-### textSubstitutions
+### TextSubstitutions
 Inspired by the PhotoMechanic's code replacements feature, this lets you designate special codes to be replaced by any kind of text! For example, typing `[[tTime]]` in the description of an image then running this tool will replace it with the timestamp the photo was created. `[[mFileName]]` will be replaced with the file's name. In addition to over 90 special codes that retrieve file metadata and perform complex behaviors, you can also create your own substitutions.
 
 Text Substitutions work in all metadata fields in Bridge's IPTC Core panel as well as in the filename.
@@ -23,7 +23,7 @@ Text Substitutions work in all metadata fields in Bridge's IPTC Core panel as we
 ##### Creating Custom Substitutions
 After installing [textSubstitutions.jsx](textSubstitutions.jsx) as described below, add [ts_customSubs.txt](ts_customSubs.txt) to the same folder. The file contains information on the format for custom substitutions. Also see [ts_folderAssignments.txt](https://github.com/9yz/bridge-scripts/blob/main/substitutions/ts_folderAssignments.txt) and [ts_hotCodes.txt](https://github.com/9yz/bridge-scripts/blob/main/substitutions/ts_hotCodes.txt) for examples of complex behaviours using functional substitutions.
 
-### copyMetadata
+### Copy Metadata
 A simple interface for copying selected metadata fields between files. These fields can be copied:
 - Headline
 - Description
@@ -38,14 +38,27 @@ A simple interface for copying selected metadata fields between files. These fie
 4. Select the files you would like to paste to
 5. Right click > Paste Property OR Tools > Paste Property. You have the option of Overwriting the existing values or Appending, which appends Keywords but overwrites other fields.
 
-### scratchPad
+### Lock Tagger
+Allows for the selection, unlocking, and tagging of locked files from a group of locked and unlocked files. When run on a selection, the script can do one of these things:
+- Select only the locked files
+- Unlock all locked files and tag them with one of these:
+  - 0-5 Stars
+  - "Reject" rating
+  - Any of the color labels (or no label)
+#### Usage:
+1. Select a group of files that contains locked (and unlocked) files.
+2. Run the script from Tools > Tag Locked Files...
+3. A dialog opens, allowing you to choose how to tag the files
+4. On subsequent usages, the dialog can be bypassed by holding Shift when selecting the Tools menu item - the last used setting from the dialog is used (persists between program restarts).
+
+### Scratch Pad
 Opens a simple, dockable text box for taking notes. Contents are not saved on program close.
 
 #### Usage
 1. Select Window > Scratch Pad
 2. Move the newly-created window to the location of your choice.
 
-### scriptFramework
+### Script Framework
 A simple example script, intended for others to learn from and build upon.
 
 ## Installation
