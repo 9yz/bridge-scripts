@@ -2,7 +2,7 @@
 @@@START_XML@@@
 <?xml version="1.0" encoding="UTF-8"?>
 <ScriptInfo xmlns:dc="http://purl.org/dc/elements/1.1/" xml:lang="en_US">
-<dc:title>LockTagger</dc:title>
+<dc:title>Lock Tagger</dc:title>
 <dc:description>This script allows bulk tagging and unlocking of locked files. Select a group of files then run from Tools -> "Tag locked files..."</dc:description>
 <dc:source>https://github.com/9yz/bridge-scripts</dc:source>
 @@@END_XML@@
@@ -37,7 +37,7 @@ if(BridgeTalk.appName == 'bridge'){
 		var ltToolsMenuItem = MenuElement.create('command', 'Tag Locked Files...', 'at the end of Tools'); // create an item in the Tools menu
 	
 	} catch(e){
-		alert("LockTagger error:\n" + e + ' ' + e.line);
+		alert("Lock Tagger error:\n" + e + ' ' + e.line);
 	}
 }
 
@@ -58,7 +58,7 @@ function ltRun(runWithoutDialog){
 		
 		var selection = app.document.selections; // get selected files
 		if(selection.length == 0){ // check for empty selection
-			alert("LockTagger error:\nNothing selected!")
+			alert("Lock Tagger error:\nNothing selected!")
 			return;
 		}
 		
@@ -105,7 +105,7 @@ function ltRun(runWithoutDialog){
 			case "No Label":
 				label = ""; break;
 			default:
-				alert("LockTagger error:\nUnknown label \"" + applyLabel + "\"!");
+				alert("Lock Tagger error:\nUnknown label \"" + applyLabel + "\"!");
 				return;
 		}
 
@@ -152,7 +152,7 @@ function ltRun(runWithoutDialog){
 		app.synchronousMode = false;
 
 	} catch(e){
-		alert("LockTagger error:\n" + e + ' ' + e.line);
+		alert("Lock Tagger error:\n" + e + ' ' + e.line);
 	}
 }
 
@@ -169,13 +169,13 @@ function ltMenu(){
 
 	/*
 		Code for Import https://scriptui.joonas.me — (Triple click to select): 
-		{"activeId":3,"items":{"item-0":{"id":0,"type":"Dialog","parentId":false,"style":{"enabled":true,"varName":"ltDialog","windowType":"Dialog","creationProps":{"su1PanelCoordinates":false,"maximizeButton":false,"minimizeButton":false,"independent":false,"closeButton":true,"borderless":false,"resizeable":false},"text":"LockTagger","preferredSize":[280,0],"margins":16,"orientation":"column","spacing":10,"alignChildren":["left","top"]}},"item-1":{"id":1,"type":"Group","parentId":4,"style":{"enabled":true,"varName":"row1","preferredSize":[0,0],"margins":0,"orientation":"row","spacing":10,"alignChildren":["left","center"],"alignment":null}},"item-2":{"id":2,"type":"StaticText","parentId":1,"style":{"enabled":true,"varName":null,"creationProps":{"truncate":"none","multiline":false,"scrolling":false},"softWrap":false,"text":"Tag locked files with:","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-3":{"id":3,"type":"DropDownList","parentId":1,"style":{"enabled":true,"varName":"ltDDApplyLabel","text":"DropDownList","listItems":"0 Stars, 1 Star, 2 Stars, 3 Stars, 4 Stars, 5 Stars, -,  No Label, Red Label, Yellow Label, Green Label, Blue Label, Purple Label, -, Reject","preferredSize":[100,0],"alignment":null,"selection":0,"helpTip":null}},"item-4":{"id":4,"type":"Group","parentId":7,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":2,"orientation":"column","spacing":10,"alignChildren":["left","center"],"alignment":null}},"item-7":{"id":7,"type":"Panel","parentId":0,"style":{"enabled":true,"varName":null,"creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Settings","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["left","top"],"alignment":null}},"item-8":{"id":8,"type":"Group","parentId":0,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":0,"orientation":"row","spacing":10,"alignChildren":["right","center"],"alignment":"right"}},"item-9":{"id":9,"type":"Button","parentId":8,"style":{"enabled":true,"varName":"ltBTRun","text":"Run","justify":"center","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-10":{"id":10,"type":"Button","parentId":8,"style":{"enabled":true,"varName":"ltBTCancel","text":"Cancel","justify":"center","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-11":{"id":11,"type":"Group","parentId":0,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":4,"orientation":"row","spacing":10,"alignChildren":["left","center"],"alignment":null}},"item-12":{"id":12,"type":"StaticText","parentId":11,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"Hold Shift when selecting this menu item to Run using the previous settings.","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}}},"order":[0,7,4,1,2,3,11,12,8,10,9],"settings":{"importJSON":true,"indentSize":false,"cepExport":false,"includeCSSJS":true,"showDialog":true,"functionWrapper":false,"afterEffectsDockable":false,"itemReferenceList":"None"}}
+		{"activeId":3,"items":{"item-0":{"id":0,"type":"Dialog","parentId":false,"style":{"enabled":true,"varName":"ltDialog","windowType":"Dialog","creationProps":{"su1PanelCoordinates":false,"maximizeButton":false,"minimizeButton":false,"independent":false,"closeButton":true,"borderless":false,"resizeable":false},"text":"Lock Tagger","preferredSize":[280,0],"margins":16,"orientation":"column","spacing":10,"alignChildren":["left","top"]}},"item-1":{"id":1,"type":"Group","parentId":4,"style":{"enabled":true,"varName":"row1","preferredSize":[0,0],"margins":0,"orientation":"row","spacing":10,"alignChildren":["left","center"],"alignment":null}},"item-2":{"id":2,"type":"StaticText","parentId":1,"style":{"enabled":true,"varName":null,"creationProps":{"truncate":"none","multiline":false,"scrolling":false},"softWrap":false,"text":"Tag locked files with:","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-3":{"id":3,"type":"DropDownList","parentId":1,"style":{"enabled":true,"varName":"ltDDApplyLabel","text":"DropDownList","listItems":"0 Stars, 1 Star, 2 Stars, 3 Stars, 4 Stars, 5 Stars, -,  No Label, Red Label, Yellow Label, Green Label, Blue Label, Purple Label, -, Reject","preferredSize":[100,0],"alignment":null,"selection":0,"helpTip":null}},"item-4":{"id":4,"type":"Group","parentId":7,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":2,"orientation":"column","spacing":10,"alignChildren":["left","center"],"alignment":null}},"item-7":{"id":7,"type":"Panel","parentId":0,"style":{"enabled":true,"varName":null,"creationProps":{"borderStyle":"etched","su1PanelCoordinates":false},"text":"Settings","preferredSize":[0,0],"margins":10,"orientation":"column","spacing":10,"alignChildren":["left","top"],"alignment":null}},"item-8":{"id":8,"type":"Group","parentId":0,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":0,"orientation":"row","spacing":10,"alignChildren":["right","center"],"alignment":"right"}},"item-9":{"id":9,"type":"Button","parentId":8,"style":{"enabled":true,"varName":"ltBTRun","text":"Run","justify":"center","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-10":{"id":10,"type":"Button","parentId":8,"style":{"enabled":true,"varName":"ltBTCancel","text":"Cancel","justify":"center","preferredSize":[0,0],"alignment":null,"helpTip":null}},"item-11":{"id":11,"type":"Group","parentId":0,"style":{"enabled":true,"varName":null,"preferredSize":[0,0],"margins":4,"orientation":"row","spacing":10,"alignChildren":["left","center"],"alignment":null}},"item-12":{"id":12,"type":"StaticText","parentId":11,"style":{"enabled":true,"varName":null,"creationProps":{},"softWrap":true,"text":"Hold Shift when selecting this menu item to Run using the previous settings.","justify":"left","preferredSize":[0,0],"alignment":null,"helpTip":null}}},"order":[0,7,4,1,2,3,11,12,8,10,9],"settings":{"importJSON":true,"indentSize":false,"cepExport":false,"includeCSSJS":true,"showDialog":true,"functionWrapper":false,"afterEffectsDockable":false,"itemReferenceList":"None"}}
 	*/ 
 
 	// LTDIALOG
 	// ========
 	var ltDialog = new Window("dialog"); 
-		ltDialog.text = "LockTagger"; 
+		ltDialog.text = "Lock Tagger Settings"; 
 		// ltDialog.preferredSize.width = 300; 
 		ltDialog.orientation = "column"; 
 		ltDialog.alignChildren = ["left","top"]; 
