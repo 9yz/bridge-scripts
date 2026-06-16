@@ -1,8 +1,21 @@
+/*
+@@@START_XML@@@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScriptInfo xmlns:dc="http://purl.org/dc/elements/1.1/" xml:lang="en_US">
+<dc:title>TextSubstitutions</dc:title>
+<dc:description>Allows quickly writing metadata through built-in and customizable substitutions. See https://github.com/9yz/bridge-scripts/wiki for documentation.</dc:description>
+<dc:source>https://github.com/9yz/bridge-scripts</dc:source>
+@@@END_XML@@
+*/
+
+
 /* 
 
 	textSubstitutions.jsx
 
-	See repo for doccumentation:
+	Allows quickly writing metadata through built-in and customizable substitutions.
+
+	See repo for documentation:
 	https://github.com/9yz/bridge-scripts
 
 */
@@ -23,8 +36,8 @@ const TS_DELIMITERS = [
 	["=",  "=",  1],
 	["==", "==", 2],
 ]
-const TS_VERSION = "1.2.1";
-const TS_VERSION_PREFS = 100201; // equal to 1.002.01, or 1.2.1
+const TS_VERSION = "1.2.2";
+const TS_VERSION_PREFS = 100202; // equal to 1.002.01, or 1.2.1
 
 var TS_SUB_TABLE_BUILTIN = [];
 var TS_SUB_TABLE_BUILTIN_FUNCTIONS = [];
@@ -58,13 +71,13 @@ if(BridgeTalk.appName == 'bridge'){
 			if( xmpLib == undefined ) var pathToLib = Folder.startup.fsName + "/AdobeXMPScript.dll"; // Load the XMP Script library
 
 			TS_SCRIPTS_DIR = Folder.userData; // %APPDATA%
-			TS_SCRIPTS_DIR.changePath("./Adobe/Bridge 2025/Startup Scripts/");
+			TS_SCRIPTS_DIR.changePath("./Adobe/Bridge " + tsGetFolderYear() + "/Startup Scripts/");
 		} 
 		else {
 			if( xmpLib == undefined ) var pathToLib = Folder.startup.fsName + "/AdobeXMPScript.framework"; // Load the XMP Script library
 
 			TS_SCRIPTS_DIR = Folder.userData; // ~/Library/Application Support
-			TS_SCRIPTS_DIR.changePath("./Adobe/Bridge 2025/Startup Scripts/");
+			TS_SCRIPTS_DIR.changePath("./Adobe/Bridge " + tsGetFolderYear() + "/Startup Scripts/");
 		}
 	
 		var libfile = new File( pathToLib );
@@ -72,8 +85,8 @@ if(BridgeTalk.appName == 'bridge'){
 
 		app.addLegalNotice("TextSubstitutions", "View contributors at https://github.com/9yz/bridge-scripts");
 
-		var tsMenuRun 			= MenuElement.create('command', 'Text Substitutions...', 'at the end of Tools');
-		var tsMenuRunCont 		= MenuElement.create('command', 'Text Substitutions...', 'after Thumbnail/Open'); 
+		var tsMenuRun 			= MenuElement.create('command', 'Text Substitutions', 'at the end of Tools');
+		var tsMenuRunCont 		= MenuElement.create('command', 'Text Substitutions', 'after Thumbnail/Open'); 
 
 		tsInitalizePrefs();
 		tsPrefsPanel();
@@ -81,7 +94,7 @@ if(BridgeTalk.appName == 'bridge'){
 
 	}
 	catch(e){
-		alert("Text Substitutions Error:\n" + e + ' ' + e.line);
+		alert("Text Substitutions error:\n" + e + ' ' + e.line);
 	}
 }
 
@@ -93,6 +106,12 @@ tsMenuRunCont.onSelect = function(){
 	tsRun();
 }
 
+// returns the application's year number. Ex. for "Adobe Bridge 2026", returns "2026"
+function tsGetFolderYear(){
+	path = BridgeTalk.getAppPath();
+	i = path.indexOf("Adobe Bridge 20");
+	return path.substring(i+13, i+17);
+}
 
 
 function tsPrefsPanel(){
@@ -959,7 +978,7 @@ function tsRun(){
 		var errorFiles = 0;
 		var selection = app.document.selections; // get selected files
 		if(!selection.length){ // nothing selected
-			alert('Text Substitutions Error:\nNothing selected!');
+			alert('Text Substitutions error:\nNothing selected!');
 			return;
 		} 
 
@@ -1098,7 +1117,7 @@ function tsRun(){
 	}
 	catch(e){
 		if(useDialog) progessDialog.hide();
-		alert("Text Substitutions Error:\n" + e + ' ' + e.line);
+		alert("Text Substitutions error:\n" + e + ' ' + e.line);
 	}
 }
 
@@ -1122,7 +1141,7 @@ function tsDoSubstitutions(sel, text){
 	}
 	catch(e){
 		if(e.message == "bracketMatching"){
-			alert("TextSubstitutions Error:\nMismatched delimeters found in file " + sel.name + "\n\nThis file has not been affected. No further files will be proccessed.");
+			alert("TextSubstitutions error:\nMismatched delimeters found in file " + sel.name + "\n\nThis file has not been affected. No further files will be proccessed.");
 			throw e;
 		}
 		else throw e;
@@ -1212,7 +1231,7 @@ function tsFindReplacement(selection, targetString){
 			if(isArray(replObject.replacement)){ 	// CASE 2a: target repl is an array
 
 				if(splitString[1] < 1 || splitString[1] > replObject.replacement.length){ // ERROR: enum index out of bounds
-					alert("TextSubstitutions Error:\nIndex out of bounds: " + targetString + " in " + selection.name + ".\nIndex must be in 1, " + replObject.replacement.length + " (inclusive).\n\nThis file has not been affected. No further files will be proccessed."); 
+					alert("TextSubstitutions error:\nIndex out of bounds: " + targetString + " in " + selection.name + ".\nIndex must be in range [1, " + replObject.replacement.length + "] (inclusive).\n\nThis file has not been affected. No further files will be proccessed."); 
 					throw SyntaxError("unknownSubstitution");
 				}
 				replText = replObject.replacement[splitString[1]-1]; // sub 1 to switch to 1-indexing
@@ -1222,13 +1241,13 @@ function tsFindReplacement(selection, targetString){
 				replText = replObject.replacement;
 			}
 			else { 									// CASE 2c ERROR: target repl is NOT an array and we're grabbing not the first index 
-				alert("TextSubstitutions Error:\nEnumeration defined on non-enumerable replacement: " + targetString + " in " + selection.name + ".\n\nThis file has not been affected. No further files will be proccessed.");
+				alert("TextSubstitutions error:\nEnumeration defined on non-enumerable replacement: " + targetString + " in " + selection.name + ".\n\nThis file has not been affected. No further files will be proccessed.");
 				throw SyntaxError("unknownSubstitution");
 			}
 
 		}
 		else{ 										// CASE 3 ERROR: too many #s in targetstring
-			alert("TextSubstitutions Error:\nInvalid syntax " + targetString + " in " + selection.name + ". Only one # allowed.\n\nThis file has not been affected. No further files will be proccessed.");
+			alert("TextSubstitutions error:\nInvalid syntax " + targetString + " in " + selection.name + ". Only one # allowed.\n\nThis file has not been affected. No further files will be proccessed.");
 			throw SyntaxError("unknownSubstitution");
 		}
 
@@ -1244,14 +1263,14 @@ function tsFindReplacement(selection, targetString){
 	
 
 	// no matching function
-	alert("TextSubstitutions Error:\nUnknown substitution " + splitString + " in " + selection.name + ".\n\nThis file has not been affected. No further files will be proccessed.");
+	alert("TextSubstitutions error:\nUnknown substitution " + splitString + " in " + selection.name + ".\n\nThis file has not been affected. No further files will be proccessed.");
 	throw SyntaxError("unknownSubstitution");
 }
 
 // checks for possible infinite recursion
 function checkRecursions(sel){
 	if(TS_RECURSIONS > app.preferences.tsRecursionLimit){
-		alert("TextSubstitutions Error:\nPossible cyclical reference detected - too many recursions in " + sel.name + ". You can raise the recursion limit in the preferences.\n\nThis file has not been affected. No further files will be proccessed.");
+		alert("TextSubstitutions error:\nPossible cyclical reference detected - too many recursions in " + sel.name + ". You can raise the recursion limit in the preferences.\n\nThis file has not been affected. No further files will be proccessed.");
 		throw SyntaxError("tooManyRecursions");
 	}
 }
@@ -1262,7 +1281,7 @@ function checkRecursions(sel){
 function tsSelectionToCreationDate(sel){
 	if(app.preferences.tsDateField == 0) return new XMPDateTime(sel.metadata.read(XMPConst.NS_EXIF, 'DateTimeOriginal'));
 	else if(app.preferences.tsDateField == 1) return new XMPDateTime(sel.metadata.read(XMPConst.NS_XMP, 'CreateDate'));
-	else alert("Text Substitutions Error:\ninvalid value for app.preferences.tsDateField!");
+	else alert("Text Substitutions error:\ninvalid value for app.preferences.tsDateField!");
 }
 
 // returns the file's creation date as an XMPDateTime object
@@ -1757,7 +1776,7 @@ function tsFRound(sel, argv){
 // returns the first argv[2] characters of argv[1]
 function tsFPrefix(sel, argv){
 	if(argv.length < 3){
-		alert("TextSubstitutions Error:\nfPrefix in "+ sel.name +" expected 2 arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
+		alert("TextSubstitutions error:\nfPrefix in "+ sel.name +" expected 2 arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
 		throw SyntaxError("missingArguments");
 	}
 	argv[2] = parseFloat(argv[2]);
@@ -1768,7 +1787,7 @@ function tsFPrefix(sel, argv){
 // returns the last argv[2] characters of argv[1]
 function tsFSuffix(sel, argv){
 	if(argv.length < 3){
-		alert("TextSubstitutions Error:\nfSuffix in "+ sel.name +" expected 2 arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
+		alert("TextSubstitutions error:\nfSuffix in "+ sel.name +" expected 2 arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
 		throw SyntaxError("missingArguments");
 	}
 	argv[2] = parseFloat(argv[2]);
@@ -1779,7 +1798,7 @@ function tsFSuffix(sel, argv){
 // returns characters between argv[2] and argv[3] in argv[1]
 function tsFSubstring(sel, argv){
 	if(argv.length < 4){
-		alert("TextSubstitutions Error:\nfSuffix in "+ sel.name +" expected 3 arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
+		alert("TextSubstitutions error:\nfSuffix in "+ sel.name +" expected 3 arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
 		throw SyntaxError("missingArguments");
 	}
 	argv[2] = parseFloat(argv[2]);
@@ -1799,7 +1818,7 @@ function tsFLength(sel, argv){
 // returns the index of the argv[3]-th occurance of argv[2] in argv[1]. Returns -1 if not found
 function tsFGetIndex(sel, argv){
 	if(argv.length < 3){
-		alert("TextSubstitutions Error:\nfGetIndex in "+ sel.name +" expected 2+ arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
+		alert("TextSubstitutions error:\nfGetIndex in "+ sel.name +" expected 2+ arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
 		throw SyntaxError("missingArguments");
 	}
 	if(!argv[3]) argv[3] = 1; // if not defined, assume they want the first one
@@ -1816,7 +1835,7 @@ function tsFGetIndex(sel, argv){
 // returns the index of the argv[3]-th occurance of argv[2] in argv[1], counting from the end. Returns -1 if not found
 function tsFGetLastIndex(sel, argv){
 	if(argv.length < 3){
-		alert("TextSubstitutions Error:\nfGetIndex in "+ sel.name +" expected 2+ arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
+		alert("TextSubstitutions error:\nfGetIndex in "+ sel.name +" expected 2+ arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
 		throw SyntaxError("missingArguments");
 	}
 	if(!argv[3]) argv[3] = 1; // if not defined, assume they want the first one
@@ -1833,7 +1852,7 @@ function tsFGetLastIndex(sel, argv){
 // replaces all instances of argv[2] in argv[1] with argv[3]
 function tsFFindReplace(sel, argv){
 	if(argv.length < 3){
-		alert("TextSubstitutions Error:\nfFindReplace in "+ sel.name +" expected 2+ arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
+		alert("TextSubstitutions error:\nfFindReplace in "+ sel.name +" expected 2+ arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
 		throw SyntaxError("missingArguments");
 	}
 
@@ -1858,7 +1877,7 @@ function tsFToLowerCase(sel, argv){
 	return argv[1].toLowerCase();
 }
 
-// returns argv[1] in Title Case, following these steps
+// returns argv[1] in Title Case, following these rules:
 /// 1. Capitalize all words
 /// 2. Lowercase the words 'a', 'an', 'and', and 'the'
 /// 3. Capitalize the first and last words
@@ -1944,7 +1963,7 @@ function tsFNot(sel, argv){
 // returns argv[2] if argv[1] is true. if argv[3] exists, return that. otherwise, return "".
 function tsFBranch(sel, argv){
 	if(argv.length < 3){
-		alert("TextSubstitutions Error:\nfBranch in "+ sel.name +" expected 2+ arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
+		alert("TextSubstitutions error:\nfBranch in "+ sel.name +" expected 2+ arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
 		throw SyntaxError("missingArguments");
 	}
 
@@ -1956,7 +1975,7 @@ function tsFBranch(sel, argv){
 // returns "1" if argv[1] is a valid subst, "0" otherwise
 function tsFSubstitutionExists(sel, argv){
 	if(argv.length < 2){
-		alert("TextSubstitutions Error:\nfSubstitutionExists in "+ sel.name +" expected 1 argument but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
+		alert("TextSubstitutions error:\nfSubstitutionExists in "+ sel.name +" expected 1 argument but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
 		throw SyntaxError("missingArguments");
 	}
 
@@ -1984,7 +2003,7 @@ function tsFSubstitutionExistsHelper(s){
 // returns the first valid substitution
 function tsFSafeExecute(sel, argv){
 	if(argv.length < 2){
-		alert("TextSubstitutions Error:\nfSafeExecute in "+ sel.name +" expected 1+ arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
+		alert("TextSubstitutions error:\nfSafeExecute in "+ sel.name +" expected 1+ arguments but got " + parseInt(argv.length-1) + "!\n\nThis file has not been affected. No further files will be proccessed.");
 		throw SyntaxError("missingArguments");
 	}
 	for(var i = 1; i < argv.length; i++){
