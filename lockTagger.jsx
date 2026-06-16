@@ -22,6 +22,9 @@
 // for ESTK
 #target bridge 
 
+// (debug) clear this script's preferences
+// app.preferences.clear("ltLabel","ltPrefsSet");
+
 // STARTUP FUNCTION: run when bridge starts, used for setup
 if(BridgeTalk.appName == 'bridge'){ 
 	try{
@@ -63,7 +66,7 @@ function ltRun(runWithoutDialog){
 		}
 		
 		// dont open dialog if requested not to, but always open if we don't have prefs sset
-		if(!runWithoutDialog || app.preferences.ltPrefsSet == false){ 
+		if(!runWithoutDialog || !app.preferences.ltPrefsSet){ 
 			if( !ltMenu() ) return; // don't proceed if the user canceled out of the menu
 		}
 
@@ -74,6 +77,9 @@ function ltRun(runWithoutDialog){
 		var applyLabel = app.preferences.ltLabel;
 		var rating = -Infinity;
 		var label = "";
+
+		var selectOnly = false; // was "Select only" chosen?
+
 
 		// set `rating` or `label` based on user preference - if a star option or Reject was selected, that value is set for `rating`. 
 		// if a label was selected, the text name of that label is grabbed from preferences and set for `label`.
@@ -104,14 +110,22 @@ function ltRun(runWithoutDialog){
 				label = app.preferences.label5; break;
 			case "No Label":
 				label = ""; break;
+			case "Select only":
+				selectOnly = true; break;
 			default:
 				alert("Lock Tagger error:\nUnknown label \"" + applyLabel + "\"!");
 				return;
 		}
 
+		if(selectOnly) app.document.deselectAll();
 
 		for(var i in selection){ // iterate through each selected item
 			if(selection[i].locked){
+
+				if(selectOnly){
+					app.document.select(selection[i]);
+					continue;
+				}
 
 				/// the way we tag the locked files is intentionally slow!
 				/// setting thumb.spec.readonly is a filesystem operation, which is slow
@@ -210,11 +224,11 @@ function ltMenu(){
 	var statictext1 = row1.add("statictext", undefined, undefined, {name: "statictext1"}); 
 		statictext1.text = "Tag locked files with:"; 
 
-	var ltDDApplyLabel_array = ["0 Stars","1 Star","2 Stars","3 Stars","4 Stars","5 Stars","-","No Label","Red Label","Yellow Label","Green Label","Blue Label","Purple Label","-","Reject"]; 
+	var ltDDApplyLabel_array = ["Select only","-","0 Stars","1 Star","2 Stars","3 Stars","4 Stars","5 Stars","-","No Label","Red Label","Yellow Label","Green Label","Blue Label","Purple Label","-","Reject"]; 
 	var ltDDApplyLabel = row1.add("dropdownlist", undefined, undefined, {name: "ltDDApplyLabel", items: ltDDApplyLabel_array}); 
 		ltDDApplyLabel.preferredSize.width = 100; 
 
-	ltDDApplyLabel.selection = 1; 
+	ltDDApplyLabel.selection = 2; 
 	// initalize value in dropdown with one stored in preferences
 	for(var i = 0; i < ltDDApplyLabel_array.length; i++){
 		if(ltDDApplyLabel_array[i] == applyLabel)
@@ -251,13 +265,7 @@ function ltMenu(){
 
 	/// DROPDOWN INTERACTIVITY
 	ltDialog.panel1.group1.row1.ltDDApplyLabel.onChange = function(){
-		if(ltDialog.panel1.group1.row1.ltDDApplyLabel.selection == "-"){ // disable ok button if a divider is selected
-			ltDialog.group3.ltBTRun.enabled = false;
-		}
-		else{
-			ltDialog.group3.ltBTRun.enabled = true;
-			applyLabel = ltDialog.panel1.group1.row1.ltDDApplyLabel.selection;
-		}
+		applyLabel = ltDialog.panel1.group1.row1.ltDDApplyLabel.selection;
 	}
 
 
