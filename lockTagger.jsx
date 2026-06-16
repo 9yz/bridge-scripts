@@ -231,7 +231,7 @@ function ltMenu(){
 		group2.margins = 4; 
 
 	var statictext2 = group2.add("statictext", undefined, undefined, {name: "statictext2", multiline: true}); 
-		statictext2.text = "Hold Shift when selecting this menu item to Run using previous settings."; 
+		statictext2.text = "Hold Shift when selecting this menu item to run using previous settings."; 
 
 	// GROUP3
 	// ======
@@ -246,7 +246,7 @@ function ltMenu(){
 		ltBTCancel.text = "Cancel"; 
 
 	var ltBTRun = group3.add("button", undefined, undefined, {name: "ltBTRun"}); 
-		ltBTRun.text = "Run"; 
+		ltBTRun.text = "Ok"; 
 
 
 	/// DROPDOWN INTERACTIVITY
