@@ -1,10 +1,22 @@
 ﻿/*
+@@@START_XML@@@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScriptInfo xmlns:dc="http://purl.org/dc/elements/1.1/" xml:lang="en_US">
+<dc:title>Copy Metadata</dc:title>
+<dc:description>This script allows copying some metadata between files. Activated from the Tools or Context (right-click) menus.</dc:description>
+<dc:source>https://github.com/9yz/bridge-scripts</dc:source>
+@@@END_XML@@
+*/
 
-	copyMetadataCont Script created by 9yz
-	12/08/24
+/*
+
+	copyMetadata.jsx
 
 	Adds the ability to copy IPTC metadata between files.
-	Activate via Tools > Copy Property or Tools > Paste Property..
+	Activate via Tools > Copy Property or Tools > Paste Property...
+
+	See repo for documentation:
+	https://github.com/9yz/bridge-scripts
 
 */
 

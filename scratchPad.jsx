@@ -1,12 +1,24 @@
+/*
+@@@START_XML@@@
+<?xml version="1.0" encoding="UTF-8"?>
+<ScriptInfo xmlns:dc="http://purl.org/dc/elements/1.1/" xml:lang="en_US">
+<dc:title>Scratch Pad</dc:title>
+<dc:description>Adds a new "Scratch Pad" window for taking notes or whatever. Accessed through Window > Scratch Pad.</dc:description>
+<dc:source>https://github.com/9yz/bridge-scripts</dc:source>
+@@@END_XML@@
+*/
+
 /* 
 	
 	scratchPad.jsx
-	12/08/24
 
 	Adds a new "Scratch Pad" window for taking notes or whatever. Accessed through Window > Scratch Pad.
 	Text is not saved between sessions.
 
 	Derived from TextPreview.jsx by David M. Converse, availible under the Apache 2.0 License.
+
+	See repo for documentation:
+	https://github.com/9yz/bridge-scripts
 
 */
 
